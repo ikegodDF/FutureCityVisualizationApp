@@ -1,0 +1,22 @@
+#uiControls {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    display: flex;
+    gap: 8px;
+    z-index: 1000;
+}
+
+#uiControls button {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+}
+
+#uiControls button:hover {
+    background: #f2f2f2;
+}
+
+
