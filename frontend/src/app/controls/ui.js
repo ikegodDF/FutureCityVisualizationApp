@@ -4,6 +4,10 @@ import '../../styles/ui.css';
 export function initUI(viewer) {
   if (document.getElementById('uiControls')) return;
 
+  const outputContainer = document.createElement('div');
+  outputContainer.id = 'outputContainer';
+  document.body.appendChild(outputContainer);
+
   const container = document.createElement('div');
   container.id = 'uiControls';
 

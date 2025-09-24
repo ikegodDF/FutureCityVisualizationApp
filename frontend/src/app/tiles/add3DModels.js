@@ -1,6 +1,7 @@
-import { Color, Cartesian3, Transforms, HeadingPitchRoll, Material, Math as CesiumMath } from 'cesium';
+import { Color, Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath } from 'cesium';
 
-export async function add3DModels(viewer) {
+export async function add3DModels(viewer, options = {}) {
+    const { outputDiv } = options;
     const modelNumber = 2356;
 
     const models = [];
@@ -82,7 +83,7 @@ export async function add3DModels(viewer) {
 
                     const modelColor = getModelColor(year);
 
-                    const modelPosition = Cartesian3.fromDegrees(lon, lat, alt);
+                    const modelPosition = Cartesian3.fromDegrees(lon, lat, 0);
                     const modelOrientation = Transforms.headingPitchRollQuaternion(
                         modelPosition,
                         new HeadingPitchRoll(CesiumMath.toRadians(90), 0, 0)
@@ -112,6 +113,10 @@ export async function add3DModels(viewer) {
             viewer.entities.remove(model);
         }
     })
+
+    const resultYear = new Date().getFullYear();
+    const visibleEntityCount = viewer.entities.values.slice().reverse().filter(entity => models.includes(entity) && entity.show === true).length
+    outputDiv.innerHTML = `施策:今は空　　年度:${resultYear} 　　建物数:${visibleEntityCount}`;
 
     return models;
 }

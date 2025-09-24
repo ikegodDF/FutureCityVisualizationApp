@@ -10,7 +10,7 @@ import { add3DModels } from './app/tiles/add3DModels.js';
 window.CESIUM_BASE_URL = '/cesium';
 setupIon();
 
-const viewer = (function() { 
+const viewer = (async function() { 
   const viewer = createViewer('cesiumContainer'); 
 
   // カメラの初期位置を設定(俯瞰)
@@ -24,7 +24,7 @@ const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
 viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
   initUI(viewer);
-  const models = add3DModels(viewer);
+  const models = await add3DModels(viewer, { outputDiv: document.getElementById('outputContainer') });
   console.log("Models", models);
   return viewer;
 
