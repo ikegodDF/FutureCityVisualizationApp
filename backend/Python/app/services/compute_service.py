@@ -2,6 +2,7 @@ import time
 from datetime import datetime
 from typing import Dict, Any, List
 import math
+from scipy.stats import norm
 from ..models.schemas import ComputeRequest, ComputeResponse
 
 class ComputeService:
@@ -59,11 +60,34 @@ class ComputeService:
     
     def _calculate_earthquake_damage_assessment(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """地震被害判定"""
+        # 計算パラメータ(木造)
+        caluculateparam_wood: Dict[str, List[int]] = {
+            "lambda_complete": [6.514, 6.432, 6.432, 6.432, 6.432, 6.659, 6.659],
+            "lambda_partial": [6.367, 6.343, 6.343, 6.343, 6.343, 6.433, 6.433],
+            "devaiation_complete": [0.187, 0.133, 0.133, 0.133, 0.133, 0.183, 0.183],
+            "devaiation_partial": [0.205, 0.157, 0.157, 0.157, 0.157, 0.169, 0.169]
+        }
+
+        # 計算パラメータ（非木造）
+        caluculateparam_concrete: Dict[str, List[int]] = {
+            "lambda_complete": [6.887, 6.768, 6.768, 6.614, 6.614],
+            "lambda_partial": [6.493, 6.449, 6.449, 6.51, 6.51],
+            "devaiation_complete": [0.319, 0.353, 0.353, 0.063, 0.063],
+            "devaiation_partial": [0.184, 0.231, 0.231, 0.175, 0.175]
+        }
+
+        structureType = params.get("structureType")
+        architecturalPeriod = params.get("architecturalPeriod")
+        earthquake_intensity = params.get("earthquake_intensity")
+
+        if structureType == "wood":
+            caluculateparam = caluculateparam_wood
+        elif structureType == "concrete":
+            caluculateparam = caluculateparam_concrete
+            damageRate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[f"lambda_complete"][architecturalPeriod]) / caluculateparam[f"devaiation_complete"][architecturalPeriod])
+
         return {
-            "damage_level": "low",
-            "damage_rate": 0.85,
-            "total_buildings": 150,
-            "area_km2": 2.5
+            "damage_rate": damageRate
         }
     
     def _calculate_thunami_damage_assessment(self, params: Dict[str, ]) -> Dict[str, Any]:
