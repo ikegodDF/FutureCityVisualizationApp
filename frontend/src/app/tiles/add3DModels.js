@@ -94,7 +94,8 @@ export async function add3DModels(viewer, options = {}) {
                         position: modelPosition,
                         orientation: modelOrientation,
                         model: { uri: gltfPath, scale: 1 },
-                        year: year
+                        year: year,
+                        latlon: [lat, lon]
                     });
                     setModelColor(model, modelColor);
                     return model;

@@ -55,7 +55,7 @@ class ComputeService:
     def _calculate_building_retention_rate(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """建物存続確率分析"""
         # 築年齢別建物の確率
-        calculateparam_age: Dict[str, List[int]] = {
+        calculateparam_age: Dict[str, List[float]] = {
             "under_5": [0, 0.059832469],
             "under_15": [0.099594893, 0.059832469],
             "under_25": [0.059156657, 0.059832469],
@@ -92,7 +92,7 @@ class ComputeService:
     def _calculate_earthquake_damage_assessment(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """地震被害判定"""
         # 計算パラメータ(木造)
-        caluculateparam_wood: Dict[str, List[int]] = {
+        caluculateparam_wood: Dict[str, List[float]] = {
             "lambda_complete": [6.514, 6.432, 6.432, 6.432, 6.432, 6.659, 6.659],
             "lambda_partial": [6.367, 6.343, 6.343, 6.343, 6.343, 6.433, 6.433],
             "devaiation_complete": [0.187, 0.133, 0.133, 0.133, 0.133, 0.183, 0.183],
@@ -100,7 +100,7 @@ class ComputeService:
         }
 
         # 計算パラメータ（非木造）
-        caluculateparam_concrete: Dict[str, List[int]] = {
+        caluculateparam_concrete: Dict[str, List[float]] = {
             "lambda_complete": [6.887, 6.768, 6.768, 6.614, 6.614],
             "lambda_partial": [6.493, 6.449, 6.449, 6.51, 6.51],
             "devaiation_complete": [0.319, 0.353, 0.353, 0.063, 0.063],
@@ -121,10 +121,10 @@ class ComputeService:
             "damage_rate": damageRate
         }
     
-    def _calculate_thunami_damage_assessment(self, params: Dict[str, ]) -> Dict[str, Any]:
+    def _calculate_thunami_damage_assessment(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """津波被害判定"""
         # 計算パラメータ（木造）
-        caluculateparam_wood: Dict[str, List[int]] = {
+        caluculateparam_wood: Dict[str, List[float]] = {
             "section": [-3.444, -3.349],
             "floodDepth": [1.088, 1.603],
             "floors": [-0.6844, -0.5398],
@@ -145,7 +145,7 @@ class ComputeService:
         }
 
         # 計算パラメータ（非木造）
-        calculateparam_concrete: Dict[str, List[int]] = {
+        calculateparam_concrete: Dict[str, List[float]] = {
             "section": [-5.966, -3.406],
             "floodDepth": [0.4584, 0.7256],
             "floors": [-0.5606, -0.5351],
