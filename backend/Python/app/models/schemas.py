@@ -9,7 +9,8 @@ class Model3D(BaseModel):
     name: str
     year: int
     show: bool
-    latlon: List[float]
+    latitude: float
+    longitude: float
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None
@@ -22,7 +23,7 @@ class ModelSearchQuery(BaseModel):
 
 class ComputeRequest(BaseModel):
     method: str
-    params: Models
+    params: List[Model3D]
 
 class ComputeResponse(BaseModel):
     result: Dict[str, Any]

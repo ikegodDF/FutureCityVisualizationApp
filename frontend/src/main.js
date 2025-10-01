@@ -23,8 +23,8 @@ const viewer = (async function() {
 const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
 viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
-  initUI(viewer);
-  const models = await add3DModels(viewer, { outputDiv: document.getElementById('outputContainer') });
+  const models = await add3DModels(viewer);
+  initUI(viewer, models);
   console.log("Models", models);
   return viewer;
 

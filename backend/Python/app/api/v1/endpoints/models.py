@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Query
 from typing import List
-from ....models.schemas import Model3D, ModelSearchQuery
-from ....services.data_service import DataService
+from app.models.schemas import Model3D, ModelSearchQuery
+from app.services.data_service import DataService
 
 router = APIRouter()
 data_service = DataService()

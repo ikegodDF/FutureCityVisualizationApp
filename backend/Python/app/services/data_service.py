@@ -2,6 +2,7 @@ import os
 from typing import List, Optional
 from ..core.config import settings
 from ..models.schemas import Model3D, ModelSearchQuery
+import json
 
 class DataService:
     def __init__(self):
@@ -41,9 +42,9 @@ class DataService:
         if query.max_lon is not None:
             filtered = [m for m in filtered if m.longitude <= query.max_lon]
         if query.year_from is not None:
-            filtered = [m for m in filtered if m.year_built and m.year_built >= query.year_from]
+            filtered = [m for m in filtered if m.year and m.year >= query.year_from]
         if query.year_to is not None:
-            filtered = [m for m in filtered if m.year_built and m.year_built <= query.year_to]
+            filtered = [m for m in filtered if m.year and m.year <= query.year_to]
         
         return filtered[:query.limit]
     

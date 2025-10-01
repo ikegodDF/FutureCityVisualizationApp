@@ -1,7 +1,6 @@
 import { Color, Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath } from 'cesium';
 
-export async function add3DModels(viewer, options = {}) {
-    const { outputDiv } = options;
+export async function add3DModels(viewer) {
     const modelNumber = 2356;
 
     const models = [];
@@ -120,10 +119,6 @@ export async function add3DModels(viewer, options = {}) {
             models.splice(idx, 1);
         }
     })
-
-    const resultYear = new Date().getFullYear();
-    const visibleEntityCount = viewer.entities.values.slice().reverse().filter(entity => models.includes(entity) && entity.show === true).length
-    outputDiv.innerHTML = `施策:今は空　　年度:${resultYear} 　　建物数:${visibleEntityCount}`;
 
     return models;
 }

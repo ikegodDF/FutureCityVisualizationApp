@@ -125,7 +125,7 @@ class ComputeService:
             "damage_rate": damageRate
         }
     
-    def _calculate_thunami_damage_assessment(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_thunami_damage_assessment(self, params: Model3D) -> Dict[str, Any]:
         """津波被害判定"""
         # 計算パラメータ（木造）
         caluculateparam_wood: Dict[str, List[float]] = {
