@@ -22,12 +22,12 @@ class ModelSearchQuery(BaseModel):
 
 class ComputeRequest(BaseModel):
     method: str
-    params: Dict[str, Any]
+    params: Models
 
 class ComputeResponse(BaseModel):
     result: Dict[str, Any]
     duration_ms: float
     timestamp: datetime
 
-class Models(BaseModel):
-    model: model
+class Models(BaseModel): 
+    models: List[Model3D]

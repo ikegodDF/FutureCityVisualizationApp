@@ -110,9 +110,14 @@ export async function add3DModels(viewer, options = {}) {
     }
 
     correctNumbers.forEach(modelNumber => {
-        const model = viewer.entities.values.find(model => model.name === `model_${modelNumber}`);
-        if (model) {
-            viewer.entities.remove(model);
+        const targetName = `model_${modelNumber}`;
+        const entity = viewer.entities.values.find(e => e.name === targetName);
+        if (entity) {
+            viewer.entities.remove(entity);
+        }
+        const idx = models.findIndex(e => e.name === targetName);
+        if (idx !== -1) {
+            models.splice(idx, 1);
         }
     })
 

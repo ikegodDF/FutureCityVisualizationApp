@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Dict, Any, List
 import math
 from scipy.stats import norm
-from ..models.schemas import ComputeRequest, ComputeResponse
+from ..models.schemas import ComputeRequest, ComputeResponse, Models, Model3D
 
 class ComputeService:
     def __init__(self):
@@ -39,20 +39,24 @@ class ComputeService:
             timestamp=datetime.now()
         )
     
-    def _execute_computation(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _execute_computation(self, method: str, params: Models) -> Dict[str, Any]:
         """実際の計算ロジック"""
+        results = []
         for param in params:
             if method == "building_retention_rate":
-                result = self._calculate_building_retention_rate(params)
+                result = self._calculate_building_retention_rate(param)
             elif method == "earthquake_damage_assessment":
-                result = self._calculate_earthquake_damage_assessment(params)
+                result = self._calculate_earthquake_damage_assessment(param)
             elif method == "thunami_damage_assessment":
-                result = self._calculate_thunami_damage_assessment(params)
+                result = self._calculate_thunami_damage_assessment(param)
             else:
                 return {"error": f"Unknown method: {method}"}
             
+            results.append(result)
+            
+        return results
     
-    def _calculate_building_retention_rate(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_building_retention_rate(self, params: Model3D) -> Dict[str, Any]:
         """建物存続確率分析"""
         # 築年齢別建物の確率
         calculateparam_age: Dict[str, List[float]] = {
@@ -65,7 +69,7 @@ class ComputeService:
             "no_data": [0.142936261, 0.059832469]
         }
 
-        building_Age  = params.get("building_Age")
+        building_Age  = params.year
 
         if building_Age < 6:
             building_AgeType = "under_5"
@@ -89,7 +93,7 @@ class ComputeService:
             "revival_probability": revival_probability
         }
     
-    def _calculate_earthquake_damage_assessment(self, params: Dict[str, Any]) -> Dict[str, Any]:
+    def _calculate_earthquake_damage_assessment(self, params: Model3D) -> Dict[str, Any]:
         """地震被害判定"""
         # 計算パラメータ(木造)
         caluculateparam_wood: Dict[str, List[float]] = {
