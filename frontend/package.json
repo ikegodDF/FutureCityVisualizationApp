@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare:cesium": "mkdir -p public/cesium && cp -R node_modules/cesium/Build/Cesium/Assets public/cesium/ && cp -R node_modules/cesium/Build/Cesium/ThirdParty public/cesium/ && cp -R node_modules/cesium/Build/Cesium/Widgets public/cesium/ && cp -R node_modules/cesium/Build/Cesium/Workers public/cesium/",
+    "prepare:cesium": "node scripts/prepare-cesium.js",
     "dev": "npm run prepare:cesium && vite",
     "build": "vite build",
     "preview": "vite preview"
@@ -17,6 +17,10 @@
     "cesium": "^1.133.1"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
+    "fs-extra": "^11.3.2",
+    "mkdirp": "^3.0.1",
+    "rimraf": "^6.0.1",
     "vite": "^6.3.6",
     "vite-plugin-cesium": "^1.2.23"
   },
