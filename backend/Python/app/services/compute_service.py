@@ -41,21 +41,52 @@ class ComputeService:
     
     def _execute_computation(self, method: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """実際の計算ロジック"""
-        if method == "building_density":
-            return self._calculate_building_density(params)
-        elif method == "height_analysis":
-            return self._calculate_height_analysis(params)
-        else:
-            return {"error": f"Unknown method: {method}"}
+        for param in params:
+            if method == "building_retention_rate":
+                result = self._calculate_building_retention_rate(params)
+            elif method == "earthquake_damage_assessment":
+                result = self._calculate_earthquake_damage_assessment(params)
+            elif method == "thunami_damage_assessment":
+                result = self._calculate_thunami_damage_assessment(params)
+            else:
+                return {"error": f"Unknown method: {method}"}
+            
     
     def _calculate_building_retention_rate(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """建物存続確率分析"""
-        bulding_Age = params.get("bulding_Age")
+        # 築年齢別建物の確率
+        calculateparam_age: Dict[str, List[int]] = {
+            "under_5": [0, 0.059832469],
+            "under_15": [0.099594893, 0.059832469],
+            "under_25": [0.059156657, 0.059832469],
+            "under_35": [0.094209708, 0.059832469],
+            "under_45": [0.264274535, 0.059832469],
+            "over_46": [0.390645831, 0.059832469],
+            "no_data": [0.142936261, 0.059832469]
+        }
+
+        building_Age  = params.get("building_Age")
+
+        if building_Age < 6:
+            building_AgeType = "under_5"
+        elif building_Age < 16:
+            building_AgeType = "under_15"
+        elif building_Age < 26:
+            building_AgeType = "under_25"
+        elif building_Age < 36:
+            building_AgeType = "under_35"
+        elif building_Age < 46:
+            building_AgeType = "under_45"
+        else:
+            building_AgeType = "over_46"
+
+
+        lost_probability = calculateparam_age[building_AgeType][0]
+        revival_probability = calculateparam_age[building_AgeType][1]
 
         return {
-            "retention_rate": 0.85,
-            "total_buildings": 150,
-            "area_km2": 2.5
+            "lost_probability": lost_probability,
+            "revival_probability": revival_probability
         }
     
     def _calculate_earthquake_damage_assessment(self, params: Dict[str, Any]) -> Dict[str, Any]:

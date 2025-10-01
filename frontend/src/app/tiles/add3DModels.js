@@ -93,7 +93,8 @@ export async function add3DModels(viewer, options = {}) {
                         name: `model_${i}`,
                         position: modelPosition,
                         orientation: modelOrientation,
-                        model: { uri: gltfPath, scale: 1 }
+                        model: { uri: gltfPath, scale: 1 },
+                        year: year
                     });
                     setModelColor(model, modelColor);
                     return model;
