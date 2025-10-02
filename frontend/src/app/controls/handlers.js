@@ -4,6 +4,11 @@ import { renew3DModels } from '../tiles/renew3DModels.js';
 
 export const prediction = async (viewer, models = []) => {
     
+    if (appState.result[appState.appliedPolicy][appState.year + 5]) {
+        renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + 5][appState.disasterState]);
+        setYear(appState.year + 5);
+        return ;
+    }
 
     const payload = {
         method: 'building_retention_rate',
