@@ -1,3 +1,4 @@
+import { toPayload } from '../tiles/toPayload.js';
 export function exportResult(filename, dataObject) {
   try {
     const json = JSON.stringify(dataObject, null, 2);
@@ -29,16 +30,8 @@ export function buildSerializableResult(result) {
       output[policy][year] = {};
       for (const [disaster, models] of Object.entries(disasters)) {
         if (!Array.isArray(models)) continue;
-        output[policy][year][disaster] = models.map((m) => {
-          if (m && typeof m === 'object') {
-            return {
-              name: m.name,
-              year: m.year,
-              show: m.show,
-            };
-          }
-          return m;
-        });
+        // toPayload 形式 { id, name, latitude, longitude, year, show }
+        output[policy][year][disaster] = models.map((m) => toPayload(m));
       }
     }
   }

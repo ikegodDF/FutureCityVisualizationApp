@@ -83,6 +83,39 @@
 }
 .modal-content {
     padding: 12px;
+    line-height: 1.6;
+}
+
+/* Modal form layout */
+.modal-content .form-row {
+    margin-bottom: 10px;
+}
+.modal-content label {
+    display: block;
+    margin-bottom: 6px;
+    line-height: 1.6;
+}
+.modal-content input[type="file"] {
+    display: block;
+}
+.modal-content .selects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.modal-content .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.modal-content select {
+    padding: 6px 8px;
+    min-width: 160px;
+}
+
+.modal-content button {
+    padding: 8px 12px;
 }
 
 

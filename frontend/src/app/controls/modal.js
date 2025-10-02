@@ -64,29 +64,40 @@ import { result } from './handlers.js';
 export function openResultPicker(viewer, models, outputContainer) {
   const wrap = document.createElement('div');
 
+  // 行1: ファイル入力
+  const rowFile = document.createElement('div');
+  rowFile.className = 'form-row';
   const fileLabel = document.createElement('label');
   fileLabel.textContent = 'JSONファイルを読み込む:';
-  fileLabel.style.display = 'block';
-  fileLabel.style.marginBottom = '6px';
-
   const fileInput = document.createElement('input');
   fileInput.type = 'file';
   fileInput.accept = '.json,application/json';
+  rowFile.appendChild(fileLabel);
+  rowFile.appendChild(fileInput);
 
   const loadInfo = document.createElement('div');
-  loadInfo.style.margin = '8px 0';
+  loadInfo.className = 'form-row';
 
+  // 行2: セレクト群
+  const selectsRow = document.createElement('div');
+  selectsRow.className = 'form-row selects';
   const policySelect = document.createElement('select');
   const yearSelect = document.createElement('select');
   const disasterSelect = document.createElement('select');
   [policySelect, yearSelect, disasterSelect].forEach(s => {
-    s.style.marginRight = '8px';
     s.disabled = true;
   });
+  selectsRow.appendChild(policySelect);
+  selectsRow.appendChild(yearSelect);
+  selectsRow.appendChild(disasterSelect);
 
+  // 行3: ボタン群
+  const actionsRow = document.createElement('div');
+  actionsRow.className = 'form-row actions';
   const runBtn = document.createElement('button');
   runBtn.textContent = '実行';
   runBtn.disabled = true;
+  actionsRow.appendChild(runBtn);
 
   function populatePolicies() {
     policySelect.innerHTML = '';
@@ -166,23 +177,24 @@ export function openResultPicker(viewer, models, outputContainer) {
     const year = Number(yearSelect.value);
     const disaster = disasterSelect.value;
     const modelsSel = appState.result?.[policy]?.[year]?.[disaster];
-    if (!modelsSel) return;
+    if (!modelsSel) {
+        loadInfo.textContent = 'データがありません';
+        return;
+    }
 
     setAppliedPolicy(policy);
     setYear(year);
     setDisasterState(disaster);
     renew3DModels(viewer, modelsSel);
     result(viewer, modelsSel, outputContainer);
+    console.log(appState);
     closeModal();
   });
 
-  fileLabel.appendChild(fileInput);
-  wrap.appendChild(fileLabel);
+  wrap.appendChild(rowFile);
   wrap.appendChild(loadInfo);
-  wrap.appendChild(policySelect);
-  wrap.appendChild(yearSelect);
-  wrap.appendChild(disasterSelect);
-  wrap.appendChild(runBtn);
+  wrap.appendChild(selectsRow);
+  wrap.appendChild(actionsRow);
 
   // 既存データがあれば初期化
   populatePolicies();
