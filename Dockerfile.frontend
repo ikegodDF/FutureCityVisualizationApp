@@ -1,5 +1,5 @@
 # Node.jsの公式イメージを使用
-FROM node:18-alpine
+FROM node:20-bookworm-slim
 
 # 作業ディレクトリを設定
 WORKDIR /app
@@ -8,10 +8,18 @@ WORKDIR /app
 COPY frontend/package*.json ./
 
 # 依存関係をインストール
-RUN npm ci --only=production
+RUN npm install
 
 # アプリケーションのソースコードをコピー
 COPY frontend/ .
+
+# Cesium の静的アセットを public/cesium に配置
+# node_modules 配下のビルド済みCesiumから必要ディレクトリをコピー
+RUN mkdir -p public/cesium \
+  && cp -R node_modules/cesium/Build/Cesium/Assets public/cesium/ \
+  && cp -R node_modules/cesium/Build/Cesium/ThirdParty public/cesium/ \
+  && cp -R node_modules/cesium/Build/Cesium/Widgets public/cesium/ \
+  && cp -R node_modules/cesium/Build/Cesium/Workers public/cesium/
 
 # ポート5173を公開
 EXPOSE 5173

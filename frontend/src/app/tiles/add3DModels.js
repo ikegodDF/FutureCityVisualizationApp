@@ -1,7 +1,11 @@
 import { Color, Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath } from 'cesium';
+import { getModelColor } from './getModelColor.js';
+import { setResult } from '../state/appState.js';
+import { toPayload } from './toPayload.js';
 
-export async function add3DModels(viewer, options = {}) {
-    const { outputDiv } = options;
+// getModelColorは別ファイルへ切り出し
+
+export async function add3DModels(viewer) {
     const modelNumber = 2356;
 
     const models = [];
@@ -30,32 +34,6 @@ export async function add3DModels(viewer, options = {}) {
         2138,
         2254, 2255
     ];
-
-    const getModelColor = (year) => {
-        const currentYear = new Date().getFullYear();
-        const age = currentYear - year;
-
-        // 色のマッピング
-        if (age < 6) {
-            return Color.fromCssColorString("#8BC34A"); // ~5  黄緑
-        } else if (age < 16) {
-            return Color.fromCssColorString("#A5D6A7"); // 6~15  緑
-        } else if (age < 26) {
-            return Color.fromCssColorString("#FFEB3B"); // 16~25  黄色
-        } else if (age < 36) {
-            return Color.fromCssColorString("#FF9800"); // 26~35  オレンジ
-        } else if (age < 46) {
-            return Color.fromCssColorString("#F44336"); // 36~45  赤
-        } else if (age < 2000){
-            return Color.fromCssColorString("#B71C1C"); // 46~55  濃い赤
-        } else {
-            return Color.fromCssColorString("#1976D2"); // 年度データなし  青
-        }
-    }
-
-    const setModelColor = (model, color) => {
-        model.model.color = color;
-    }
 
     // バッチ並列実行
     const batchSize = 500;
@@ -93,9 +71,11 @@ export async function add3DModels(viewer, options = {}) {
                         name: `model_${i}`,
                         position: modelPosition,
                         orientation: modelOrientation,
-                        model: { uri: gltfPath, scale: 1 }
+                        model: { uri: gltfPath, scale: 1 },
+                        year: year,
+                        latlon: [lat, lon]
                     });
-                    setModelColor(model, modelColor);
+                    model.model.color = modelColor;
                     return model;
                 } catch {
                     return null;
@@ -108,15 +88,18 @@ export async function add3DModels(viewer, options = {}) {
     }
 
     correctNumbers.forEach(modelNumber => {
-        const model = viewer.entities.values.find(model => model.name === `model_${modelNumber}`);
-        if (model) {
-            viewer.entities.remove(model);
+        const targetName = `model_${modelNumber}`;
+        const entity = viewer.entities.values.find(e => e.name === targetName);
+        if (entity) {
+            viewer.entities.remove(entity);
+        }
+        const idx = models.findIndex(e => e.name === targetName);
+        if (idx !== -1) {
+            models.splice(idx, 1);
         }
     })
-
-    const resultYear = new Date().getFullYear();
-    const visibleEntityCount = viewer.entities.values.slice().reverse().filter(entity => models.includes(entity) && entity.show === true).length
-    outputDiv.innerHTML = `施策:今は空　　年度:${resultYear} 　　建物数:${visibleEntityCount}`;
+    
+    setResult(models.map(toPayload));
 
     return models;
 }

@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "vite",
+    "prepare:cesium": "node scripts/prepare-cesium.js",
+    "dev": "npm run prepare:cesium && vite",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -16,7 +17,12 @@
     "cesium": "^1.133.1"
   },
   "devDependencies": {
-    "vite": "^6.3.6"
+    "cross-env": "^10.1.0",
+    "fs-extra": "^11.3.2",
+    "mkdirp": "^3.0.1",
+    "rimraf": "^6.0.1",
+    "vite": "^6.3.6",
+    "vite-plugin-cesium": "^1.2.23"
   },
   "type": "module"
 }
