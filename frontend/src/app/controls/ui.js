@@ -1,7 +1,10 @@
 import { flyToJapan } from '../utils/camera.js';
 import '../../styles/ui.css';
 import { prediction, result, restore} from './handlers.js';
-import { resetResult } from '../state/appState.js';
+import { openModal, closeModal, openResultPicker } from './modal.js';
+import { resetResult, appState, setAppliedPolicy, setYear, setDisasterState } from '../state/appState.js';
+import { renew3DModels } from '../tiles/renew3DModels.js';
+import { exportResultSerializable } from '../utils/export.js';
 
 let outputContainer;
 
@@ -40,6 +43,20 @@ export function initUI(viewer, models) {
     result(viewer, models, outputContainer);
   });
 
+  const btnExport = document.createElement('button');
+  btnExport.textContent = '予測結果の出力';
+  btnExport.addEventListener('click', async () => {
+    const filename = `result_${Date.now()}.json`;
+    exportResultSerializable(filename, appState.result);
+  });
+
+  const btnInputappState = document.createElement('button');
+  btnInputappState.textContent = '予測結果の呼び出し';
+  btnInputappState.addEventListener('click', async () => {
+    openResultPicker(viewer, models, outputContainer);
+  });
+  
+
   const lineBreak = document.createElement('span');
   lineBreak.className = 'break';
 
@@ -50,6 +67,9 @@ export function initUI(viewer, models) {
   container.appendChild(btnPrediction);
   container.appendChild(btnreturn);
   container.appendChild(btnreset);
+  container.appendChild(lineBreak);
+  container.appendChild(btnExport);
+  container.appendChild(btnInputappState);
   document.body.appendChild(container);
 }
 
