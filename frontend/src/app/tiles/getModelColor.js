@@ -1,7 +1,8 @@
 import { Color } from 'cesium';
+import { appState } from '../state/appState.js';
 
 export const getModelColor = (year) => {
-    const currentYear = new Date().getFullYear();
+    const currentYear = appState.year;
     const age = currentYear - year;
 
     if (age < 6) {

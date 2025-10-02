@@ -5,8 +5,8 @@ import { renew3DModels } from '../tiles/renew3DModels.js';
 export const prediction = async (viewer, models = []) => {
     
     if (appState.result[appState.appliedPolicy][appState.year + 5]) {
-        renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + 5][appState.disasterState]);
         setYear(appState.year + 5);
+        renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + 5][appState.disasterState]);
         return ;
     }
 
@@ -24,9 +24,9 @@ export const prediction = async (viewer, models = []) => {
         });
         const data = await res.json();
         console.log('calculate response:', data);
-        await renew3DModels(viewer, data.result);
         setYear(appState.year + 5);
         setResult(data.result);
+        await renew3DModels(viewer, data.result);
         console.log(appState);
         return ;
     } catch (error) {
