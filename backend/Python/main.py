@@ -9,8 +9,8 @@ app = FastAPI(title="FutureCity API", version="0.1.0")
 # CORS設定（フロントエンドからのアクセスを許可）
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # Viteのデフォルトポート
-    allow_credentials=True,
+    allow_origins=["*"],  # 開発環境では全てのオリジンを許可
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )

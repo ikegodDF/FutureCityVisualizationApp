@@ -5,6 +5,9 @@ import { initUI } from './app/controls/ui.js';
 import { loadCityTiles } from './app/tiles/cityTiles.js';
 import { setupIon } from './app/services/ion.js';
 import { add3DModels } from './app/tiles/add3DModels.js';
+import { result } from './app/controls/handlers.js';
+import { appState } from './app/state/appState.js';
+import { outputContainer } from './app/controls/ui.js';
 
 // 公開アセットのベースURL
 window.CESIUM_BASE_URL = '/cesium';
@@ -26,6 +29,7 @@ viewer.clock.currentTime = JulianDate.fromDate(targetTime);
   const models = await add3DModels(viewer);
   initUI(viewer, models);
   console.log("Models", models);
+  result(viewer, models, outputContainer, appState);
   return viewer;
 
 }());

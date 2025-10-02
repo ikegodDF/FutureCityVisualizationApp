@@ -1,4 +1,9 @@
 import { Color, Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath } from 'cesium';
+import { getModelColor } from './getModelColor.js';
+import { setResult } from '../state/appState.js';
+import { toPayload } from './toPayload.js';
+
+// getModelColorは別ファイルへ切り出し
 
 export async function add3DModels(viewer) {
     const modelNumber = 2356;
@@ -29,32 +34,6 @@ export async function add3DModels(viewer) {
         2138,
         2254, 2255
     ];
-
-    const getModelColor = (year) => {
-        const currentYear = new Date().getFullYear();
-        const age = currentYear - year;
-
-        // 色のマッピング
-        if (age < 6) {
-            return Color.fromCssColorString("#8BC34A"); // ~5  黄緑
-        } else if (age < 16) {
-            return Color.fromCssColorString("#A5D6A7"); // 6~15  緑
-        } else if (age < 26) {
-            return Color.fromCssColorString("#FFEB3B"); // 16~25  黄色
-        } else if (age < 36) {
-            return Color.fromCssColorString("#FF9800"); // 26~35  オレンジ
-        } else if (age < 46) {
-            return Color.fromCssColorString("#F44336"); // 36~45  赤
-        } else if (age < 2000){
-            return Color.fromCssColorString("#B71C1C"); // 46~55  濃い赤
-        } else {
-            return Color.fromCssColorString("#1976D2"); // 年度データなし  青
-        }
-    }
-
-    const setModelColor = (model, color) => {
-        model.model.color = color;
-    }
 
     // バッチ並列実行
     const batchSize = 500;
@@ -96,7 +75,7 @@ export async function add3DModels(viewer) {
                         year: year,
                         latlon: [lat, lon]
                     });
-                    setModelColor(model, modelColor);
+                    model.model.color = modelColor;
                     return model;
                 } catch {
                     return null;
@@ -119,6 +98,8 @@ export async function add3DModels(viewer) {
             models.splice(idx, 1);
         }
     })
+    
+    setResult(models.map(toPayload));
 
     return models;
 }

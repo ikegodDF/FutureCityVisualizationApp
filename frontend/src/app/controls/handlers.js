@@ -1,22 +1,14 @@
 // クリックなどのイベントハンドラ群を配置
+import { appState, setYear, setResult } from '../state/appState.js';
+import { renew3DModels } from '../tiles/renew3DModels.js';
 
 export const prediction = async (viewer, models = []) => {
-    const toPayload = (e) => {
-        const id = Number(String(e?.name ?? '').replace('model_', ''));
-        const [lat, lon] = e?.latlon ?? [];
-        return {
-            id,
-            name: e?.name ?? String(id),
-            latitude: lat,
-            longitude: lon,
-            year: e?.year ?? null,
-            show: e?.show === true,
-        };
-    };
+    
 
     const payload = {
         method: 'building_retention_rate',
-        params: models.map(toPayload),
+        appStateYear: appState.year + 5,
+        params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
     };
 
     try {
@@ -27,13 +19,25 @@ export const prediction = async (viewer, models = []) => {
         });
         const data = await res.json();
         console.log('calculate response:', data);
+        await renew3DModels(viewer, data.result);
+        setYear(appState.year + 5);
+        setResult(data.result);
+        console.log(appState);
+        return ;
     } catch (error) {
         console.error('calculate error:', error);
+        return ;
     }
 }
 
+
+export const restore = async (viewer) => {
+    renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year-5][appState.disasterState]);
+    setYear(appState.year - 5);
+    return ;
+}
 export const result = (viewer, models, outputContainer) => {
-    const resultYear = new Date().getFullYear();
+    const resultYear = appState.year;
     const visibleEntityCount = viewer.entities.values.slice().reverse().filter(entity => models.includes(entity) && entity.show === true).length
-    outputContainer.innerHTML = `施策:今は空　　年度:${resultYear} 　　建物数:${visibleEntityCount}`;
+    outputContainer.innerHTML = `施策:${appState.appliedPolicy}　　年度:${resultYear} 　　建物数:${visibleEntityCount}`;
 }

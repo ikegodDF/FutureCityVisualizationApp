@@ -2,22 +2,24 @@ import time
 from datetime import datetime
 from typing import Dict, Any, List
 import math
+import random
 from scipy.stats import norm
-from ..models.schemas import ComputeRequest, ComputeResponse, Models, Model3D
+from ..models.schemas import ComputeRequest, ComputeResponse, Model3D
 
 class ComputeService:
     def __init__(self):
         self.cache = {}  # 簡単なメモリキャッシュ
+        self.enable_cache = False  # 開発中はキャッシュ無効
     
     def compute(self, request: ComputeRequest) -> ComputeResponse:
         """計算リクエストを処理"""
         start_time = time.time()
         
-        # キャッシュキー生成
-        cache_key = f"{request.method}_{hash(str(request.params))}"
+        # キャッシュキー生成（必要時のみ）
+        cache_key = f"{request.method}_{request.appStateYear}_{hash(str(request.params))}"
         
-        # キャッシュチェック
-        if cache_key in self.cache:
+        # キャッシュチェック（有効時のみ）
+        if self.enable_cache and cache_key in self.cache:
             cached_result = self.cache[cache_key]
             return ComputeResponse(
                 result=cached_result,
@@ -26,10 +28,11 @@ class ComputeService:
             )
         
         # 実際の計算
-        result = self._execute_computation(request.method, request.params)
+        result = self._execute_computation(request.method, request.params, request.appStateYear)
         
-        # キャッシュに保存
-        self.cache[cache_key] = result
+        # キャッシュに保存（有効時のみ）
+        if self.enable_cache:
+            self.cache[cache_key] = result
         
         duration_ms = (time.time() - start_time) * 1000
         
@@ -39,24 +42,24 @@ class ComputeService:
             timestamp=datetime.now()
         )
     
-    def _execute_computation(self, method: str, params: Models) -> Dict[str, Any]:
+    def _execute_computation(self, method: str, params: List[Model3D], appStateYear: int) -> List[Model3D]:
         """実際の計算ロジック"""
         results = []
         for param in params:
             if method == "building_retention_rate":
-                result = self._calculate_building_retention_rate(param)
+                result = self._calculate_building_retention_rate(param, appStateYear)
             elif method == "earthquake_damage_assessment":
                 result = self._calculate_earthquake_damage_assessment(param)
             elif method == "thunami_damage_assessment":
                 result = self._calculate_thunami_damage_assessment(param)
             else:
-                return {"error": f"Unknown method: {method}"}
+                result = param
             
             results.append(result)
             
         return results
     
-    def _calculate_building_retention_rate(self, params: Model3D) -> Dict[str, Any]:
+    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int) -> Model3D:
         """建物存続確率分析"""
         # 築年齢別建物の確率
         calculateparam_age: Dict[str, List[float]] = {
@@ -69,31 +72,44 @@ class ComputeService:
             "no_data": [0.142936261, 0.059832469]
         }
 
-        building_Age  = params.year
-
-        if building_Age < 6:
-            building_AgeType = "under_5"
-        elif building_Age < 16:
-            building_AgeType = "under_15"
-        elif building_Age < 26:
-            building_AgeType = "under_25"
-        elif building_Age < 36:
-            building_AgeType = "under_35"
-        elif building_Age < 46:
-            building_AgeType = "under_45"
+        # yearがNoneのときはno_data扱い
+        if param.year == 0:
+            building_AgeType = "no_data"
+            print("no_data")
         else:
-            building_AgeType = "over_46"
+            building_Age  = appStateYear - 5 - param.year
+
+            if building_Age < 6:
+                building_AgeType = "under_5"
+            elif building_Age < 16:
+                building_AgeType = "under_15"
+            elif building_Age < 26:
+                building_AgeType = "under_25"
+            elif building_Age < 36:
+                building_AgeType = "under_35"
+            elif building_Age < 46:
+                building_AgeType = "under_45"
+            else:
+                building_AgeType = "over_46"
 
 
         lost_probability = calculateparam_age[building_AgeType][0]
         revival_probability = calculateparam_age[building_AgeType][1]
 
-        return {
-            "lost_probability": lost_probability,
-            "revival_probability": revival_probability
-        }
+        judgement = random.random()
+        print(judgement)
+
+        if param.show == True:
+            if judgement < lost_probability:
+                param.show = False
+        else:
+            if judgement < revival_probability:
+                param.show = True
+                param.year = appStateYear
+        return param
+
     
-    def _calculate_earthquake_damage_assessment(self, params: Model3D) -> Dict[str, Any]:
+    def _calculate_earthquake_damage_assessment(self, params: Model3D) -> Model3D:
         """地震被害判定"""
         # 計算パラメータ(木造)
         caluculateparam_wood: Dict[str, List[float]] = {
@@ -121,11 +137,9 @@ class ComputeService:
             caluculateparam = caluculateparam_concrete
             damageRate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[f"lambda_complete"][architecturalPeriod]) / caluculateparam[f"devaiation_complete"][architecturalPeriod])
 
-        return {
-            "damage_rate": damageRate
-        }
+        return param
     
-    def _calculate_thunami_damage_assessment(self, params: Model3D) -> Dict[str, Any]:
+    def _calculate_thunami_damage_assessment(self, params: Model3D) -> Model3D:
         """津波被害判定"""
         # 計算パラメータ（木造）
         caluculateparam_wood: Dict[str, List[float]] = {
@@ -188,6 +202,4 @@ class ComputeService:
         damageRate = 1/(1+math.exp( caluculateparam["section"][judgementparam] + calcuclateparam["floodDepth"] * floodDepth + calcuclateparam["floors"][judgementparam] * floors + calcuclateparam["area"][judgementparam] * area + calcuclateparam[f"architecuturalPeriod{architecturalPeriod}"][judgementparam] * architecturalPeriod + calcuclateparam[f"purpose{purpose}"][judgementparam] * purpose + calcuclateparam["devaiation"][judgementparam]))
 
 
-        return {
-            "damage_rate": damageRate
-        }
+        return param

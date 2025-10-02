@@ -1,16 +1,16 @@
 # Pydanticスキーマ
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from datetime import datetime
 
 class Model3D(BaseModel):
     model_config = ConfigDict(extra="allow")
     id: int
     name: str
-    year: int
+    year: Optional[int] = None
     show: bool
-    latitude: float
-    longitude: float
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None
@@ -23,10 +23,11 @@ class ModelSearchQuery(BaseModel):
 
 class ComputeRequest(BaseModel):
     method: str
+    appStateYear: int
     params: List[Model3D]
 
 class ComputeResponse(BaseModel):
-    result: Dict[str, Any]
+    result: List[Model3D]
     duration_ms: float
     timestamp: datetime
 
