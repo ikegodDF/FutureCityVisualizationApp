@@ -32,8 +32,8 @@ cd backend/Python
 pip install -r requirements.txt
 
 # サーバー起動
-python app.py
-# → http://localhost:8000 でアクセス
+python -m uvicorn main:app --reload --host 0.0.0.0 --port 8000
+# → http://localhost:8000/docs でアクセス
 ```
 
 ### Docker で起動
