@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     config_file: str = "config.json"
     
     # CORS
-    cors_origins: List[str] = ["http://localhost:5173"]
+    cors_origins: str = "http://localhost:5173"
     
     # 計算設定
     max_models_per_request: int = 1000

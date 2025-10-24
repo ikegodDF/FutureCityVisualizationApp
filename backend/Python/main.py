@@ -2,14 +2,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints.calculate import router as calculate_router
 from app.api.v1.endpoints.models import router as models_router
+from app.core.config import settings
 
 
 app = FastAPI(title="FutureCity API", version="0.1.0")
 
 # CORS設定（フロントエンドからのアクセスを許可）
+cors_origins = settings.cors_origins.split(",") if settings.cors_origins else ["*"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 開発環境では全てのオリジンを許可
+    allow_origins=cors_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -26,6 +28,7 @@ def info():
         "version": "0.1.0",
         "description": "3D都市可視化アプリケーションのバックエンドAPI"
     }
+
 
 # お試しAPI
 @app.get("/example")

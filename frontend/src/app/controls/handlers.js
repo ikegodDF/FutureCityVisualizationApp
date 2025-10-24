@@ -17,7 +17,8 @@ export const prediction = async (viewer, models = []) => {
     };
 
     try {
-        const res = await fetch('http://localhost:8000/api/v1/calculate/', {
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+        const res = await fetch(`${apiBaseUrl}/api/v1/calculate/`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),

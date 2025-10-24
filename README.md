@@ -10,6 +10,16 @@
 - **Docker Desktop** (コンテナ実行時)
 - **Git**
 
+### 環境変数の設定
+```bash
+# .env.example をコピーして .env を作成
+cp .env.example .env
+
+# .env ファイルを編集して必要な値を設定
+# - VITE_CESIUM_ION_TOKEN: Cesium Ion のアクセストークン
+# - VITE_API_BASE_URL: バックエンドAPIのURL
+```
+
 ### フロントエンド
 JavaScript + Vite + Cesium.js
 
