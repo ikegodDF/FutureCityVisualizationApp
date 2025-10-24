@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints.calculate import router as calculate_router
 from app.api.v1.endpoints.models import router as models_router
+from app.api.v1.endpoints.analysis import router as analysis_router
 from app.core.config import settings
 
 
@@ -29,13 +30,20 @@ def info():
         "description": "3D都市可視化アプリケーションのバックエンドAPI"
     }
 
-
-# お試しAPI
-@app.get("/example")
-def example():
-    return {"message": "Hello, World!"}
-
 # v1 routers
-app.include_router(calculate_router, prefix="/api/v1", tags=["calculate"])
-app.include_router(models_router, prefix="/api/v1", tags=["models"])
+try:
+    app.include_router(calculate_router, prefix="/api/v1", tags=["calculate"])
+    print("Calculate router registered")
+    
+    app.include_router(models_router, prefix="/api/v1", tags=["models"])
+    print("Models router registered")
+    
+    app.include_router(analysis_router, prefix="/api/v1", tags=["analysis"])
+    print("Analysis router registered")
+    
+    print("All routers registered successfully!")
+except Exception as e:
+    print(f"Router registration error: {e}")
+    import traceback
+    traceback.print_exc()
 

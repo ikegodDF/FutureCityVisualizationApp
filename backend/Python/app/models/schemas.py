@@ -33,3 +33,8 @@ class ComputeResponse(BaseModel):
 
 class Models(BaseModel): 
     models: List[Model3D]
+
+class AnalysisResponse(BaseModel):
+    result: List[List[int]]
+    duration_ms: float
+    timestamp: datetime
