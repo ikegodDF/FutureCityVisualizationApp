@@ -38,10 +38,11 @@ export const prediction = async (viewer, models = []) => {
 
 
 export const restore = async (viewer) => {
-    renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year-5][appState.disasterState]);
     setYear(appState.year - 5);
+    renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year][appState.disasterState]);
     return ;
 }
+
 export const result = (viewer, models, outputContainer) => {
     const resultYear = appState.year;
     const modelNames = new Set((models || []).map(m => m && m.name));
