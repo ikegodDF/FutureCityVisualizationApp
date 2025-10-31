@@ -75,7 +75,7 @@ class ComputeService:
         # yearがNoneのときはno_data扱い
         if param.year == 0:
             building_AgeType = "no_data"
-            print("no_data")
+            
         else:
             building_Age  = appStateYear - 5 - param.year
 
@@ -97,7 +97,7 @@ class ComputeService:
         revival_probability = calculateparam_age[building_AgeType][1]
 
         judgement = random.random()
-        print(judgement)
+        
 
         if param.show == True:
             if judgement < lost_probability:

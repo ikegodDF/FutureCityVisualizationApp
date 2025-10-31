@@ -3,6 +3,7 @@ from app.models.schemas import ComputeRequest, AnalysisResponse
 from app.services.analysis_service import AnalysisService
 from datetime import datetime
 import copy
+import time
 
 router = APIRouter(prefix="/analysis")
 analysis_service = AnalysisService()
@@ -10,8 +11,8 @@ analysis_service = AnalysisService()
 @router.post("/", response_model=AnalysisResponse)
 def analysis(request: ComputeRequest):
     results = []
-    for i in range(1000):
-        
+    start_time = time.time()
+    for i in range(100000):
         # 元のパラメータから完全に新しいリクエストを作成
         original_params_copy = copy.deepcopy(request.params)
         current_request = ComputeRequest(
@@ -26,6 +27,7 @@ def analysis(request: ComputeRequest):
         # 分析実行
         result = fresh_service.analyze(current_request)
         results.append(result)
+        print("試行回数：", i, "経過時間：", time.time() - start_time)
         
     
     return AnalysisResponse(

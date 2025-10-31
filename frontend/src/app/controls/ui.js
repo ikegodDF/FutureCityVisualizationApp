@@ -60,7 +60,6 @@ export function initUI(viewer, models) {
   btnAnalysis.textContent = '分析';
   btnAnalysis.addEventListener('click', async () => {
     await analysis(viewer, models);
-    result(viewer, models, outputContainer);
   });
   
 

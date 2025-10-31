@@ -1,6 +1,7 @@
 // クリックなどのイベントハンドラ群を配置
 import { appState, setYear, setResult } from '../state/appState.js';
 import { renew3DModels } from '../tiles/renew3DModels.js';
+import { analysisExportCSV, analysisExportJSON } from '../utils/analysisExport.js';
 
 export const prediction = async (viewer, models = []) => {
     
@@ -65,6 +66,7 @@ export const analysis = async (viewer, models = []) => {
             body: JSON.stringify(payload),
         });
         const data = await res.json();
+        analysisExportJSON('analysis_result.json', data.result);
         console.log('analysis response:', data);
         return data.result;
     } catch (error) {
