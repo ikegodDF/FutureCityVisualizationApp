@@ -1,6 +1,6 @@
 import { flyToJapan } from '../utils/camera.js';
 import '../../styles/ui.css';
-import { prediction, result, restore} from './handlers.js';
+import { prediction, result, restore, analysis} from './handlers.js';
 import { openModal, closeModal, openResultPicker } from './modal.js';
 import { resetResult, appState, setAppliedPolicy, setYear, setDisasterState } from '../state/appState.js';
 import { renew3DModels } from '../tiles/renew3DModels.js';
@@ -55,6 +55,12 @@ export function initUI(viewer, models) {
   btnInputappState.addEventListener('click', async () => {
     openResultPicker(viewer, models, outputContainer);
   });
+
+  const btnAnalysis = document.createElement('button');
+  btnAnalysis.textContent = '分析';
+  btnAnalysis.addEventListener('click', async () => {
+    await analysis(viewer, models);
+  });
   
 
   const lineBreak = document.createElement('span');
@@ -70,6 +76,7 @@ export function initUI(viewer, models) {
   container.appendChild(lineBreak);
   container.appendChild(btnExport);
   container.appendChild(btnInputappState);
+  container.appendChild(btnAnalysis);
   document.body.appendChild(container);
 }
 
