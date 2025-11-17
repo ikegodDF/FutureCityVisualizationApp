@@ -63,20 +63,40 @@ export function initUI(viewer, models) {
   });
   
 
-  const lineBreak = document.createElement('span');
-  lineBreak.className = 'break';
+  const layoutSequence = [
+    btnFlyJapan,
+    'break',
+    btnPrediction,
+    btnreturn,
+    btnreset,
+    'break',
+    btnExport,
+    btnInputappState,
+    'break',
+    btnAnalysis,
+  ];
 
+  const createRow = () => {
+    const row = document.createElement('div');
+    row.className = 'control-row';
+    return row;
+  };
 
+  let currentRow = createRow();
+  layoutSequence.forEach((item) => {
+    if (item === 'break') {
+      if (currentRow.childElementCount > 0) {
+        container.appendChild(currentRow);
+        currentRow = createRow();
+      }
+      return;
+    }
+    currentRow.appendChild(item);
+  });
 
-  container.appendChild(btnFlyJapan);
-  container.appendChild(lineBreak);
-  container.appendChild(btnPrediction);
-  container.appendChild(btnreturn);
-  container.appendChild(btnreset);
-  container.appendChild(lineBreak);
-  container.appendChild(btnExport);
-  container.appendChild(btnInputappState);
-  container.appendChild(btnAnalysis);
+  if (currentRow.childElementCount > 0) {
+    container.appendChild(currentRow);
+  }
   document.body.appendChild(container);
 }
 
