@@ -87,12 +87,16 @@ class ComputeService:
                 result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count)
                 new_building_Num += num
             elif method == "earthquake_damage_assessment":
-                result = self._calculate_earthquake_damage_assessment(param)
+                if param.show == True:
+                    result = self._calculate_earthquake_damage_assessment(param)
+                else:
+                    result = param
             elif method == "thunami_damage_assessment":
-                result = self._calculate_thunami_damage_assessment(param)
-            else:
-                result = param
-            
+                if param.show == True:
+                    result = self._calculate_thunami_damage_assessment(param)
+                else:
+                    result = param
+
             results.append(result)
             
         print("増えた建物数", new_building_Num)
@@ -152,7 +156,7 @@ class ComputeService:
         return param, num
 
     
-    def _calculate_earthquake_damage_assessment(self, params: Model3D, se) -> Model3D:
+    def _calculate_earthquake_damage_assessment(self, params: Model3D) -> Model3D:
         """地震被害判定"""
         # 計算パラメータ(木造)
         caluculateparam_wood: Dict[str, List[float]] = {
@@ -180,7 +184,7 @@ class ComputeService:
         structureType = param_dict.get("structureType")
         architecturalPeriod = param_dict.get("architecturalPeriod")
 
-        earthquake_intensity = self.seismic_data_service.get_intensity(param_dict.get("id", getattr(params, "id", None)))
+        earthquake_intensity = params.seismic_intensity
         if earthquake_intensity is None:
             earthquake_intensity = param_dict.get("earthquake_intensity")
 
@@ -193,6 +197,8 @@ class ComputeService:
             caluculateparam = caluculateparam_concrete
         
         damage_rate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[f"lambda_complete"][architecturalPeriod]) / caluculateparam[f"devaiation_complete"][architecturalPeriod])
+        if damage_rate > 0.5:
+            params.show = False
 
         return params
     

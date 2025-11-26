@@ -1,3 +1,6 @@
+# Data files
+backend/Python/data/
+
 # Dependencies
 node_modules/
 npm-debug.log*

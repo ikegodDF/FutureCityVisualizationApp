@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.v1.endpoints.calculate import router as calculate_router
 from app.api.v1.endpoints.models import router as models_router
 from app.api.v1.endpoints.analysis import router as analysis_router
+from app.api.v1.endpoints.damage_prediction import router as damage_prediction_router
 from app.core.config import settings
 
 
@@ -40,6 +41,9 @@ try:
     
     app.include_router(analysis_router, prefix="/api/v1", tags=["analysis"])
     print("Analysis router registered")
+
+    app.include_router(damage_prediction_router, prefix="/api/v1", tags=["damage_prediction"])
+    print("Seismic router registered")
     
     print("All routers registered successfully!")
 except Exception as e:

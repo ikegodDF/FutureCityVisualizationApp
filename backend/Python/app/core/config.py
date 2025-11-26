@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     data_dir: str = "data"
     models_file: str = "models.json"
     config_file: str = "config.json"
-    seismic_intensity_file: str = "seismic_intensity.csv"
+    seismic_intensity_file: str = "seismic/seismic_intensity.csv"
     
     # CORS
     cors_origins: str = "http://localhost:5173"

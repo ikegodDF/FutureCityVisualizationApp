@@ -11,6 +11,8 @@ class Model3D(BaseModel):
     show: bool
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    seismic_intensity: Optional[float] = None
+    thunami_inundation_depth: Optional[float] = None
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None
@@ -24,6 +26,7 @@ class ModelSearchQuery(BaseModel):
 class ComputeRequest(BaseModel):
     method: str
     appStateYear: int
+    disasterState: str
     params: List[Model3D]
 
 class ComputeResponse(BaseModel):

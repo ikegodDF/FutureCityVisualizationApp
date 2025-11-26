@@ -8,12 +8,12 @@ from ..core.config import settings
 
 class SeismicDataService:
     """
-    震度CSVを読み込み、建物ID→震度のマップを提供するサービス。
+    震度CSVを読み込み、メッシュコード→震度のマップを提供するサービス。
     ディレクトリ常駐ファイルとユーザーアップロード双方に対応できるよう設計。
     """
 
     def __init__(self):
-        self._intensity_map: Dict[int, float] = {}
+        self._mesh_intensity_map: Dict[str, float] = {}
         self._source_mtime: Optional[float] = None
 
     # Public API -------------------------------------------------------------
@@ -36,14 +36,51 @@ class SeismicDataService:
             text_stream = file_obj
 
         reader = csv.DictReader(text_stream)
-        self._intensity_map = self._parse_rows(reader)
+        self._mesh_intensity_map = self._parse_rows(reader)
         self._source_mtime = None  # カスタム入力のためmtimeは無効化
 
-    def get_intensity(self, building_id: int, default: Optional[float] = None) -> Optional[float]:
+    def get_intensity(self, mesh_code: Union[str, int], default: Optional[float] = None) -> Optional[float]:
         """
-        建物IDに紐づく震度を取得。存在しない場合は default を返す。
+        メッシュコードに対応する震度(SI)を取得。
         """
-        return self._intensity_map.get(building_id, default)
+        if mesh_code is None:
+            return default
+
+        normalized_code = self._normalize_mesh_code(mesh_code)
+        return self._mesh_intensity_map.get(normalized_code, default)
+
+    def load_mesh_intensity(self, path: str):
+        """
+        デバッグ/ユーティリティ用途: 指定パスのCSVを読み込み、{meshcode, SI} の配列で返す。
+        """
+        mesh_list = []
+
+        with open(path, newline='', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                meshcode = (
+                    row.get("meshcode")
+                    or row.get("MESHCODE")
+                    or row.get("CODE")
+                )
+                si_value = row.get("SI") or row.get("si")
+
+                if not meshcode or not si_value:
+                    continue  # 空値や欠損がある行はスキップ
+
+                try:
+                    intensity = float(si_value)
+                except (ValueError, TypeError):
+                    continue
+
+                mesh_list.append(
+                    {
+                        "meshcode": self._normalize_mesh_code(meshcode),
+                        "SI": intensity,
+                    }
+                )
+
+        return mesh_list
 
     # Internal helpers -------------------------------------------------------
     def _load_from_path(self, file_path: str) -> None:
@@ -56,39 +93,45 @@ class SeismicDataService:
 
         with open(file_path, "r", encoding="utf-8") as csvfile:
             reader = csv.DictReader(csvfile)
-            self._intensity_map = self._parse_rows(reader)
+            self._mesh_intensity_map = self._parse_rows(reader)
             self._source_mtime = current_mtime
 
-    @staticmethod
-    def _parse_rows(reader: csv.DictReader) -> Dict[int, float]:
+    def _parse_rows(self, reader: csv.DictReader) -> Dict[str, float]:
         """
         CSVのヘッダは以下のいずれかを想定:
-          - id, intensity
-          - building_id, intensity_value
+          - meshcode, SI
+          - CODE, SI (内閣府公表データ等)
         """
-        map_data: Dict[int, float] = {}
+        mesh_map: Dict[str, float] = {}
         for row in reader:
-            building_raw = (
-                row.get("id")
-                or row.get("building_id")
-                or row.get("model_id")
+            meshcode_raw = (
+                row.get("meshcode")
+                or row.get("MESHCODE")
+                or row.get("CODE")
             )
-            intensity_raw = (
-                row.get("intensity")
-                or row.get("earthquake_intensity")
-                or row.get("intensity_value")
-            )
+            intensity_raw = row.get("SI") or row.get("si")
 
-            if building_raw is None or intensity_raw is None:
+            if meshcode_raw is None or intensity_raw is None:
                 continue
 
+            meshcode = self._normalize_mesh_code(meshcode_raw)
             try:
-                building_id = int(building_raw)
                 intensity = float(intensity_raw)
             except (ValueError, TypeError):
                 continue
 
-            map_data[building_id] = intensity
+            mesh_map[meshcode] = intensity
 
-        return map_data
+        return mesh_map
 
+    @staticmethod
+    def _normalize_mesh_code(code: Union[str, int]) -> str:
+        """
+        CSVに含まれるメッシュコードを統一的な文字列に整形。
+        ダブルクォート等が含まれていても取り除き、ゼロ埋め・桁落ちを防ぐ。
+        """
+        if isinstance(code, int):
+            return str(code)
+
+        cleaned = str(code).strip().strip('"').strip("'")
+        return cleaned
