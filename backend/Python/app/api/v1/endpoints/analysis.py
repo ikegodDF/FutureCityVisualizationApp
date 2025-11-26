@@ -12,7 +12,7 @@ analysis_service = AnalysisService()
 def analysis(request: ComputeRequest):
     results = []
     start_time = time.time()
-    for i in range(10000):
+    for i in range(1000):
         # 元のパラメータから完全に新しいリクエストを作成
         original_params_copy = copy.deepcopy(request.params)
         current_request = ComputeRequest(

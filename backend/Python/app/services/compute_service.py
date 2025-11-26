@@ -3,13 +3,17 @@ from datetime import datetime
 from typing import Dict, Any, List
 import math
 import random
-from scipy.stats import norm
+import numpy as np
+from scipy.stats import norm, truncnorm
 from ..models.schemas import ComputeRequest, ComputeResponse, Model3D
+from .seismic_data_service import SeismicDataService
 
 class ComputeService:
     def __init__(self):
         self.cache = {}  # 簡単なメモリキャッシュ
         self.enable_cache = False  # 開発中はキャッシュ無効
+        self.seismic_data_service = SeismicDataService()
+        self.seismic_data_service.ensure_loaded_from_directory()
     
     def compute(self, request: ComputeRequest) -> ComputeResponse:
         """計算リクエストを処理"""
@@ -45,9 +49,43 @@ class ComputeService:
     def _execute_computation(self, method: str, params: List[Model3D], appStateYear: int) -> List[Model3D]:
         """実際の計算ロジック"""
         results = []
+        building_Num = len([p for p in params if p.show == False])
+        if building_Num == 0:
+            building_Num = 1
+        
+        # 1. パラメーターの定義
+        historical_mean = 39.62
+        historical_std_dev = 32.80
+        # building_Num は上で計算済み（showがFalseの建物数）
+        # コメント: 分母となる比較対象の建物数は既に計算済み
+
+        # 2. 四分位範囲 (Q1とQ3) の定義
+        a_min_limit = 19  # 最小値 (Q1)
+        b_max_limit = 67  # 最大値 (Q3)
+
+        # 3. 切断正規分布のためのパラメーター計算
+        # truncnormは、標準正規分布 (μ=0, σ=1) の範囲を定義するため、
+        # aとbの値を標準化（Zスコア化）する必要があります。
+
+        # 標準化: Z = (X - μ) / σ
+        a = (a_min_limit - historical_mean) / historical_std_dev
+        b = (b_max_limit - historical_mean) / historical_std_dev
+
+        # 4. 切断正規分布から乱数生成
+        # loc=μ, scale=σ で元の分布のスケールに戻します
+        # size=1 で1つの乱数を生成
+        random_number_array = truncnorm.rvs(a, b, loc=historical_mean, scale=historical_std_dev, size=1)
+
+        # 5. 建物数として処理（整数に丸める）
+        # 生成される値は既に範囲内にあるため、クリッピング(a_min=0)は不要ですが、
+        # 念のため0未満にならないよう処理し、整数に丸めます。
+        generated_building_count = np.round(np.clip(random_number_array, a_min=0, a_max=None)).astype(int)[0]
+        print("建物数乱数", generated_building_count)
+        new_building_Num = 0
         for param in params:
             if method == "building_retention_rate":
-                result = self._calculate_building_retention_rate(param, appStateYear)
+                result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count)
+                new_building_Num += num
             elif method == "earthquake_damage_assessment":
                 result = self._calculate_earthquake_damage_assessment(param)
             elif method == "thunami_damage_assessment":
@@ -57,9 +95,10 @@ class ComputeService:
             
             results.append(result)
             
+        print("増えた建物数", new_building_Num)
         return results
     
-    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int) -> Model3D:
+    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, building_Num: int, generated_building_count: int) -> Model3D:
         """建物存続確率分析"""
         # 築年齢別建物の確率
         calculateparam_age: Dict[str, List[float]] = {
@@ -94,11 +133,14 @@ class ComputeService:
 
 
         lost_probability = calculateparam_age[building_AgeType][0]
-        revival_probability = calculateparam_age[building_AgeType][1]
+        # revival_probability = calculateparam_age[building_AgeType][1]
+
+
+        revival_probability = generated_building_count / building_Num
 
         judgement = random.random()
         
-
+        num = 0
         if param.show == True:
             if judgement < lost_probability:
                 param.show = False
@@ -106,10 +148,11 @@ class ComputeService:
             if judgement < revival_probability:
                 param.show = True
                 param.year = appStateYear
-        return param
+                num = 1
+        return param, num
 
     
-    def _calculate_earthquake_damage_assessment(self, params: Model3D) -> Model3D:
+    def _calculate_earthquake_damage_assessment(self, params: Model3D, se) -> Model3D:
         """地震被害判定"""
         # 計算パラメータ(木造)
         caluculateparam_wood: Dict[str, List[float]] = {
@@ -127,17 +170,31 @@ class ComputeService:
             "devaiation_partial": [0.184, 0.231, 0.231, 0.175, 0.175]
         }
 
-        structureType = params.get("structureType")
-        architecturalPeriod = params.get("architecturalPeriod")
-        earthquake_intensity = params.get("earthquake_intensity")
+        if hasattr(params, "model_dump"):
+            param_dict = params.model_dump()
+        elif isinstance(params, dict):
+            param_dict = params
+        else:
+            param_dict = {}
+
+        structureType = param_dict.get("structureType")
+        architecturalPeriod = param_dict.get("architecturalPeriod")
+
+        earthquake_intensity = self.seismic_data_service.get_intensity(param_dict.get("id", getattr(params, "id", None)))
+        if earthquake_intensity is None:
+            earthquake_intensity = param_dict.get("earthquake_intensity")
+
+        if earthquake_intensity is None or earthquake_intensity <= 0:
+            return params
 
         if structureType == "wood":
             caluculateparam = caluculateparam_wood
         elif structureType == "concrete":
             caluculateparam = caluculateparam_concrete
-            damageRate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[f"lambda_complete"][architecturalPeriod]) / caluculateparam[f"devaiation_complete"][architecturalPeriod])
+        
+        damage_rate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[f"lambda_complete"][architecturalPeriod]) / caluculateparam[f"devaiation_complete"][architecturalPeriod])
 
-        return param
+        return params
     
     def _calculate_thunami_damage_assessment(self, params: Model3D) -> Model3D:
         """津波被害判定"""
