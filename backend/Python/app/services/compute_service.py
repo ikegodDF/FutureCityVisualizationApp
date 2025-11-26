@@ -156,51 +156,51 @@ class ComputeService:
         return param, num
 
     
-    def _calculate_earthquake_damage_assessment(self, params: Model3D) -> Model3D:
+    def _calculate_earthquake_damage_assessment(self, param: Model3D) -> Model3D:
         """地震被害判定"""
         # 計算パラメータ(木造)
         caluculateparam_wood: Dict[str, List[float]] = {
-            "lambda_complete": [6.514, 6.432, 6.432, 6.432, 6.432, 6.659, 6.659],
-            "lambda_partial": [6.367, 6.343, 6.343, 6.343, 6.343, 6.433, 6.433],
-            "devaiation_complete": [0.187, 0.133, 0.133, 0.133, 0.133, 0.183, 0.183],
-            "devaiation_partial": [0.205, 0.157, 0.157, 0.157, 0.157, 0.169, 0.169]
+            "no_data": {"lambda_complete": 6.514, "lambda_partial": 6.367, "devaiation_complete": 0.187, "devaiation_partial": 0.205},
+            "under_1981": {"lambda_complete": 6.432, "lambda_partial": 6.343, "devaiation_complete": 0.133, "devaiation_partial": 0.157},
+            "over_1981": {"lambda_complete": 6.659, "lambda_partial": 6.433, "devaiation_complete": 0.183, "devaiation_partial": 0.169},
         }
 
         # 計算パラメータ（非木造）
         caluculateparam_concrete: Dict[str, List[float]] = {
-            "lambda_complete": [6.887, 6.768, 6.768, 6.614, 6.614],
-            "lambda_partial": [6.493, 6.449, 6.449, 6.51, 6.51],
-            "devaiation_complete": [0.319, 0.353, 0.353, 0.063, 0.063],
-            "devaiation_partial": [0.184, 0.231, 0.231, 0.175, 0.175]
+            "no_data": {"lambda_complete": 6.887, "lambda_partial": 6.493, "devaiation_complete": 0.319, "devaiation_partial": 0.184},
+            "under_1981": {"lambda_complete": 6.768, "lambda_partial": 6.449, "devaiation_complete": 0.353, "devaiation_partial": 0.231},
+            "over_1981": {"lambda_complete": 6.614, "lambda_partial": 6.51, "devaiation_complete": 0.063, "devaiation_partial": 0.175},
         }
 
-        if hasattr(params, "model_dump"):
-            param_dict = params.model_dump()
-        elif isinstance(params, dict):
-            param_dict = params
+        structureType = param.structureType
+        architecturalPeriod = param.year
+        if param.year is None:
+            architecturalPeriod = "no_data"
         else:
-            param_dict = {}
+            if param.year <= 1981:
+                architecturalPeriod = "under_1981"
+            elif param.year > 1981:
+                architecturalPeriod = "over_1981"
 
-        structureType = param_dict.get("structureType")
-        architecturalPeriod = param_dict.get("architecturalPeriod")
-
-        earthquake_intensity = params.seismic_intensity
+        earthquake_intensity = param.seismic_intensity
         if earthquake_intensity is None:
             earthquake_intensity = param_dict.get("earthquake_intensity")
 
         if earthquake_intensity is None or earthquake_intensity <= 0:
-            return params
+            return param
 
         if structureType == "wood":
             caluculateparam = caluculateparam_wood
-        elif structureType == "concrete":
+        else:
             caluculateparam = caluculateparam_concrete
         
-        damage_rate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[f"lambda_complete"][architecturalPeriod]) / caluculateparam[f"devaiation_complete"][architecturalPeriod])
-        if damage_rate > 0.5:
-            params.show = False
+        
 
-        return params
+        damage_rate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[architecturalPeriod]["lambda_complete"]) / caluculateparam[architecturalPeriod]["devaiation_complete"])
+        if damage_rate > 0.5:
+            param.show = False
+
+        return param
     
     def _calculate_thunami_damage_assessment(self, params: Model3D) -> Model3D:
         """津波被害判定"""

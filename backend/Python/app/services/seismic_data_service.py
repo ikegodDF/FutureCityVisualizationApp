@@ -121,7 +121,6 @@ class SeismicDataService:
                 continue
 
             mesh_map[meshcode] = intensity
-
         return mesh_map
 
     @staticmethod

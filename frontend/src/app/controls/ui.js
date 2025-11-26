@@ -5,6 +5,7 @@ import { openModal, closeModal, openResultPicker } from './modal.js';
 import { resetResult, appState, setAppliedPolicy, setYear, setDisasterState } from '../state/appState.js';
 import { renew3DModels } from '../tiles/renew3DModels.js';
 import { exportResultSerializable } from '../utils/export.js';
+import { damageAssessment } from './handlers/damageAssessmentHandlers.js';
 
 let outputContainer;
 
@@ -62,6 +63,11 @@ export function initUI(viewer, models) {
     await analysis(viewer, models);
   });
   
+  const btnDamageAssessment = document.createElement('button');
+  btnDamageAssessment.textContent = '地震被害予測';
+  btnDamageAssessment.addEventListener('click', async () => {
+    await damageAssessment(viewer, models, '地震発生後');
+  });
 
   const layoutSequence = [
     btnFlyJapan,
@@ -74,6 +80,7 @@ export function initUI(viewer, models) {
     btnInputappState,
     'break',
     btnAnalysis,
+    btnDamageAssessment,
   ];
 
   const createRow = () => {

@@ -11,6 +11,7 @@ export const prediction = async (viewer, models = []) => {
   const payload = {
     method: 'building_retention_rate',
     appStateYear: appState.year + 5,
+    disasterState: appState.disasterState,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
   };
 
