@@ -13,7 +13,13 @@ class Model3D(BaseModel):
     longitude: Optional[float] = None
     seismic_intensity: Optional[float] = None
     thunami_inundation_depth: Optional[float] = None
-    structureType: Optional[str] = None
+    BuildingDetail: Optional[dict] = None
+
+class BuildingDetail(BaseModel):
+    structureType: str =None
+    floors: int =None
+    area: float =None
+    purpose: int =None
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None

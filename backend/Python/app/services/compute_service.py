@@ -172,7 +172,11 @@ class ComputeService:
             "over_1981": {"lambda_complete": 6.614, "lambda_partial": 6.51, "devaiation_complete": 0.063, "devaiation_partial": 0.175},
         }
 
-        structureType = param.structureType
+        if param.BuildingDetail is None:
+            structureType = "wood"
+        else:
+            structureType = param.BuildingDetail.structureType
+        
         architecturalPeriod = param.year
         if param.year is None:
             architecturalPeriod = "no_data"
@@ -184,7 +188,7 @@ class ComputeService:
 
         earthquake_intensity = param.seismic_intensity
         if earthquake_intensity is None:
-            earthquake_intensity = param_dict.get("earthquake_intensity")
+            earthquake_intensity = param.seismic_intensity
 
         if earthquake_intensity is None or earthquake_intensity <= 0:
             return param
@@ -202,7 +206,7 @@ class ComputeService:
 
         return param
     
-    def _calculate_thunami_damage_assessment(self, params: Model3D) -> Model3D:
+    def _calculate_thunami_damage_assessment(self, param: Model3D) -> Model3D:
         """津波被害判定"""
         # 計算パラメータ（木造）
         caluculateparam_wood: Dict[str, List[float]] = {
@@ -210,12 +214,12 @@ class ComputeService:
             "floodDepth": [1.088, 1.603],
             "floors": [-0.6844, -0.5398],
             "area": [-0.003809, -0.001909],
-            "artitecuturalPeriod1": [0, 0],
-            "architecuturalPeriod2": [-0.1208, -0.001909],
-            "architecuturalPeriod3": [0.3251, 0.05358],
-            "architecuturalPeriod4": [-0.0391, -0.2634],
-            "architecuturalPeriod5": [-0.2955, -0.6985],
-            "architecuturalPeriod6": [-0.6426, -1.054],
+            "architecturalPeriod1": [0, 0],
+            "architecturalPeriod2": [-0.1208, -0.001909],
+            "architecturalPeriod3": [0.3251, 0.05358],
+            "architecturalPeriod4": [-0.0391, -0.2634],
+            "architecturalPeriod5": [-0.2955, -0.6985],
+            "architecturalPeriod6": [-0.6426, -1.054],
             "purpose1": [0, 0],
             "purpose2": [0.002743, 0.2321],
             "purpose3": [0.09565, 0.08084],
@@ -234,10 +238,11 @@ class ComputeService:
             "structureType1": [0, 0],
             "structureType2": [1.76, 1.504],
             "structureType4": [2.268, 1.403],
-            "artitecuturalPeriod1": [0, 0],
-            "architecuturalPeriod2": [0.0003355, 0.1627],
-            "architecuturalPeriod3": [0.003832, -0.009885],
-            "architecuturalPeriod4": [-0.4716, -0.5078],
+            "architecturalPeriod1": [0, 0],
+            "architecturalPeriod2": [0.0003355, 0.1627],
+            "architecturalPeriod3": [0.003832, -0.009885],
+            "architecturalPeriod4": [-0.4716, -0.5078],
+            
             "purpose1": [0, 0],
             "purpose2": [-0.2879, -0.3954],
             "purpose3": [-0.175, -0.5347],
@@ -247,22 +252,25 @@ class ComputeService:
             "devaiation": [1.92, 1.605]
         }
 
-        judgementparam = 0
-        floodDepth = params.get("floodDepth")
-        floors = params.get("floors")
-        area = params.get("area")
-        structureType = params.get("structureType")
-        architecturalPeriod = params.get("architecturalPeriod")
-        purpose = params.get("purpose")
+        judgementparam = 1
+        floodDepth = param.thunami_inundation_depth
+        floors = 1
+        area = 100
+        structureType = "wood"
+        architecturalPeriod = 1
+        purpose = 1
 
         if structureType == "wood":
-            caluculateparam = caluculateparam_wood
+            calculateparam = caluculateparam_wood
         elif structureType == "concrete":
-            caluculateparam = calculateparam_concrete
+            calculateparam = calculateparam_concrete
         else:
-            caluculateparam = {}
+            calculateparam = {}
         
-        damageRate = 1/(1+math.exp( caluculateparam["section"][judgementparam] + calcuclateparam["floodDepth"] * floodDepth + calcuclateparam["floors"][judgementparam] * floors + calcuclateparam["area"][judgementparam] * area + calcuclateparam[f"architecuturalPeriod{architecturalPeriod}"][judgementparam] * architecturalPeriod + calcuclateparam[f"purpose{purpose}"][judgementparam] * purpose + calcuclateparam["devaiation"][judgementparam]))
+        damageRate = 1/(1+math.exp( -(calculateparam["section"][judgementparam] + calculateparam["floodDepth"][judgementparam] * floodDepth + calculateparam["floors"][judgementparam] * floors + calculateparam["area"][judgementparam] * area + calculateparam[f"architecturalPeriod{architecturalPeriod}"][judgementparam]  + calculateparam[f"purpose{purpose}"][judgementparam] + calculateparam["devaiation"][judgementparam])))
+
+        if damageRate > 0.5:
+            param.show = False
 
 
         return param

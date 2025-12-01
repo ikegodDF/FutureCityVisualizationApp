@@ -69,7 +69,7 @@ class ThunamiDataService:
         for row in reader:
             latitude = row.get("lat")
             longitude = row.get("lon")
-            inundation_depth_raw = row.get("SIN_MAX")
+            inundation_depth_raw = row.get("SIN_SH01")
             if latitude is None or longitude is None or inundation_depth_raw is None:
                 continue
             try:
