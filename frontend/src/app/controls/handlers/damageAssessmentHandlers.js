@@ -3,6 +3,16 @@ import { renew3DModels } from '../../tiles/renew3DModels.js';
 
 export const earthquakeDamageAssessment = async (viewer, models = [], disasterState) => {
 
+    if (appState.disasterState !== '被災前') {
+        renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year]["被災前"]);
+        
+        if (appState.disasterState === '地震発生後') {
+            setDisasterState('被災前');
+            return;
+        }
+        setDisasterState('被災前');
+    }
+
     const payload = {
         method: 'earthquake_damage_assessment',
         appStateYear: appState.year,
@@ -36,6 +46,16 @@ export const earthquakeDamageAssessment = async (viewer, models = [], disasterSt
 }
 
 export const tsunamiDamageAssessment = async (viewer, models = [], disasterState) => {
+
+    if (appState.disasterState !== '被災前') {
+        renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year]["被災前"]);
+        
+        if (appState.disasterState === '津波発生後') {
+            setDisasterState('被災前');
+            return;
+        }
+        setDisasterState('被災前');
+    }
 
     const payload = {
         method: 'thunami_damage_assessment',
