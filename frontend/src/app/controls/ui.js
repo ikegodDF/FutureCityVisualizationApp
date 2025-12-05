@@ -2,7 +2,7 @@ import { flyToJapan } from '../utils/camera.js';
 import '../../styles/ui.css';
 import { prediction, result, restore, analysis} from './handlers.js';
 import { openModal, closeModal, openResultPicker } from './modal.js';
-import { resetResult, appState, setAppliedPolicy, setYear, setDisasterState } from '../state/appState.js';
+import { resetResult, allResetResult, appState, setAppliedPolicy, setYear, setDisasterState } from '../state/appState.js';
 import { renew3DModels } from '../tiles/renew3DModels.js';
 import { exportResultSerializable } from '../utils/export.js';
 import { earthquakeDamageAssessment, tsunamiDamageAssessment } from './handlers/damageAssessmentHandlers.js';
@@ -22,6 +22,13 @@ export function initUI(viewer, models) {
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
   btnFlyJapan.addEventListener('click', () => flyToJapan(viewer));
+
+  const btnAllReset = document.createElement('button');
+  btnAllReset.textContent = '全リセット';
+  btnAllReset.addEventListener('click', async () => {
+    allResetResult(viewer);
+    result(viewer, models, outputContainer);
+  });
 
   const btnPrediction = document.createElement('button');
   btnPrediction.textContent = '予測';
@@ -55,6 +62,7 @@ export function initUI(viewer, models) {
   btnInputappState.textContent = '予測結果の呼び出し';
   btnInputappState.addEventListener('click', async () => {
     openResultPicker(viewer, models, outputContainer);
+    result(viewer, models, outputContainer);
   });
 
   const btnAnalysis = document.createElement('button');
@@ -67,16 +75,19 @@ export function initUI(viewer, models) {
   btnEarthquakeDamageAssessment.textContent = '地震被害予測';
   btnEarthquakeDamageAssessment.addEventListener('click', async () => {
     await earthquakeDamageAssessment(viewer, models, '地震発生後');
+    result(viewer, models, outputContainer);
   });
 
   const btnThunamiDamageAssessment = document.createElement('button');
   btnThunamiDamageAssessment.textContent = '津波被害予測';
   btnThunamiDamageAssessment.addEventListener('click', async () => {
     await tsunamiDamageAssessment(viewer, models, '津波発生後');
+    result(viewer, models, outputContainer);
   });
 
   const layoutSequence = [
     btnFlyJapan,
+    btnAllReset,
     'break',
     btnPrediction,
     btnreturn,
