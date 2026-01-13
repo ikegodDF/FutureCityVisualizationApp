@@ -20,13 +20,39 @@ async def get_gml_files(directory: str = "sapporo_cityGML"):
         GMLファイル名のリスト
     """
     try:
-        # フロントエンドのpublicディレクトリを基準にパスを構築
-        # プロジェクトルートからの相対パス
-        base_path = Path(__file__).parent.parent.parent.parent.parent.parent
-        gml_dir = base_path / "frontend" / "public" / "models" / directory
+        # 複数のパス候補を試す
+        current_file = Path(__file__).resolve()
+        current_dir = Path(os.getcwd())
+        # プロジェクトルートは backend/Python の2つ上 (FutureCityVisualizationApp) を想定
+        project_root = current_dir.parent.parent
         
-        if not gml_dir.exists():
-            raise HTTPException(status_code=404, detail=f"Directory not found: {directory}")
+        # パス候補のリスト
+        path_candidates = [
+            # プロジェクトルート/frontend/public/models
+            project_root / "frontend" / "public" / "models" / directory,
+            # __file__ から辿った場合（念のため）
+            current_file.parent.parent.parent.parent.parent.parent / "frontend" / "public" / "models" / directory,
+            # 現在の作業ディレクトリから
+            current_dir / "frontend" / "public" / "models" / directory,
+            # 親ディレクトリから
+            current_dir.parent / "frontend" / "public" / "models" / directory,
+        ]
+        
+        gml_dir = None
+        searched_paths = []
+        
+        for candidate_path in path_candidates:
+            candidate_path = candidate_path.resolve()
+            searched_paths.append(str(candidate_path))
+            if candidate_path.exists() and candidate_path.is_dir():
+                gml_dir = candidate_path
+                break
+        
+        if gml_dir is None:
+            raise HTTPException(
+                status_code=404, 
+                detail=f"Directory not found: {directory}. Searched paths:\n" + "\n".join(searched_paths)
+            )
         
         # .gmlファイルのみを取得
         gml_files = [
@@ -38,5 +64,10 @@ async def get_gml_files(directory: str = "sapporo_cityGML"):
         gml_files.sort()
         
         return gml_files
+    except HTTPException:
+        # HTTPExceptionはそのまま再スロー
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error reading directory: {str(e)}")
+        import traceback
+        error_detail = f"Error reading directory: {str(e)}\nTraceback:\n{traceback.format_exc()}"
+        raise HTTPException(status_code=500, detail=error_detail)

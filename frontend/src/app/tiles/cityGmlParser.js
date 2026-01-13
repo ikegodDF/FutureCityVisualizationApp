@@ -7,6 +7,15 @@
  * @param {string} xmlString - XML文字列
  * @returns {Document} - パースされたXML Document
  */
+const NS = {
+  gml: 'http://www.opengis.net/gml',
+  bldg: 'http://www.opengis.net/citygml/building/2.0',
+  gen09: 'http://www.opengis.net/citygml/generics/0.9',
+  gen20: 'http://www.opengis.net/citygml/generics/2.0',
+  uro: 'http://www.opengis.net/citygml/uro/2.0',
+  core: 'http://www.opengis.net/citygml/2.0',
+};
+
 function parseXML(xmlString) {
   const parser = new DOMParser();
   return parser.parseFromString(xmlString, 'text/xml');
@@ -29,6 +38,51 @@ function getElementsByNS(parent, namespace, localName) {
     }
   }
   return elements;
+}
+
+// 指定したlocalNameを持つ最初の子孫要素のテキストを取得（名前空間に依存しない）
+function findFirstTextByLocalName(parent, localName) {
+  const all = parent.getElementsByTagName('*');
+  for (let i = 0; i < all.length; i++) {
+    if (all[i].localName === localName) {
+      const text = getTextContent(all[i]);
+      if (text) return text;
+    }
+  }
+  return null;
+}
+
+// 名前空間候補とlocalNameから最初のテキストを取得
+function getFirstTextByNS(parent, namespaces, localName) {
+  const nsList = Array.isArray(namespaces) ? namespaces : [namespaces];
+  for (const ns of nsList) {
+    const els = getElementsByNS(parent, ns, localName);
+    if (els.length > 0) {
+      const text = getTextContent(els[0]);
+      if (text) return text;
+    }
+  }
+  return null;
+}
+
+// gen:stringAttribute など name属性を持つ属性要素を抽出
+function getGenericAttribute(parent, targetName) {
+  const candidates = [NS.gen20, NS.gen09];
+  for (const ns of candidates) {
+    const attrs = getElementsByNS(parent, ns, 'stringAttribute');
+    for (const attr of attrs) {
+      if (attr.getAttribute('name') === targetName) {
+        const valEl = attr.getElementsByTagName('*');
+        for (let i = 0; i < valEl.length; i++) {
+          if (valEl[i].localName === 'value') {
+            const text = getTextContent(valEl[i]);
+            if (text) return text;
+          }
+        }
+      }
+    }
+  }
+  return null;
 }
 
 /**
@@ -75,17 +129,19 @@ function parsePosList(posListElement) {
   const coords = text.trim().split(/\s+/).map(Number);
   const positions = [];
   
-  // 3D座標（lon lat alt）または2D座標（lon lat）に対応
+  // 3D座標または2D座標に対応
   const dimension = posListElement.getAttribute('srsDimension') || '3';
   const dim = parseInt(dimension);
   
+  // PLATEAUの札幌CityGMLでは座標順が「緯度, 経度, 高度」となっているため
+  // 無条件で coord1=緯度, coord2=経度 とみなし、経度=coord2, 緯度=coord1 にマッピングする
   for (let i = 0; i < coords.length; i += dim) {
     if (i + 1 < coords.length) {
-      positions.push({
-        lon: coords[i],
-        lat: coords[i + 1],
-        alt: dim >= 3 && i + 2 < coords.length ? coords[i + 2] : 0
-      });
+      const lat = coords[i];       // 緯度
+      const lon = coords[i + 1];   // 経度
+      const alt = dim >= 3 && i + 2 < coords.length ? coords[i + 2] : 0;
+      
+      positions.push({ lon, lat, alt });
     }
   }
   
@@ -128,54 +184,99 @@ function parseBuilding(buildingElement) {
     usage: null,
     height: null,
     storeysAboveGround: null,
+    storeysBelowGround: null,
     positions: [],
     center: null,
-    attributes: {}
+    attributes: {},
+    geometry: {}
+  };
+  const addAttr = (key, val) => {
+    if (val !== null && val !== undefined && val !== '') {
+      building.attributes[key] = val;
+    }
   };
   
   // gml:name を取得
-  const nameElements = getElementsByNS(buildingElement, 'http://www.opengis.net/gml', 'name');
+  const nameElements = getElementsByNS(buildingElement, NS.gml, 'name');
   if (nameElements.length > 0) {
     building.name = getTextContent(nameElements[0]);
   }
-  
-  // 建物の属性情報を取得（core:cityObjectMember/bldg:Building/bldg:function など）
-  const functionElements = getElementsByNS(buildingElement, 'http://www.opengis.net/citygml/building/2.0', 'function');
-  if (functionElements.length > 0) {
-    building.usage = getTextContent(functionElements[0]);
-  }
-  
-  // 建築年を取得（bldg:yearOfConstruction）
-  const yearElements = getElementsByNS(buildingElement, 'http://www.opengis.net/citygml/building/2.0', 'yearOfConstruction');
-  if (yearElements.length > 0) {
-    const yearText = getTextContent(yearElements[0]);
-    if (yearText) {
-      building.year = parseInt(yearText);
+
+  // 基本識別情報
+  addAttr('buildingID', getFirstTextByNS(buildingElement, NS.uro, 'buildingID'));
+  addAttr('creationDate', getFirstTextByNS(buildingElement, [NS.core, NS.bldg], 'creationDate'));
+  addAttr('keyCode', getGenericAttribute(buildingElement, 'KeyCode'));
+
+  // 分類・用途
+  addAttr('class', getFirstTextByNS(buildingElement, NS.bldg, 'class'));
+  building.usage = getFirstTextByNS(buildingElement, NS.bldg, 'usage') || null;
+  addAttr('usage', building.usage);
+
+  // 建築年
+  const yearText = getFirstTextByNS(buildingElement, NS.bldg, 'yearOfConstruction');
+  if (yearText) building.year = parseInt(yearText);
+
+  // 高さ
+  const heightText = getFirstTextByNS(buildingElement, NS.bldg, 'measuredHeight');
+  if (heightText) building.height = parseFloat(heightText);
+
+  // 階数
+  const storeysAG = getFirstTextByNS(buildingElement, NS.bldg, 'storeysAboveGround');
+  if (storeysAG) building.storeysAboveGround = parseInt(storeysAG);
+  const storeysBG = getFirstTextByNS(buildingElement, NS.bldg, 'storeysBelowGround');
+  if (storeysBG) building.storeysBelowGround = parseInt(storeysBG);
+
+  // 詳細属性（uro:buildingDetailAttribute配下など）
+  addAttr('siteArea', parseFloat(findFirstTextByLocalName(buildingElement, 'siteArea')));
+  addAttr('totalFloorArea', parseFloat(findFirstTextByLocalName(buildingElement, 'totalFloorArea')));
+  addAttr('buildingFootprintArea', parseFloat(findFirstTextByLocalName(buildingElement, 'buildingFootprintArea')));
+  addAttr('buildingStructureType', findFirstTextByLocalName(buildingElement, 'buildingStructureType'));
+  addAttr('fireproofStructureType', findFirstTextByLocalName(buildingElement, 'fireproofStructureType'));
+  addAttr('districtsAndZonesType', findFirstTextByLocalName(buildingElement, 'districtsAndZonesType'));
+  addAttr('orgUsage2', findFirstTextByLocalName(buildingElement, 'orgUsage2'));
+  addAttr('specifiedBuildingCoverageRate', parseFloat(findFirstTextByLocalName(buildingElement, 'specifiedBuildingCoverageRate')));
+  addAttr('specifiedFloorAreaRate', parseFloat(findFirstTextByLocalName(buildingElement, 'specifiedFloorAreaRate')));
+  addAttr('buildingHeight', parseFloat(findFirstTextByLocalName(buildingElement, 'buildingHeight')));
+  addAttr('surveyYear', parseInt(findFirstTextByLocalName(buildingElement, 'surveyYear')));
+
+  // 位置・行政
+  addAttr('prefecture', findFirstTextByLocalName(buildingElement, 'prefecture'));
+  addAttr('city', findFirstTextByLocalName(buildingElement, 'city'));
+
+  // データ品質
+  addAttr('geometrySrcDescLod0', findFirstTextByLocalName(buildingElement, 'geometrySrcDescLod0'));
+  addAttr('geometrySrcDescLod1', findFirstTextByLocalName(buildingElement, 'geometrySrcDescLod1'));
+  addAttr('geometrySrcDescLod2', findFirstTextByLocalName(buildingElement, 'geometrySrcDescLod2'));
+  addAttr('thematicSrcDesc', findFirstTextByLocalName(buildingElement, 'thematicSrcDesc'));
+  addAttr('lod1HeightType', findFirstTextByLocalName(buildingElement, 'lod1HeightType'));
+  addAttr('srcScaleLod0', findFirstTextByLocalName(buildingElement, 'srcScaleLod0'));
+  addAttr('srcScaleLod1', findFirstTextByLocalName(buildingElement, 'srcScaleLod1'));
+
+  // 拡張属性 (uro:bldgKeyValuePairAttribute)
+  const kvPairs = [];
+  const allNodes = buildingElement.getElementsByTagName('*');
+  for (let i = 0; i < allNodes.length; i++) {
+    const el = allNodes[i];
+    if (el.localName === 'bldgKeyValuePairAttribute') {
+      const key = findFirstTextByLocalName(el, 'key');
+      const value = findFirstTextByLocalName(el, 'codeValue');
+      if (key || value) kvPairs.push({ key, value });
     }
   }
-  
-  // 建物の高さを取得（bldg:measuredHeight）
-  const heightElements = getElementsByNS(buildingElement, 'http://www.opengis.net/citygml/building/2.0', 'measuredHeight');
-  if (heightElements.length > 0) {
-    const heightText = getTextContent(heightElements[0]);
-    if (heightText) {
-      building.height = parseFloat(heightText);
+  if (kvPairs.length > 0) building.attributes.keyValuePairs = kvPairs;
+
+  // 建物のジオメトリを取得（bldg:lod0RoofEdge, lod1Solid, lod2Solid, lod2MultiSurface など）
+  const lod0RoofEdge = getElementsByNS(buildingElement, NS.bldg, 'lod0RoofEdge');
+  if (lod0RoofEdge.length > 0) {
+    const posLists = getElementsByNS(lod0RoofEdge[0], NS.gml, 'posList');
+    if (posLists.length > 0) {
+      building.geometry.lod0RoofEdge = parsePosList(posLists[0]);
     }
   }
-  
-  // 階数を取得（bldg:storeysAboveGround）
-  const storeysElements = getElementsByNS(buildingElement, 'http://www.opengis.net/citygml/building/2.0', 'storeysAboveGround');
-  if (storeysElements.length > 0) {
-    const storeysText = getTextContent(storeysElements[0]);
-    if (storeysText) {
-      building.storeysAboveGround = parseInt(storeysText);
-    }
-  }
-  
-  // 建物のジオメトリを取得（bldg:lod1Solid, bldg:lod2Solid など）
-  const lod1Solid = getElementsByNS(buildingElement, 'http://www.opengis.net/citygml/building/2.0', 'lod1Solid');
-  const lod2Solid = getElementsByNS(buildingElement, 'http://www.opengis.net/citygml/building/2.0', 'lod2Solid');
-  const lod3Solid = getElementsByNS(buildingElement, 'http://www.opengis.net/citygml/building/2.0', 'lod3Solid');
+
+  const lod1Solid = getElementsByNS(buildingElement, NS.bldg, 'lod1Solid');
+  const lod2Solid = getElementsByNS(buildingElement, NS.bldg, 'lod2Solid');
+  const lod3Solid = getElementsByNS(buildingElement, NS.bldg, 'lod3Solid');
   
   // より詳細なLODを優先
   let solidElement = null;
@@ -189,13 +290,21 @@ function parseBuilding(buildingElement) {
   
   // Solidから座標を抽出
   if (solidElement) {
-    // gml:Solid/gml:exterior/gml:CompositeSurface/gml:surfaceMember/gml:Polygon/gml:exterior/gml:LinearRing/gml:posList
-    const posListElements = getElementsByNS(solidElement, 'http://www.opengis.net/gml', 'posList');
+    const posListElements = getElementsByNS(solidElement, NS.gml, 'posList');
     if (posListElements.length > 0) {
-      // 最初のposListから座標を取得（建物の底面）
       const positions = parsePosList(posListElements[0]);
       building.positions = positions;
       building.center = calculateCenter(positions);
+      building.geometry.solid = positions;
+    }
+  }
+
+  // lod2MultiSurface
+  const lod2MultiSurface = getElementsByNS(buildingElement, NS.bldg, 'lod2MultiSurface');
+  if (lod2MultiSurface.length > 0) {
+    const posListElements = getElementsByNS(lod2MultiSurface[0], NS.gml, 'posList');
+    if (posListElements.length > 0) {
+      building.geometry.lod2MultiSurface = parsePosList(posListElements[0]);
     }
   }
   

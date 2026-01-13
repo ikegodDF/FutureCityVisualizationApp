@@ -4,10 +4,12 @@ import { createViewer } from './app/viewer.js';
 import { initUI } from './app/controls/ui.js';
 import { loadCityTiles } from './app/tiles/cityTiles.js';
 import { setupIon } from './app/services/ion.js';
-import { add3DModels } from './app/tiles/add3DModels.js';
+import { addGltfModels } from './app/tiles/addGltfModels.js';
+import { loadAllSapporoCityGML } from './app/tiles/loadSapporoCityGML.js';
 import { result } from './app/controls/handlers.js';
-import { appState } from './app/state/appState.js';
+import { appState, setResult } from './app/state/appState.js';
 import { outputContainer } from './app/controls/ui.js';
+import { toPayload } from './app/tiles/toPayload.js';
 
 // 公開アセットのベースURL
 window.CESIUM_BASE_URL = '/cesium';
@@ -26,7 +28,8 @@ const viewer = (async function() {
 const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
 viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
-  const models = await add3DModels(viewer);
+  const models = await loadAllSapporoCityGML(viewer);
+  setResult(models.map(toPayload));
   initUI(viewer, models);
   console.log("Models", models);
   result(viewer, models, outputContainer, appState);

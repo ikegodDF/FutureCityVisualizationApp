@@ -7,7 +7,19 @@ export const renew3DModels = async (viewer, renewModels) => {
         if (renewModel) {
             entity.year = renewModel.year;
             entity.show = renewModel.show;
-            entity.model.color = getModelColor(renewModel.year);
+            
+            // GLTFモデルの場合（modelプロパティが存在）
+            if (entity.model) {
+                entity.model.color = getModelColor(renewModel.year);
+            }
+            // CityGMLのpolygonの場合
+            else if (entity.polygon) {
+                entity.polygon.material = getModelColor(renewModel.year);
+            }
+            // CityGMLのboxの場合
+            else if (entity.box) {
+                entity.box.material = getModelColor(renewModel.year);
+            }
         }
     });
     return renewModels;
