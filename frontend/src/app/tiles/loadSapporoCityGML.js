@@ -23,7 +23,7 @@ function generateGMLFileName(meshCode) {
  * @param {string} directory - ディレクトリ名（デフォルト: CITY_GML_DIR）
  * @returns {Promise<Array<string>>} - GMLファイル名の配列
  */
-/*
+
 export async function getAllGMLFileNames(directory = CITY_GML_DIR) {
   try {
     // バックエンドAPIからファイルリストを取得
@@ -43,7 +43,6 @@ export async function getAllGMLFileNames(directory = CITY_GML_DIR) {
     return [];
   }
 }
-*/
 
 /**
  * JSONファイルからメッシュコードを読み込んでGMLファイル名のリストを生成
@@ -91,19 +90,20 @@ export async function getGMLFileNamesFromJSON(jsonPath) {
 export async function loadAllSapporoCityGML(viewer, options = {}) {
   const {
     batchSize = 100,
-    useGeometry = true, // CityGMLのジオメトリを直接使用（GLTFファイルがないため）
-    jsonPath = '/models/json/shiroishi.json', // デフォルトは白石区
-    sampleRate = 0.3, // デフォルトは100%（すべて読み込む）
+    useGeometry = true,
+    jsonPath = '/models/json/shiroishi.json', // デフォルトは南区
+    sampleRate = 1.0, // デフォルトは100%（すべて読み込む）
     onProgress = null
   } = options;
   
   // JSONファイルからメッシュコードを読み込んでGMLファイル名を生成
-  const allFileNames = await getGMLFileNamesFromJSON(jsonPath);
+  let allFileNames;
+  if(jsonPath) allFileNames = await getGMLFileNamesFromJSON(jsonPath);
+  else {
+    allFileNames = await getAllGMLFileNames(CITY_GML_DIR);
+  }
   
-  // 旧方式: バックエンドAPIから取得する場合（コメントアウト）
-  // const allFileNames = await getAllGMLFileNames(directory);
-  
-  if (allFileNames.length === 0) {
+  if (allFileNames.length === 0) {  
     console.warn('GMLファイルが見つかりませんでした');
     return [];
   }

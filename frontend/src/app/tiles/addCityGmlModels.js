@@ -1,6 +1,7 @@
 import { Color, Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath } from 'cesium';
 import { getModelColor } from './getModelColor.js';
 import { loadCityGMLFromURL, parseCityGML } from './cityGmlParser.js';
+import { structureTypes, usages } from './PLATEAUData.js';
 
 /**
  * PLATEAUのCityGMLデータを読み込んで3Dモデルとして追加
@@ -112,7 +113,14 @@ export async function add3DModelsFromCityGML(viewer, cityGmlUrls, options = {}) 
                                 buildingArea,
                                 buildingHeight,
                                 storeysAboveGround,
-                                citygmlData: building // 元のCityGMLデータを保持
+                                citygmlData: building, // 元のCityGMLデータを保持
+                                description: "緯度: " + lat.toFixed(6) + " 経度: " + lon.toFixed(6) + "<br>" + 
+                                "建物用途: " + usages[usage] + "<br>" +
+                                "建物構造: " + structureTypes[structureType] + "<br>" +
+                                "建物面積: " + buildingArea + " m2<br>" +
+                                "建物高さ: " + buildingHeight + " m<br>" +
+                                "建物階数: " + storeysAboveGround + "階<br>" +
+                                "建物年: " + year + "<br>" ,
                             });
                         } else {
                             // 形状が取れない場合はフォールバックとしてBox
@@ -138,7 +146,8 @@ export async function add3DModelsFromCityGML(viewer, cityGmlUrls, options = {}) 
                                 buildingArea,
                                 buildingHeight,
                                 storeysAboveGround,
-                                citygmlData: building
+                                citygmlData: building,
+                                description: building.description
                             });
                         }
                     } else {
@@ -177,7 +186,8 @@ export async function add3DModelsFromCityGML(viewer, cityGmlUrls, options = {}) 
                                 buildingArea,
                                 buildingHeight,
                                 storeysAboveGround,
-                                citygmlData: building
+                                citygmlData: building,
+                                description: building.description
                             });
                         } else {
                             // GLTFファイルを使用
@@ -202,7 +212,8 @@ export async function add3DModelsFromCityGML(viewer, cityGmlUrls, options = {}) 
                                 buildingArea,
                                 buildingHeight,
                                 storeysAboveGround,
-                                citygmlData: building
+                                citygmlData: building,
+                                description: building.description
                             });
                             entity.model.color = modelColor;
                         }

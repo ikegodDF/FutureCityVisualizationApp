@@ -29,6 +29,21 @@ const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
 viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
   const models = await loadAllSapporoCityGML(viewer);
+  
+  // モデルが読み込まれた後、画角はそのままに緯度経度だけ移動
+  if (models.length > 0) {
+    // 緯度経度が設定されている最初のモデルを使用
+    const target = models.find(m => m.latitude != null && m.longitude != null);
+    if (target) {
+      const { latitude, longitude } = target;
+      // 画角はそのままに、緯度経度だけ移動
+      viewer.camera.setView({
+        destination: Cartesian3.fromDegrees(longitude, latitude, 500),
+        orientation: { heading: 0, pitch: -20 * CesiumMath.PI / 180, roll: 0 }
+      });
+    }
+  }
+  
   setResult(models.map(toPayload));
   initUI(viewer, models);
   console.log("Models", models);
