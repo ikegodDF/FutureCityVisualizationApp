@@ -28,7 +28,7 @@ const viewer = (async function() {
 const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
 viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
-  const models = await loadAllSapporoCityGML(viewer);
+  const models = await addGltfModels(viewer);
   
   // モデルが読み込まれた後、画角はそのままに緯度経度だけ移動
   if (models.length > 0) {

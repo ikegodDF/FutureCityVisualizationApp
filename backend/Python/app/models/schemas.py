@@ -1,6 +1,6 @@
 # Pydanticスキーマ
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, List
+from typing import Optional, List, Literal
 from datetime import datetime
 
 class Model3D(BaseModel):
@@ -14,6 +14,9 @@ class Model3D(BaseModel):
     seismic_intensity: Optional[float] = None
     thunami_inundation_depth: Optional[float] = None
     BuildingDetail: Optional[dict] = None
+    # 被害計算ができなかったかどうかを示すフラグ（フロントで黒表示などに使用）
+    earthquake_uncomputable: Optional[bool] = None
+    thunami_uncomputable: Optional[bool] = None
 
 class BuildingDetail(BaseModel):
     structureType: str =None
@@ -34,6 +37,10 @@ class ComputeRequest(BaseModel):
     method: str
     appStateYear: int
     disasterState: str
+    # 欠損データの扱い方針（UIから選択）
+    # - strict: 欠損がある建物は計算しない（フロントで黒表示などに使える）
+    # - fallback_fixed: 欠損があっても固定値で補完して計算する（現状互換のデフォルト）
+    missing_data_policy: Literal["strict", "fallback_fixed"] = "strict"
     params: List[Model3D]
 
 class ComputeResponse(BaseModel):

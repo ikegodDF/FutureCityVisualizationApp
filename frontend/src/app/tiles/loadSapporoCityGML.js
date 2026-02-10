@@ -91,7 +91,7 @@ export async function loadAllSapporoCityGML(viewer, options = {}) {
   const {
     batchSize = 100,
     useGeometry = true,
-    jsonPath = '/models/json/shiroishi.json', // デフォルトは南区
+    jsonPath = '/models/json/minami.json', // デフォルトは南区
     sampleRate = 1.0, // デフォルトは100%（すべて読み込む）
     onProgress = null
   } = options;

@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional, Literal
 import math
 import random
 import numpy as np
@@ -20,7 +20,8 @@ class ComputeService:
         start_time = time.time()
         
         # キャッシュキー生成（必要時のみ）
-        cache_key = f"{request.method}_{request.appStateYear}_{hash(str(request.params))}"
+        missing_data_policy = getattr(request, "missing_data_policy", "fallback_fixed")
+        cache_key = f"{request.method}_{request.appStateYear}_{missing_data_policy}_{hash(str(request.params))}"
         
         # キャッシュチェック（有効時のみ）
         if self.enable_cache and cache_key in self.cache:
@@ -32,7 +33,12 @@ class ComputeService:
             )
         
         # 実際の計算
-        result = self._execute_computation(request.method, request.params, request.appStateYear)
+        result = self._execute_computation(
+            request.method,
+            request.params,
+            request.appStateYear,
+            missing_data_policy=missing_data_policy,
+        )
         
         # キャッシュに保存（有効時のみ）
         if self.enable_cache:
@@ -46,7 +52,14 @@ class ComputeService:
             timestamp=datetime.now()
         )
     
-    def _execute_computation(self, method: str, params: List[Model3D], appStateYear: int) -> List[Model3D]:
+    def _execute_computation(
+        self,
+        method: str,
+        params: List[Model3D],
+        appStateYear: int,
+        *,
+        missing_data_policy: str = "fallback_fixed",
+    ) -> List[Model3D]:
         """実際の計算ロジック"""
         results = []
         building_Num = len([p for p in params if p.show == False])
@@ -88,12 +101,12 @@ class ComputeService:
                 new_building_Num += num
             elif method == "earthquake_damage_assessment":
                 if param.show == True:
-                    result = self._calculate_earthquake_damage_assessment(param)
+                    result = self._calculate_earthquake_damage_assessment(param, missing_data_policy=missing_data_policy)
                 else:
                     result = param
             elif method == "thunami_damage_assessment":
                 if param.show == True:
-                    result = self._calculate_thunami_damage_assessment(param)
+                    result = self._calculate_thunami_damage_assessment(param, missing_data_policy=missing_data_policy)
                 else:
                     result = param
 
@@ -137,10 +150,11 @@ class ComputeService:
 
 
         lost_probability = calculateparam_age[building_AgeType][0]
-        # revival_probability = calculateparam_age[building_AgeType][1]
+        revival_probability = calculateparam_age[building_AgeType][1]
 
 
-        revival_probability = generated_building_count / building_Num
+        # 特定範囲数からランダムで復活
+        # revival_probability = generated_building_count / building_Num
 
         judgement = random.random()
         
@@ -156,7 +170,13 @@ class ComputeService:
         return param, num
 
     
-    def _calculate_earthquake_damage_assessment(self, param: Model3D) -> Model3D:
+    def _calculate_earthquake_damage_assessment(
+        self,
+        param: Model3D,
+        *,
+        missing_data_policy: str = "fallback_fixed",
+        default_intensity: float = 600.0,
+    ) -> Model3D:
         """地震被害判定"""
         # 計算パラメータ(木造)
         caluculateparam_wood: Dict[str, List[float]] = {
@@ -172,10 +192,37 @@ class ComputeService:
             "over_1981": {"lambda_complete": 6.614, "lambda_partial": 6.51, "devaiation_complete": 0.063, "devaiation_partial": 0.175},
         }
 
-        if param.BuildingDetail is None:
-            structureType = "wood"
-        else:
-            structureType = param.BuildingDetail.structureType
+        # BuildingDetail は dict 想定（schemas.py で Optional[dict]）
+        building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
+        structure_type = None
+        if building_detail is not None:
+            structure_type = building_detail.get("structureType")
+
+        # 計算不能フラグを一旦リセット（前回計算結果が残らないようにする）
+        param.earthquake_uncomputable = False
+
+        # strict: 必要情報が欠けている建物は「計算不能」として扱う（showは変更しない）
+        if missing_data_policy == "strict":
+            # 震度 + 建築年 + 構造種別が揃わない場合は計算しない
+            if param.seismic_intensity is None or param.year is None or not structure_type:
+                # フロント側で「計算不能」を判定できるようフラグを立てる
+                param.earthquake_uncomputable = True
+                # 震度は欠損状態に寄せる（既存仕様を維持）
+                param.seismic_intensity = None
+                return param
+
+        # fallback_fixed: 欠損があっても固定値/デフォルトで補完して計算
+        # 現仕様では「震度が欠損することはなく、取れない場合は 0」とするため、
+        # ここでは None（本当に値が入っていないケース）のみを補完対象とする。
+        if param.seismic_intensity is None:
+            if missing_data_policy == "fallback_fixed":
+                param.seismic_intensity = float(default_intensity)
+            else:
+                return param
+
+        # 構造種別の決定（fallback時は未指定なら木造扱い）
+        if not structure_type:
+            structure_type = "wood"
         
         architecturalPeriod = param.year
         if param.year is None:
@@ -187,13 +234,11 @@ class ComputeService:
                 architecturalPeriod = "over_1981"
 
         earthquake_intensity = param.seismic_intensity
-        if earthquake_intensity is None:
-            earthquake_intensity = param.seismic_intensity
-
+        # 震度 0 は「被害無し」として扱い、対数計算を避けるためそのまま返す。
         if earthquake_intensity is None or earthquake_intensity <= 0:
             return param
 
-        if structureType == "wood":
+        if structure_type == "wood":
             caluculateparam = caluculateparam_wood
         else:
             caluculateparam = caluculateparam_concrete
@@ -206,7 +251,17 @@ class ComputeService:
 
         return param
     
-    def _calculate_thunami_damage_assessment(self, param: Model3D) -> Model3D:
+    def _calculate_thunami_damage_assessment(
+        self,
+        param: Model3D,
+        *,
+        missing_data_policy: str = "fallback_fixed",
+        default_depth: float = 1.0,
+        default_floors: int = 1,
+        default_area: float = 100.0,
+        default_structure_type: str = "wood",
+        default_purpose: int = 1,
+    ) -> Model3D:
         """津波被害判定"""
         # 計算パラメータ（木造）
         caluculateparam_wood: Dict[str, List[float]] = {
@@ -253,21 +308,69 @@ class ComputeService:
         }
 
         judgementparam = 1
-        floodDepth = param.thunami_inundation_depth
-        floors = 1
-        area = 100
-        structureType = "wood"
-        architecturalPeriod = 1
-        purpose = 1
 
-        if structureType == "wood":
+        building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
+        floodDepth = param.thunami_inundation_depth
+        floors = building_detail.get("floors") if building_detail else None
+        area = building_detail.get("area") if building_detail else None
+        structureType = building_detail.get("structureType") if building_detail else None
+        purpose = building_detail.get("purpose") if building_detail else None
+        architecturalPeriod = 1  # 現状ロジック踏襲（必要なら将来年次から推定）
+
+        # 計算不能フラグを一旦リセット（前回計算結果が残らないようにする）
+        param.thunami_uncomputable = False
+
+        if missing_data_policy == "strict":
+            # 浸水深 + 建物詳細（階数/面積/構造/用途）が揃わない場合は計算しない
+            if (
+                floodDepth is None
+                or floors is None
+                or area is None
+                or not structureType
+                or purpose is None
+            ):
+                # フロント側で「計算不能」を判定できるようフラグを立てる
+                param.thunami_uncomputable = True
+                param.thunami_inundation_depth = None
+                return param
+        else:
+            # fallback_fixed: 欠損があれば固定値で補完
+            if floodDepth is None:
+                floodDepth = float(default_depth)
+                param.thunami_inundation_depth = float(default_depth)
+            floors = int(floors) if floors is not None else int(default_floors)
+            area = float(area) if area is not None else float(default_area)
+            structureType = str(structureType) if structureType else str(default_structure_type)
+            purpose = int(purpose) if purpose is not None else int(default_purpose)
+
+        # purpose は 1..6 を想定（範囲外は丸める）
+        if purpose < 1:
+            purpose = 1
+        if purpose > 6:
+            purpose = 6
+
+        # structureType は wood / concrete の2択に寄せる（それ以外は wood 扱い）
+        structureType_norm = str(structureType).lower()
+        if structureType_norm not in ["wood", "concrete"]:
+            structureType_norm = "wood"
+
+        if structureType_norm == "wood":
             calculateparam = caluculateparam_wood
-        elif structureType == "concrete":
+        elif structureType_norm == "concrete":
             calculateparam = calculateparam_concrete
         else:
             calculateparam = {}
         
-        damageRate = 1/(1+math.exp( -(calculateparam["section"][judgementparam] + calculateparam["floodDepth"][judgementparam] * floodDepth + calculateparam["floors"][judgementparam] * floors + calculateparam["area"][judgementparam] * area + calculateparam[f"architecturalPeriod{architecturalPeriod}"][judgementparam]  + calculateparam[f"purpose{purpose}"][judgementparam] + calculateparam["devaiation"][judgementparam])))
+        # 念のため数値化（strict時は既に揃っている前提）
+        if floodDepth is None:
+            return param
+        try:
+            floodDepth_f = float(floodDepth)
+        except (TypeError, ValueError):
+            param.thunami_inundation_depth = None if missing_data_policy == "strict" else float(default_depth)
+            return param
+
+        damageRate = 1/(1+math.exp( -(calculateparam["section"][judgementparam] + calculateparam["floodDepth"][judgementparam] * floodDepth_f + calculateparam["floors"][judgementparam] * floors + calculateparam["area"][judgementparam] * area + calculateparam[f"architecturalPeriod{architecturalPeriod}"][judgementparam]  + calculateparam[f"purpose{purpose}"][judgementparam] + calculateparam["devaiation"][judgementparam])))
 
         if damageRate > 0.5:
             param.show = False

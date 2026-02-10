@@ -46,17 +46,24 @@ class ThunamiDataService:
             self._source_mtime = current_mtime
 
 
-    def get_inundation_depth(self, latitude: float, longitude: float) -> float:
+    def get_inundation_depth(self, latitude: float, longitude: float) -> Optional[float]:
+        """
+        指定地点の浸水深を取得。
+        - データが未ロード/近傍点が見つからない場合は None を返す（=欠損）
+        - 近傍点が取得できた場合は浸水深(float)を返す
+        """
         if self.tree is None:
-            return 0.0
+            return None
 
         dist, index = self.tree.query((latitude, longitude), k=1)
         limit_degree = 0.00015  # 約15m
 
         if dist > limit_degree:
-            return 0.0
+            return None
 
-        return self.depth_values[index] if 0 <= index < len(self.depth_values) else 0.0
+        if 0 <= index < len(self.depth_values):
+            return float(self.depth_values[index])
+        return None
 
     def _parse_rows(self, reader: csv.DictReader) -> Tuple[List[Tuple[float, float]], List[float]]:
         """

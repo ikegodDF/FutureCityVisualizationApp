@@ -43,11 +43,44 @@ class GetSeismicService:
         return meshCode
     
     def get_seismic_data(self, buildings: List[Model3D]) -> List[Model3D]:
+        """
+        各建物に震度(SI)を付与する。
+
+        現仕様では「震度が欠損することはなく、取得できない場合は 0 とする」
+        という前提のため、ここでは欠損を 0.0 に正規化する。
+        （missing_data_policy は後方互換のために残している）
+        """
+        return self.get_seismic_data_with_policy(buildings)
+
+    def get_seismic_data_with_policy(
+        self,
+        buildings: List[Model3D],
+        *,
+        missing_data_policy: str = "fallback_fixed",
+        default_intensity: float = 600.0,
+    ) -> List[Model3D]:
+        """
+        震度を各建物に付与する。
+
+        - データが取得できない場合は 0.0 を設定する
+        - これにより下流の計算では None を前提とせず、0 を「揺れ無し」として扱える
+        """
         for building in buildings:
-            if building.show == False:
+            if building.show is False:
                 continue
-            
+
+            # 位置情報が欠けている場合はメッシュコードが引けないが、
+            # 現仕様では「欠けることはなく、なければ 0」という前提に合わせて 0.0 を設定する。
+            if building.latitude is None or building.longitude is None:
+                building.seismic_intensity = 0.0
+                continue
+
             meshCode = self.get_meshCode(building)
-            intensity = self.seismic_data_service.get_intensity(meshCode)
-            building.seismic_intensity = intensity if intensity is not None else 0.0
+            intensity = self.seismic_data_service.get_intensity(meshCode, default=None)
+            if intensity is None:
+                # 近傍にデータが無い場合も 0.0 として扱う
+                building.seismic_intensity = 0.0
+            else:
+                building.seismic_intensity = float(intensity)
+
         return buildings

@@ -13,12 +13,18 @@ get_thunami_service = GetThunamiService()
 @router.post("/earthquake", response_model=ComputeResponse)
 def damage_prediction(request: ComputeRequest):
     start_time = time.time()
-    request.params = get_seismic_service.get_seismic_data(request.params)
+    request.params = get_seismic_service.get_seismic_data_with_policy(
+        request.params,
+        missing_data_policy=request.missing_data_policy,
+    )
     return compute_service.compute(request)
 
 
 @router.post("/thunami", response_model=ComputeResponse)
 def thunami_damage_prediction(request: ComputeRequest):
     start_time = time.time()
-    request.params = get_thunami_service.get_thunami_data(request.params)
+    request.params = get_thunami_service.get_thunami_data_with_policy(
+        request.params,
+        missing_data_policy=request.missing_data_policy,
+    )
     return compute_service.compute(request)
