@@ -1,5 +1,5 @@
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { Cartesian3, JulianDate, Math as CesiumMath } from 'cesium';
+import { Cartesian3, JulianDate, Math as CesiumMath, CesiumTerrainProvider } from 'cesium';
 import { createViewer } from './app/viewer.js';
 import { initUI } from './app/controls/ui.js';
 import { loadCityTiles } from './app/tiles/cityTiles.js';
@@ -10,6 +10,8 @@ import { result } from './app/controls/handlers.js';
 import { appState, setResult } from './app/state/appState.js';
 import { outputContainer } from './app/controls/ui.js';
 import { toPayload } from './app/tiles/toPayload.js';
+import { Cesium3DTileset } from 'cesium';
+
 
 // 公開アセットのベースURL
 window.CESIUM_BASE_URL = '/cesium';
@@ -29,6 +31,15 @@ const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
 viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
   const models = await addGltfModels(viewer);
+
+  const terrain = await CesiumTerrainProvider.fromIonAssetId(1);
+  viewer.scene.globe.depthTestAgainstTerrain = true;
+  viewer.terrainProvider = terrain;
+
+  const tileset = viewer.scene.primitives.add(
+    await Cesium3DTileset.fromIonAssetId(2763270),
+  );
+  
   
   // モデルが読み込まれた後、画角はそのままに緯度経度だけ移動
   if (models.length > 0) {
