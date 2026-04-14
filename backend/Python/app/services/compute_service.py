@@ -259,8 +259,8 @@ class ComputeService:
         default_depth: float = 1.0,
         default_floors: int = 1,
         default_area: float = 100.0,
-        default_structure_type: str = "wood",
-        default_purpose: int = 1,
+        default_structure_type: int = 3,
+        default_usage: int = 1,
     ) -> Model3D:
         """津波被害判定"""
         # 計算パラメータ（木造）
@@ -269,6 +269,7 @@ class ComputeService:
             "floodDepth": [1.088, 1.603],
             "floors": [-0.6844, -0.5398],
             "area": [-0.003809, -0.001909],
+            "structureType3": [0, 0],
             "architecturalPeriod1": [0, 0],
             "architecturalPeriod2": [-0.1208, -0.001909],
             "architecturalPeriod3": [0.3251, 0.05358],
@@ -294,9 +295,11 @@ class ComputeService:
             "structureType2": [1.76, 1.504],
             "structureType4": [2.268, 1.403],
             "architecturalPeriod1": [0, 0],
-            "architecturalPeriod2": [0.0003355, 0.1627],
-            "architecturalPeriod3": [0.003832, -0.009885],
-            "architecturalPeriod4": [-0.4716, -0.5078],
+            "architecturalPeriod2": [0, 0],
+            "architecturalPeriod3": [0, 0],
+            "architecturalPeriod4": [0.0003355, 0.1627],
+            "architecturalPeriod5": [0.003832, -0.009885],
+            "architecturalPeriod6": [-0.4716, -0.5078],
             
             "purpose1": [0, 0],
             "purpose2": [-0.2879, -0.3954],
@@ -311,11 +314,11 @@ class ComputeService:
 
         building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
         floodDepth = param.thunami_inundation_depth
-        floors = building_detail.get("floors") if building_detail else None
-        area = building_detail.get("area") if building_detail else None
-        structureType = building_detail.get("structureType") if building_detail else None
-        purpose = building_detail.get("purpose") if building_detail else None
-        architecturalPeriod = 1  # 現状ロジック踏襲（必要なら将来年次から推定）
+        floors = building_detail.get("storeysAboveGround") if building_detail else None
+        area = building_detail.get("buildingArea") if building_detail else None
+        structureType = building_detail.get("buildingStructureType") if building_detail else None
+        purpose = building_detail.get("buildingUsage") if building_detail else None
+        architecturalPeriod = param.year if param.year else None # 現状ロジック踏襲（必要なら将来年次から推定）
 
         # 計算不能フラグを一旦リセット（前回計算結果が残らないようにする）
         param.thunami_uncomputable = False
@@ -340,26 +343,32 @@ class ComputeService:
                 param.thunami_inundation_depth = float(default_depth)
             floors = int(floors) if floors is not None else int(default_floors)
             area = float(area) if area is not None else float(default_area)
-            structureType = str(structureType) if structureType else str(default_structure_type)
-            purpose = int(purpose) if purpose is not None else int(default_purpose)
-
-        # purpose は 1..6 を想定（範囲外は丸める）
-        if purpose < 1:
-            purpose = 1
-        if purpose > 6:
-            purpose = 6
+            structureType = int(structureType) if structureType else int(default_structure_type)
+            purpose = int(purpose) if purpose is not None else int(default_usage)
 
         # structureType は wood / concrete の2択に寄せる（それ以外は wood 扱い）
-        structureType_norm = str(structureType).lower()
-        if structureType_norm not in ["wood", "concrete"]:
-            structureType_norm = "wood"
-
-        if structureType_norm == "wood":
+        if structureType == 3:
             calculateparam = caluculateparam_wood
-        elif structureType_norm == "concrete":
-            calculateparam = calculateparam_concrete
         else:
-            calculateparam = {}
+            calculateparam = calculateparam_concrete
+
+        if architecturalPeriod is None:
+            if structureType == 3:
+                architecturalPeriod = building_detail.get("architecturalPeriod")
+            else:
+                architecturalPeriod = building_detail.get("architecturalPeriod") + 2
+        elif architecturalPeriod < 1952:
+            architecturalPeriod = 1
+        elif architecturalPeriod < 1962:
+            architecturalPeriod = 2
+        elif architecturalPeriod < 1972:
+            architecturalPeriod = 3
+        elif architecturalPeriod < 1982:
+            architecturalPeriod = 4
+        elif architecturalPeriod < 2001:
+            architecturalPeriod = 5
+        else:
+            architecturalPeriod = 6
         
         # 念のため数値化（strict時は既に揃っている前提）
         if floodDepth is None:
@@ -370,7 +379,7 @@ class ComputeService:
             param.thunami_inundation_depth = None if missing_data_policy == "strict" else float(default_depth)
             return param
 
-        damageRate = 1/(1+math.exp( -(calculateparam["section"][judgementparam] + calculateparam["floodDepth"][judgementparam] * floodDepth_f + calculateparam["floors"][judgementparam] * floors + calculateparam["area"][judgementparam] * area + calculateparam[f"architecturalPeriod{architecturalPeriod}"][judgementparam]  + calculateparam[f"purpose{purpose}"][judgementparam] + calculateparam["devaiation"][judgementparam])))
+        damageRate = 1/(1+math.exp( -(calculateparam["section"][judgementparam] + calculateparam["floodDepth"][judgementparam] * floodDepth_f + calculateparam["floors"][judgementparam] * floors + calculateparam["area"][judgementparam] * area + calculateparam[f"structureType{structureType}"][judgementparam] + calculateparam[f"architecturalPeriod{architecturalPeriod}"][judgementparam]  + calculateparam[f"purpose{purpose}"][judgementparam] )))
 
         if damageRate > 0.5:
             param.show = False

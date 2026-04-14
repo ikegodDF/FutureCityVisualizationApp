@@ -19,10 +19,11 @@ class Model3D(BaseModel):
     thunami_uncomputable: Optional[bool] = None
 
 class BuildingDetail(BaseModel):
-    structureType: str =None
-    floors: int =None
-    area: float =None
-    purpose: int =None
+    buildingStructureType: int =None
+    storeysAboveGround: int =None
+    buildingArea: float =None
+    buildingUsage: int =None
+    architecturalPeriod: int =None
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None
