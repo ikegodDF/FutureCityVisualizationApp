@@ -175,7 +175,7 @@ class ComputeService:
         param: Model3D,
         *,
         missing_data_policy: str = "fallback_fixed",
-        default_intensity: float = 600.0,
+        default_intensity: float = 0,
     ) -> Model3D:
         """地震被害判定"""
         # 計算パラメータ(木造)
@@ -196,7 +196,7 @@ class ComputeService:
         building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
         structure_type = None
         if building_detail is not None:
-            structure_type = building_detail.get("structureType")
+            structure_type = building_detail.get("buildingStructureType")
 
         # 計算不能フラグを一旦リセット（前回計算結果が残らないようにする）
         param.earthquake_uncomputable = False
@@ -223,6 +223,10 @@ class ComputeService:
         # 構造種別の決定（fallback時は未指定なら木造扱い）
         if not structure_type:
             structure_type = "wood"
+        elif structure_type == 3:
+            structure_type = "wood"
+        else:
+            structure_type = "concrete"
         
         architecturalPeriod = param.year
         if param.year is None:
@@ -230,7 +234,7 @@ class ComputeService:
         else:
             if param.year <= 1981:
                 architecturalPeriod = "under_1981"
-            elif param.year > 1981:
+            else:
                 architecturalPeriod = "over_1981"
 
         earthquake_intensity = param.seismic_intensity
@@ -245,7 +249,7 @@ class ComputeService:
         
         
 
-        damage_rate = norm.cdf((math.log(earthquake_intensity) - caluculateparam[architecturalPeriod]["lambda_complete"]) / caluculateparam[architecturalPeriod]["devaiation_complete"])
+        damage_rate = norm.cdf((earthquake_intensity - caluculateparam[architecturalPeriod]["lambda_complete"]) / caluculateparam[architecturalPeriod]["devaiation_complete"])
         if damage_rate > 0.5:
             param.show = False
 
