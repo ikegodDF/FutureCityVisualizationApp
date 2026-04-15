@@ -130,3 +130,6 @@ backend/Python/.venv/
 *.bak
 *.backup
 
+# Cesium
+CESIUM_JS_REF_DOC.md
+CESIUM_ION_REST_API.md
