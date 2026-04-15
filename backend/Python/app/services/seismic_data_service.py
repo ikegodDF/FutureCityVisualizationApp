@@ -41,7 +41,7 @@ class SeismicDataService:
 
     def get_intensity(self, mesh_code: Union[str, int], default: Optional[float] = None) -> Optional[float]:
         """
-        メッシュコードに対応する震度(SI)を取得。
+        メッシュコードに対応する震度(BI)を取得。
         """
         if mesh_code is None:
             return default
@@ -51,7 +51,7 @@ class SeismicDataService:
 
     def load_mesh_intensity(self, path: str):
         """
-        デバッグ/ユーティリティ用途: 指定パスのCSVを読み込み、{meshcode, SI} の配列で返す。
+        デバッグ/ユーティリティ用途: 指定パスのCSVを読み込み、{meshcode, BI} の配列で返す。
         """
         mesh_list = []
 
@@ -63,7 +63,7 @@ class SeismicDataService:
                     or row.get("MESHCODE")
                     or row.get("CODE")
                 )
-                si_value = row.get("SI") or row.get("si")
+                si_value = row.get("BI") or row.get("bi")
 
                 if not meshcode or not si_value:
                     continue  # 空値や欠損がある行はスキップ
@@ -76,7 +76,7 @@ class SeismicDataService:
                 mesh_list.append(
                     {
                         "meshcode": self._normalize_mesh_code(meshcode),
-                        "SI": intensity,
+                        "BI": intensity,
                     }
                 )
 
@@ -99,8 +99,8 @@ class SeismicDataService:
     def _parse_rows(self, reader: csv.DictReader) -> Dict[str, float]:
         """
         CSVのヘッダは以下のいずれかを想定:
-          - meshcode, SI
-          - CODE, SI (内閣府公表データ等)
+          - meshcode, BI
+          - CODE, BI (内閣府公表データ等)
         """
         mesh_map: Dict[str, float] = {}
         for row in reader:
@@ -109,7 +109,7 @@ class SeismicDataService:
                 or row.get("MESHCODE")
                 or row.get("CODE")
             )
-            intensity_raw = row.get("SI") or row.get("si")
+            intensity_raw = row.get("BI") or row.get("bi")
 
             if meshcode_raw is None or intensity_raw is None:
                 continue

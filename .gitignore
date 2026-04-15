@@ -1,3 +1,7 @@
+# Local Cesium docs (自分用メモ、GitHub に載せない)
+CESIUM_JS_REF_DOC.md
+CESIUM_ION_REST_API.md
+
 # Data files
 backend/Python/data/
 
@@ -125,3 +129,4 @@ backend/Python/.venv/
 # Backup files
 *.bak
 *.backup
+
