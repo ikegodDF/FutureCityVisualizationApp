@@ -1,24 +1,36 @@
+:root {
+    --ui-font-family: Arial, sans-serif;
+    --ui-bg-soft: rgba(255, 255, 255, 0.8);
+    --ui-border-soft: rgba(0, 0, 0, 0.15);
+    --ui-text-main: #222;
+    --ui-gap-sm: 8px;
+    --ui-radius-sm: 5px;
+    --ui-radius-md: 8px;
+}
+
+/* Controls */
 #uiControls {
     position: fixed;
     top: 12px;
     left: 12px;
+    z-index: 1000;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    z-index: 1000;
+    gap: var(--ui-gap-sm);
+    font-family: var(--ui-font-family);
 }
 
 .control-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--ui-gap-sm);
 }
 
 #uiControls button {
     padding: 6px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    background: #fff;
+    background: var(--ui-bg-soft);
     cursor: pointer;
 }
 
@@ -26,20 +38,69 @@
     background: #f2f2f2;
 }
 
+/* Building age legend */
+#buildingAgeLegend {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: fit-content;
+    min-width: 160px;
+    padding: 8px;
+    background: var(--ui-bg-soft);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: var(--ui-radius-sm);
+    font-family: var(--ui-font-family);
+    font-size: 14px;
+}
+
+.legend-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 120px;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.legend-item:last-child {
+    margin-bottom: 0;
+}
+
+.legend-swatch {
+    width: 15px;
+    height: 15px;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.legend-label {
+    color: var(--ui-text-main);
+}
+
+/* Output */
 #outputContainer {
     position: absolute;
     top: 60px;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
-    background: rgba(255, 255, 255, 0.8);
     padding: 15px;
-    border-radius: 5px;
+    background: var(--ui-bg-soft);
+    border-radius: var(--ui-radius-sm);
+    font-family: var(--ui-font-family);
     font-size: 25px;
     text-align: center;
-    font-family: 'Arial', sans-serif;
 }
-
 
 /* Modal */
 #appModalRoot {
@@ -48,23 +109,29 @@
     display: none;
     z-index: 2000;
 }
-#appModalRoot.show { display: block; }
+
+#appModalRoot.show {
+    display: block;
+}
+
 .modal-backdrop {
     position: absolute;
     inset: 0;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
 }
+
 .modal-dialog {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #fff;
     width: min(560px, 90vw);
-    border-radius: 8px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    background: #fff;
+    border-radius: var(--ui-radius-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     overflow: hidden;
 }
+
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -72,46 +139,48 @@
     padding: 10px 12px;
     border-bottom: 1px solid #eee;
 }
+
 .modal-title {
     font-weight: bold;
 }
+
 .modal-close {
     border: none;
     background: transparent;
     font-size: 20px;
     cursor: pointer;
 }
+
 .modal-content {
     padding: 12px;
     line-height: 1.6;
 }
 
-/* Modal form layout */
+/* Modal form */
 .modal-content .form-row {
     margin-bottom: 10px;
 }
+
 .modal-content label {
     display: block;
     margin-bottom: 6px;
     line-height: 1.6;
 }
+
 .modal-content input[type="file"] {
     display: block;
 }
-.modal-content .selects {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
+
+.modal-content .selects,
 .modal-content .actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: var(--ui-gap-sm);
 }
 
 .modal-content select {
-    padding: 6px 8px;
     min-width: 160px;
+    padding: 6px 8px;
 }
 
 .modal-content button {

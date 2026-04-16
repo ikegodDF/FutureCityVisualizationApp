@@ -2,6 +2,7 @@ import { flyToJapan } from '../utils/camera.js';
 import '../../styles/ui.css';
 import { prediction, result, restore, analysis} from './handlers.js';
 import { openModal, closeModal, openResultPicker } from './modal.js';
+import { createBuildingAgeLegend } from './scales.js';
 import { resetResult, allResetResult, appState, setAppliedPolicy, setYear, setDisasterState } from '../state/appState.js';
 import { renew3DModels } from '../tiles/renew3DModels.js';
 import { exportResultSerializable } from '../utils/export.js';
@@ -122,6 +123,8 @@ export function initUI(viewer, models) {
   if (currentRow.childElementCount > 0) {
     container.appendChild(currentRow);
   }
+
+  container.appendChild(createBuildingAgeLegend());
   document.body.appendChild(container);
 }
 

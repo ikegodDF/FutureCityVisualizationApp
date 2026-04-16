@@ -1,5 +1,6 @@
-import { Color, Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath } from 'cesium';
+import { Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath, ShadowMode } from 'cesium';
 import { getModelColor } from './getModelColor.js';
+import { createModelYear } from './createModelDetails.js';
 
 // glTFモデル（施策適用前の3Dモデル）を読み込んで追加する
 // 役割は addCityGmlModels の GLTF版
@@ -28,7 +29,7 @@ export async function addGltfModels(viewer) {
                     const lat = attrs?.緯度;
                     const lon = attrs?.経度;
                     const alt = attrs?.高度 ?? 0;
-                    const year = attrs?.k14_Nendo ?? null;
+                    const year = createModelYear();
                     const buildingUsage = attrs?.用途区_ ?? null;
                     const buildingStructureType = attrs?.建築構_ ?? null;
                     const buildingArea = attrs?.面積 ?? null;
@@ -51,7 +52,11 @@ export async function addGltfModels(viewer) {
                         name: `model_${i}`,
                         position: modelPosition,
                         orientation: modelOrientation,
-                        model: { uri: gltfPath, scale: 1 },
+                        model: {
+                            uri: gltfPath,
+                            scale: 1,
+                            shadows: ShadowMode.DISABLED
+                        },
                         year: year,
                         latlon: [lat, lon],
                         buildingUsage,

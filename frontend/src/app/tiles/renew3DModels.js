@@ -1,4 +1,4 @@
-import { Color } from 'cesium';
+import { ShadowMode } from 'cesium';
 import { getModelColor } from './getModelColor.js';
 
 export const renew3DModels = async (viewer, renewModels) => {
@@ -21,6 +21,7 @@ export const renew3DModels = async (viewer, renewModels) => {
 
         // GLTFモデルの場合（modelプロパティが存在）
         if (entity.model) {
+            entity.model.shadows = ShadowMode.DISABLED;
             entity.model.color = color;
         }
         // CityGMLのpolygonの場合

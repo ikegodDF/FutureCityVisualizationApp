@@ -26,7 +26,10 @@ export const prediction = async (viewer, models = []) => {
     console.log('calculate response:', data);
     setYear(appState.year + 5);
     setResult(data.result);
-    await renew3DModels(viewer, data.result);
+    const nextModels = Array.isArray(data.result)
+      ? data.result
+      : appState.result?.[appState.appliedPolicy]?.[appState.year]?.[appState.disasterState];
+    await renew3DModels(viewer, nextModels);
     console.log(appState);
     return;
   } catch (error) {
