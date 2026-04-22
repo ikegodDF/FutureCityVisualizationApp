@@ -1,7 +1,7 @@
 body.ui-mode-general .edit-menu-bar {
     position: fixed;
     left: 0;
-    bottom: 128px;
+    bottom: 64px;
     width: auto;
     z-index: 1200;
     pointer-events: none;
