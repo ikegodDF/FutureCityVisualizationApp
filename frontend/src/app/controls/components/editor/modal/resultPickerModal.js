@@ -1,6 +1,6 @@
-import { appState, setAppliedPolicy, setYear, setDisasterState } from '../../../state/appState.js';
-import { renew3DModels } from '../../../tiles/renew3DModels.js';
-import { result } from '../../actions/resultActions.js';
+import { appState, setAppliedPolicy, setYear, setDisasterState } from '../../../../state/appState.js';
+import { renew3DModels } from '../../../../tiles/renew3DModels.js';
+import { result } from '../../../actions/resultActions.js';
 import { closeModal, openModal } from './modalRoot.js';
 
 export function openResultPicker(viewer, models, outputContainer) {

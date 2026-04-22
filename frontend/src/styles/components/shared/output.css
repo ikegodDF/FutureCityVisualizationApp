@@ -1,0 +1,20 @@
+#outputContainer {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    padding: 15px;
+    background: var(--ui-bg-soft);
+    color: var(--ui-text-main);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: var(--ui-radius-sm);
+    font-family: var(--ui-font-family);
+    font-size: 25px;
+    text-align: center;
+    transition: top 0.28s ease;
+}
+
+body.ui-mode-general.general-edit-menu-open #outputContainer {
+    top: 60px;
+}

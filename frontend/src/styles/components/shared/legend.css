@@ -1,0 +1,48 @@
+#buildingAgeLegend {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: fit-content;
+    min-width: 160px;
+    padding: 8px;
+    background: var(--ui-bg-soft);
+    border: 1px solid var(--ui-border-soft);
+    color: var(--ui-text-main);
+    border-radius: var(--ui-radius-sm);
+    font-family: var(--ui-font-family);
+    font-size: 14px;
+}
+
+.legend-title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    min-width: 120px;
+    font-size: 14px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+}
+
+.legend-item:last-child {
+    margin-bottom: 0;
+}
+
+.legend-swatch {
+    width: 15px;
+    height: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.legend-label {
+    color: var(--ui-text-main);
+}

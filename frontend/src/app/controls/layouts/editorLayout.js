@@ -10,6 +10,9 @@ let outputContainer;
 
 export function initEditorLayout(viewer, models) {
   if (document.getElementById('uiControls')) return;
+  document.body.classList.add('ui-mode-editor');
+  document.body.classList.remove('ui-mode-general', 'general-edit-menu-open');
+  document.body.style.setProperty('--general-edit-menu-offset', '0px');
 
   outputContainer = document.createElement('div');
   outputContainer.id = 'outputContainer';

@@ -1,0 +1,91 @@
+body.ui-mode-general .edit-menu-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 1200;
+    pointer-events: none;
+}
+
+body.ui-mode-general .edit-menu-panel {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 10px 16px 20px;
+    background: rgba(66, 66, 66, 0.86);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+    transform: translateY(-100%);
+    z-index: 1;
+    pointer-events: auto;
+    transition: transform 0.28s ease;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: visible;
+}
+
+body.ui-mode-general .edit-menu-bar.is-open .edit-menu-panel {
+    transform: translateY(0);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.ui-mode-general .edit-menu-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: rgba(255, 255, 255, 0.92);
+}
+
+body.ui-mode-general .edit-menu-content {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--ui-gap-sm);
+    padding-bottom: 0;
+}
+
+body.ui-mode-general .edit-menu-handle {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    margin-top: -1px;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
+    width: 72px;
+    height: 36px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-top: none;
+    border-radius: 0 0 999px 999px;
+    background: rgba(66, 66, 66, 0.9);
+    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.28);
+}
+
+body.ui-mode-general .edit-menu-toggle {
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    border-radius: 0 0 999px 999px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+body.ui-mode-general .edit-menu-toggle:focus-visible {
+    outline: 2px solid rgba(153, 204, 255, 0.9);
+    outline-offset: -2px;
+}
+
+body.ui-mode-general #cesiumContainer {
+    transition: none;
+}

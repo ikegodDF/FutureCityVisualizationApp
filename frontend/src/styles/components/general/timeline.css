@@ -1,0 +1,37 @@
+body.ui-mode-general .timeline-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 240px;
+    padding: 8px;
+    background: rgba(58, 58, 58, 0.88);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--ui-radius-sm);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+body.ui-mode-general .timeline-title {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+body.ui-mode-general .timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.76);
+}
+
+body.ui-mode-general .timeline-slider {
+    width: 100%;
+}
+
+body.ui-mode-general .timeline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+body.ui-mode-general .timeline-actions button {
+    font-size: 12px;
+}
