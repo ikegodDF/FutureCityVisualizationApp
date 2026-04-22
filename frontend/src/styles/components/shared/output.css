@@ -15,6 +15,3 @@
     transition: top 0.28s ease;
 }
 
-body.ui-mode-general.general-edit-menu-open #outputContainer {
-    top: 60px;
-}

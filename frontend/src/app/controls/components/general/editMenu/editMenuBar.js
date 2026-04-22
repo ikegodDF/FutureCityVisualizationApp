@@ -24,11 +24,16 @@ export const createEditMenuBar = ({ title = '編集メニュー' } = {}) => {
   toggleButton.textContent = '⌄';
   handle.appendChild(toggleButton);
 
+  const tooltip = document.createElement('div');
+  tooltip.className = 'edit-menu-tooltip';
+  tooltip.textContent = `${title}を開く`;
+
   panel.appendChild(panelHeader);
   panel.appendChild(panelContent);
   panel.appendChild(handle);
 
   root.appendChild(panel);
+  root.appendChild(tooltip);
 
   let isOpen = false;
   const updateOffset = () => {
@@ -44,13 +49,35 @@ export const createEditMenuBar = ({ title = '編集メニュー' } = {}) => {
     if (!isOpen) {
       document.body.style.setProperty('--general-edit-menu-offset', '0px');
     }
-    toggleButton.setAttribute('aria-label', isOpen ? `${title}を閉じる` : `${title}を開く`);
+    const labelText = isOpen ? `${title}を閉じる` : `${title}を開く`;
+    toggleButton.setAttribute('aria-label', labelText);
     toggleButton.textContent = isOpen ? '⌃' : '⌄';
+    placeTooltip();
+  };
+
+  const placeTooltip = () => {
+    const rect = toggleButton.getBoundingClientRect();
+    tooltip.style.left = `${rect.left + rect.width / 2}px`;
+    tooltip.style.top = `${rect.bottom + 6}px`;
+  };
+
+  const showTooltip = () => {
+    tooltip.textContent = isOpen ? `${title}を閉じる` : `${title}を開く`;
+    placeTooltip();
+    tooltip.classList.add('is-visible');
+  };
+  const hideTooltip = () => {
+    tooltip.classList.remove('is-visible');
   };
 
   toggleButton.addEventListener('click', () => {
+    hideTooltip();
     setOpen(!isOpen);
   });
+  toggleButton.addEventListener('mouseenter', showTooltip);
+  toggleButton.addEventListener('mouseleave', hideTooltip);
+  toggleButton.addEventListener('focus', showTooltip);
+  toggleButton.addEventListener('blur', hideTooltip);
   toggleButton.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -59,6 +86,7 @@ export const createEditMenuBar = ({ title = '編集メニュー' } = {}) => {
   });
   window.addEventListener('resize', () => {
     if (isOpen) updateOffset();
+    if (tooltip.classList.contains('is-visible')) placeTooltip();
   });
 
   return {

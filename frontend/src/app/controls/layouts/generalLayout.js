@@ -35,11 +35,21 @@ export function initGeneralLayout(viewer, models) {
   const timeline = createTimelineView({
     baseYear,
     currentYear: appState.year,
+    currentDisasterState: appState.disasterState,
+    currentPolicy: appState.appliedPolicy,
     maxYears: TIMELINE_MAX_YEARS,
     stepYears: TIMELINE_STEP_YEARS,
     onApplyYear: async (selectedYear) => {
       await timelineController.moveToYear(selectedYear);
       timeline.setYear(appState.year);
+      timeline.setDisasterState(appState.disasterState);
+    },
+    onDisasterChange: async (disasterState) => {
+      await timelineController.applyDisasterState(disasterState);
+      timeline.setDisasterState(appState.disasterState);
+    },
+    onPolicyChange: async (policyName) => {
+      await timelineController.applyPolicy(policyName);
     },
     onTrimFuture: async (selectedYear) => {
       await timelineController.trimFutureFromYear(selectedYear);

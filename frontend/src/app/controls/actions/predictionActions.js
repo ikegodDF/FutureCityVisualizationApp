@@ -1,7 +1,11 @@
-import { appState, setYear, setResult } from '../../state/appState.js';
+import { appState, setDisasterState, setYear, setResult } from '../../state/appState.js';
 import { renew3DModels } from '../../tiles/renew3DModels.js';
 
 export const prediction = async (viewer, models = []) => {
+  if (appState.disasterState !== '被災前') {
+    setDisasterState('被災前');
+  }
+
   if (appState.result[appState.appliedPolicy][appState.year + 5]) {
     setYear(appState.year + 5);
     renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + 5][appState.disasterState]);

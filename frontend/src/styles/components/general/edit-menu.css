@@ -1,19 +1,20 @@
 body.ui-mode-general .edit-menu-bar {
     position: fixed;
-    top: 0;
     left: 0;
-    width: 100vw;
+    bottom: 128px;
+    width: auto;
     z-index: 1200;
     pointer-events: none;
 }
 
 body.ui-mode-general .edit-menu-panel {
     box-sizing: border-box;
-    width: 100%;
+    width: min(940px, calc(100vw - 20px));
+    max-height: calc(100vh - 24px);
     padding: 10px 16px 20px;
     background: rgba(66, 66, 66, 0.86);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.18);
-    transform: translateY(-100%);
+    border-bottom: none;
+    transform: translateX(calc(-100% + 24px));
     z-index: 1;
     pointer-events: auto;
     transition: transform 0.28s ease;
@@ -23,9 +24,12 @@ body.ui-mode-general .edit-menu-panel {
 }
 
 body.ui-mode-general .edit-menu-bar.is-open .edit-menu-panel {
-    transform: translateY(0);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    transform: translateX(0);
     box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+body.ui-mode-general .edit-menu-panel::after {
+    content: none;
 }
 
 body.ui-mode-general .edit-menu-header {
@@ -46,30 +50,44 @@ body.ui-mode-general .edit-menu-content {
     flex-wrap: wrap;
     gap: var(--ui-gap-sm);
     padding-bottom: 0;
+    overflow: auto;
+    max-height: calc(100vh - 120px);
 }
 
 body.ui-mode-general .edit-menu-handle {
     position: absolute;
-    left: 50%;
-    top: 100%;
-    margin-top: -1px;
-    transform: translateX(-50%);
+    right: 0;
+    top: 50%;
+    margin-top: 0;
+    transform: translate(100%, -50%);
     display: flex;
     justify-content: center;
-    width: 72px;
-    height: 36px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-top: none;
-    border-radius: 0 0 999px 999px;
-    background: rgba(66, 66, 66, 0.9);
-    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.28);
+    width: 24px;
+    height: 60px;
+    border: none;
+    background: transparent;
+    overflow: hidden;
+}
+
+body.ui-mode-general .edit-menu-handle::before {
+    content: '';
+    position: absolute;
+    left: -36px;
+    top: 0;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: rgba(66, 66, 66, 0.86);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.22);
 }
 
 body.ui-mode-general .edit-menu-toggle {
+    position: relative;
+    z-index: 1;
     width: 100%;
     height: 100%;
     min-width: 0;
-    border-radius: 0 0 999px 999px;
+    border-radius: 50%;
     background: transparent;
     color: rgba(255, 255, 255, 0.95);
     font-size: 18px;
@@ -79,12 +97,35 @@ body.ui-mode-general .edit-menu-toggle {
     justify-content: center;
     cursor: pointer;
     user-select: none;
+    transform: rotate(-90deg);
 }
 
 body.ui-mode-general .edit-menu-toggle:focus-visible {
     outline: 2px solid rgba(153, 204, 255, 0.9);
     outline-offset: -2px;
 }
+
+body.ui-mode-general .edit-menu-tooltip {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, 0);
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: rgba(18, 18, 18, 0.94);
+    color: rgba(255, 255, 255, 0.96);
+    font-size: 12px;
+    line-height: 1.2;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.08s ease;
+    z-index: 1300;
+}
+
+body.ui-mode-general .edit-menu-tooltip.is-visible {
+    opacity: 1;
+}
+
 
 body.ui-mode-general #cesiumContainer {
     transition: none;

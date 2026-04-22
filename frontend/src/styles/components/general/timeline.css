@@ -1,8 +1,5 @@
 body.ui-mode-general .timeline-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    min-width: 240px;
+    min-width: 780px;
     padding: 8px;
     background: rgba(58, 58, 58, 0.88);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -10,9 +7,40 @@ body.ui-mode-general .timeline-controls {
     color: rgba(255, 255, 255, 0.9);
 }
 
+body.ui-mode-general .timeline-board {
+    display: flex;
+    gap: 12px;
+}
+
+body.ui-mode-general .timeline-time-section,
+body.ui-mode-general .timeline-policy-section {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 10px;
+    background: rgba(78, 78, 78, 0.65);
+}
+
+body.ui-mode-general .timeline-time-section {
+    flex: 1;
+}
+
+body.ui-mode-general .timeline-policy-section {
+    width: 300px;
+}
+
 body.ui-mode-general .timeline-title {
     font-size: 14px;
     font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+body.ui-mode-general .timeline-time-main {
+    display: block;
+}
+
+body.ui-mode-general .timeline-time-body {
+    flex: 1;
 }
 
 body.ui-mode-general .timeline-labels {
@@ -26,6 +54,19 @@ body.ui-mode-general .timeline-slider {
     width: 100%;
 }
 
+body.ui-mode-general .timeline-group-wrap {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 8px;
+    background: rgba(88, 88, 88, 0.55);
+}
+
+body.ui-mode-general .timeline-group-title {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 6px;
+}
+
 body.ui-mode-general .timeline-actions {
     display: flex;
     flex-wrap: wrap;
@@ -34,4 +75,17 @@ body.ui-mode-general .timeline-actions {
 
 body.ui-mode-general .timeline-actions button {
     font-size: 12px;
+}
+
+body.ui-mode-general .timeline-policy-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+body.ui-mode-general .timeline-policy-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
 }

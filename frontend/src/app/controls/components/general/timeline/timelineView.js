@@ -1,17 +1,32 @@
 export const createTimelineView = ({
   baseYear,
   currentYear,
+  currentDisasterState,
+  currentPolicy,
   maxYears,
   stepYears,
   onApplyYear,
+  onDisasterChange,
+  onPolicyChange,
   onTrimFuture,
 }) => {
   const wrap = document.createElement('div');
   wrap.className = 'timeline-controls';
 
+  const board = document.createElement('div');
+  board.className = 'timeline-board';
+
+  const timeSection = document.createElement('div');
+  timeSection.className = 'timeline-time-section';
+
+  const policySection = document.createElement('div');
+  policySection.className = 'timeline-policy-section';
+  const disasterSection = document.createElement('div');
+  disasterSection.className = 'timeline-policy-section';
+
   const title = document.createElement('div');
   title.className = 'timeline-title';
-  title.textContent = '予測タイムライン';
+  title.textContent = '時系列選択';
 
   const labels = document.createElement('div');
   labels.className = 'timeline-labels';
@@ -47,10 +62,92 @@ export const createTimelineView = ({
   actions.appendChild(applyBtn);
   actions.appendChild(trimBtn);
 
-  wrap.appendChild(title);
-  wrap.appendChild(labels);
-  wrap.appendChild(slider);
-  wrap.appendChild(actions);
+  const timeBody = document.createElement('div');
+  timeBody.className = 'timeline-time-body';
+  timeBody.appendChild(labels);
+  timeBody.appendChild(slider);
+  timeBody.appendChild(actions);
+
+  const timeMain = document.createElement('div');
+  timeMain.className = 'timeline-time-main';
+  timeMain.appendChild(timeBody);
+
+  timeSection.appendChild(title);
+  timeSection.appendChild(timeMain);
+
+  const policyTitle = document.createElement('div');
+  policyTitle.className = 'timeline-title';
+  policyTitle.textContent = '施策選択';
+
+  const policyGroupWrap = document.createElement('div');
+  policyGroupWrap.className = 'timeline-group-wrap';
+  const policyGroup = document.createElement('div');
+  policyGroup.className = 'timeline-policy-group';
+  const policyOptions = ['施策なし', '施策A（仮）', '施策B（仮）'];
+  policyOptions.forEach((policyName) => {
+    const label = document.createElement('label');
+    label.className = 'timeline-policy-option';
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'generalPolicy';
+    input.value = policyName;
+    if (policyName === currentPolicy) input.checked = true;
+    input.addEventListener('change', async () => {
+      if (!input.checked) return;
+      await onPolicyChange(policyName);
+    });
+    const text = document.createElement('span');
+    text.textContent = policyName;
+    label.appendChild(input);
+    label.appendChild(text);
+    policyGroup.appendChild(label);
+  });
+  policyGroupWrap.appendChild(policyGroup);
+
+  const disasterTitle = document.createElement('div');
+  disasterTitle.className = 'timeline-title';
+  disasterTitle.textContent = '被害選択';
+
+  const disasterGroupWrap = document.createElement('div');
+  disasterGroupWrap.className = 'timeline-group-wrap';
+  const disasterGroup = document.createElement('div');
+  disasterGroup.className = 'timeline-policy-group';
+  const disasterInputsByValue = new Map();
+  const disasterOptions = [
+    { label: '被災前', value: '被災前' },
+    { label: '地震', value: '地震発生後' },
+    { label: '津波', value: '津波発生後' },
+  ];
+  disasterOptions.forEach(({ label, value }) => {
+    const item = document.createElement('label');
+    item.className = 'timeline-policy-option';
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = 'generalDisaster';
+    input.value = value;
+    if (value === currentDisasterState) input.checked = true;
+    input.addEventListener('change', async () => {
+      if (!input.checked) return;
+      await onDisasterChange(value);
+    });
+    disasterInputsByValue.set(value, input);
+    const text = document.createElement('span');
+    text.textContent = label;
+    item.appendChild(input);
+    item.appendChild(text);
+    disasterGroup.appendChild(item);
+  });
+  disasterGroupWrap.appendChild(disasterGroup);
+
+  policySection.appendChild(policyTitle);
+  policySection.appendChild(policyGroupWrap);
+  disasterSection.appendChild(disasterTitle);
+  disasterSection.appendChild(disasterGroupWrap);
+
+  board.appendChild(timeSection);
+  board.appendChild(policySection);
+  board.appendChild(disasterSection);
+  wrap.appendChild(board);
 
   const getSelectedYear = () => Number(slider.value);
   const snapYear = (year) => {
@@ -87,6 +184,10 @@ export const createTimelineView = ({
     setYear: (year) => {
       slider.value = String(year);
       updateCurrentLabel();
+    },
+    setDisasterState: (disasterState) => {
+      const target = disasterInputsByValue.get(disasterState);
+      if (target) target.checked = true;
     },
   };
 };
