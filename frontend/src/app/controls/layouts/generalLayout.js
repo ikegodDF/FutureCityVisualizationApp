@@ -1,12 +1,15 @@
 import { flyToJapan } from '../../utils/camera.js';
 import '../../../styles/ui.css';
-import { result } from '../actions/index.js';
-import { createBuildingAgeLegend } from '../components/scales/buildingAgeLegend.js';
+import { appState } from '../../state/appState.js';
+import { createTimelineView } from '../components/general/timeline/timelineView.js';
+import { createTimelineController, TIMELINE_MAX_YEARS, TIMELINE_STEP_YEARS } from '../components/general/timeline/timelineController.js';
+import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
 
 let outputContainer;
 
 export function initGeneralLayout(viewer, models) {
   if (document.getElementById('uiControls')) return;
+  const baseYear = appState.year;
 
   outputContainer = document.createElement('div');
   outputContainer.id = 'outputContainer';
@@ -19,20 +22,38 @@ export function initGeneralLayout(viewer, models) {
   btnFlyJapan.textContent = '初期位置へ';
   btnFlyJapan.addEventListener('click', () => flyToJapan(viewer));
 
-  const btnRefreshResult = document.createElement('button');
-  btnRefreshResult.textContent = '表示更新';
-  btnRefreshResult.addEventListener('click', () => {
-    result(viewer, models, outputContainer);
+  const timelineController = createTimelineController({
+    viewer,
+    models,
+    outputContainer,
+    baseYear,
+  });
+
+  const timeline = createTimelineView({
+    baseYear,
+    currentYear: appState.year,
+    maxYears: TIMELINE_MAX_YEARS,
+    stepYears: TIMELINE_STEP_YEARS,
+    onApplyYear: async (selectedYear) => {
+      await timelineController.moveToYear(selectedYear);
+      timeline.setYear(appState.year);
+    },
+    onTrimFuture: async (selectedYear) => {
+      await timelineController.trimFutureFromYear(selectedYear);
+      timeline.setYear(appState.year);
+    },
   });
 
   const row = document.createElement('div');
   row.className = 'control-row';
   row.appendChild(btnFlyJapan);
-  row.appendChild(btnRefreshResult);
   container.appendChild(row);
+  container.appendChild(timeline.element);
 
   container.appendChild(createBuildingAgeLegend());
   document.body.appendChild(container);
+
+  timelineController.syncResult();
 }
 
 export { outputContainer };

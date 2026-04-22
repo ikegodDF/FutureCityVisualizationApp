@@ -1,8 +1,8 @@
 import { flyToJapan } from '../../utils/camera.js';
 import '../../../styles/ui.css';
 import { prediction, result, restore, analysis, earthquakeDamageAssessment, tsunamiDamageAssessment } from '../actions/index.js';
-import { openResultPicker } from '../components/modal/resultPickerModal.js';
-import { createBuildingAgeLegend } from '../components/scales/buildingAgeLegend.js';
+import { openResultPicker } from '../components/editor/modal/resultPickerModal.js';
+import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
 import { resetResult, allResetResult, appState } from '../../state/appState.js';
 import { exportResultSerializable } from '../../utils/export.js';
 

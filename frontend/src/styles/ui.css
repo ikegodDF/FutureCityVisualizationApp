@@ -53,6 +53,43 @@
     font-size: 14px;
 }
 
+.timeline-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 240px;
+    padding: 8px;
+    background: var(--ui-bg-soft);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: var(--ui-radius-sm);
+}
+
+.timeline-title {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #444;
+}
+
+.timeline-slider {
+    width: 100%;
+}
+
+.timeline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.timeline-actions button {
+    font-size: 12px;
+}
+
 .legend-title {
     margin: 0 0 8px 0;
     font-size: 16px;
