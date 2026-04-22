@@ -9,6 +9,8 @@ export async function addGltfModels(viewer) {
 
     const models = [];
 
+    // モデルの角度指定
+    const fixedHeadingPitchRoll = new HeadingPitchRoll(CesiumMath.toRadians(90), 0, 0);
     // バッチ並列実行
     const batchSize = 500;
     for (let start = 1; start <= modelNumber; start += batchSize) {
@@ -45,7 +47,7 @@ export async function addGltfModels(viewer) {
                     const modelPosition = Cartesian3.fromDegrees(lon, lat, 0);
                     const modelOrientation = Transforms.headingPitchRollQuaternion(
                         modelPosition,
-                        new HeadingPitchRoll(CesiumMath.toRadians(90), 0, 0)
+                        fixedHeadingPitchRoll
                     );
 
                     const model = viewer.entities.add({

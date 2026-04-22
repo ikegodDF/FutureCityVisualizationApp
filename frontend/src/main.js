@@ -1,14 +1,13 @@
 import 'cesium/Build/Cesium/Widgets/widgets.css';
-import { Cartesian3, JulianDate, Math as CesiumMath, CesiumTerrainProvider } from 'cesium';
+import { Cartesian3, JulianDate, Math as CesiumMath, CesiumTerrainProvider, ScreenSpaceEventHandler, ScreenSpaceEventType, defined } from 'cesium';
 import { createViewer } from './app/viewer.js';
-import { initUI } from './app/controls/ui.js';
+import { initUI, outputContainer } from './app/controls/index.js';
 import { loadCityTiles } from './app/tiles/cityTiles.js';
 import { setupIon } from './app/services/ion.js';
 import { addGltfModels } from './app/tiles/addGltfModels.js';
 import { loadAllSapporoCityGML } from './app/tiles/loadSapporoCityGML.js';
-import { result } from './app/controls/handlers.js';
+import { result } from './app/controls/actions/index.js';
 import { appState, setResult } from './app/state/appState.js';
-import { outputContainer } from './app/controls/ui.js';
 import { toPayload } from './app/tiles/toPayload.js';
 import { Cesium3DTileset } from 'cesium';
 import { Cesium3DTileStyle } from 'cesium';

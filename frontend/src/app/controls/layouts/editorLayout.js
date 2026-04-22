@@ -1,16 +1,14 @@
-import { flyToJapan } from '../utils/camera.js';
-import '../../styles/ui.css';
-import { prediction, result, restore, analysis} from './handlers.js';
-import { openModal, closeModal, openResultPicker } from './modal.js';
-import { createBuildingAgeLegend } from './scales.js';
-import { resetResult, allResetResult, appState, setAppliedPolicy, setYear, setDisasterState } from '../state/appState.js';
-import { renew3DModels } from '../tiles/renew3DModels.js';
-import { exportResultSerializable } from '../utils/export.js';
-import { earthquakeDamageAssessment, tsunamiDamageAssessment } from './handlers/damageAssessmentHandlers.js';
+import { flyToJapan } from '../../utils/camera.js';
+import '../../../styles/ui.css';
+import { prediction, result, restore, analysis, earthquakeDamageAssessment, tsunamiDamageAssessment } from '../actions/index.js';
+import { openResultPicker } from '../components/modal/resultPickerModal.js';
+import { createBuildingAgeLegend } from '../components/scales/buildingAgeLegend.js';
+import { resetResult, allResetResult, appState } from '../../state/appState.js';
+import { exportResultSerializable } from '../../utils/export.js';
 
 let outputContainer;
 
-export function initUI(viewer, models) {
+export function initEditorLayout(viewer, models) {
   if (document.getElementById('uiControls')) return;
 
   outputContainer = document.createElement('div');
@@ -71,7 +69,7 @@ export function initUI(viewer, models) {
   btnAnalysis.addEventListener('click', async () => {
     await analysis(viewer, models);
   });
-  
+
   const btnEarthquakeDamageAssessment = document.createElement('button');
   btnEarthquakeDamageAssessment.textContent = '地震被害予測';
   btnEarthquakeDamageAssessment.addEventListener('click', async () => {
@@ -129,5 +127,3 @@ export function initUI(viewer, models) {
 }
 
 export { outputContainer };
-
-

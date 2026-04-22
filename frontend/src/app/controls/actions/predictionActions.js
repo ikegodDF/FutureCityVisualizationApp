@@ -43,4 +43,3 @@ export const restore = async (viewer) => {
   renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year][appState.disasterState]);
   return;
 };
-
