@@ -1,6 +1,7 @@
-import { flyToJapan } from '../../utils/camera.js';
+import { flyToMukawa } from '../../utils/camera.js';
 import '../../../styles/ui.css';
 import { appState } from '../../state/appState.js';
+import { startRangeSelection } from '../actions/index.js';
 import { createTimelineView } from '../components/general/timeline/timelineView.js';
 import { createTimelineController, TIMELINE_MAX_YEARS, TIMELINE_STEP_YEARS } from '../components/general/timeline/timelineController.js';
 import { createEditMenuBar } from '../components/general/editMenu/editMenuBar.js';
@@ -23,7 +24,13 @@ export function initGeneralLayout(viewer, models) {
 
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
-  btnFlyJapan.addEventListener('click', () => flyToJapan(viewer));
+  btnFlyJapan.addEventListener('click', () => flyToMukawa(viewer));
+
+  const btnRangeSelect = document.createElement('button');
+  btnRangeSelect.textContent = '範囲選択して編集';
+  btnRangeSelect.addEventListener('click', () => {
+    startRangeSelection(viewer);
+  });
 
   const timelineController = createTimelineController({
     viewer,
@@ -60,6 +67,7 @@ export function initGeneralLayout(viewer, models) {
   const row = document.createElement('div');
   row.className = 'control-row';
   row.appendChild(btnFlyJapan);
+  row.appendChild(btnRangeSelect);
   container.appendChild(row);
   
   const editMenuBar = createEditMenuBar({ title: 'モデル編集' });

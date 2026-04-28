@@ -1,6 +1,6 @@
-import { flyToJapan } from '../../utils/camera.js';
+import { flyToMukawa } from '../../utils/camera.js';
 import '../../../styles/ui.css';
-import { prediction, result, restore, analysis, earthquakeDamageAssessment, tsunamiDamageAssessment } from '../actions/index.js';
+import { prediction, result, restore, analysis, earthquakeDamageAssessment, tsunamiDamageAssessment, startRangeSelection } from '../actions/index.js';
 import { openResultPicker } from '../components/editor/modal/resultPickerModal.js';
 import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
 import { resetResult, allResetResult, appState } from '../../state/appState.js';
@@ -23,7 +23,7 @@ export function initEditorLayout(viewer, models) {
 
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
-  btnFlyJapan.addEventListener('click', () => flyToJapan(viewer));
+  btnFlyJapan.addEventListener('click', () => flyToMukawa(viewer));
 
   const btnAllReset = document.createElement('button');
   btnAllReset.textContent = '全リセット';
@@ -67,6 +67,12 @@ export function initEditorLayout(viewer, models) {
     result(viewer, models, outputContainer);
   });
 
+  const btnRangeSelect = document.createElement('button');
+  btnRangeSelect.textContent = '範囲選択して編集';
+  btnRangeSelect.addEventListener('click', () => {
+    startRangeSelection(viewer);
+  });
+
   const btnAnalysis = document.createElement('button');
   btnAnalysis.textContent = '分析';
   btnAnalysis.addEventListener('click', async () => {
@@ -97,6 +103,7 @@ export function initEditorLayout(viewer, models) {
     'break',
     btnExport,
     btnInputappState,
+    btnRangeSelect,
     'break',
     btnAnalysis,
     btnEarthquakeDamageAssessment,
