@@ -2,6 +2,7 @@
 @import './components/shared/controls.css';
 @import './components/shared/legend.css';
 @import './components/shared/output.css';
+@import './components/shared/range-select.css';
 @import './components/general/timeline.css';
 @import './components/general/edit-menu.css';
 @import './components/editor/modal.css';

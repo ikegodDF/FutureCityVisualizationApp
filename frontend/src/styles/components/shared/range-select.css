@@ -1,0 +1,95 @@
+.range-select-panel {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1400;
+    width: min(320px, calc(100vw - 32px));
+    padding: 12px;
+    background: var(--ui-bg-soft);
+    color: var(--ui-text-main);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: var(--ui-radius-md);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+    font-family: var(--ui-font-family);
+}
+
+.range-select-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.range-select-status {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
+
+.range-select-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.range-select-actions button {
+    padding: 6px 10px;
+    border: 1px solid var(--ui-border-soft);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--ui-text-main);
+    cursor: pointer;
+}
+
+.range-select-actions button:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.range-select-list-title {
+    font-size: 12px;
+    margin-bottom: 6px;
+    opacity: 0.85;
+}
+
+.range-select-list {
+    max-height: 180px;
+    overflow: auto;
+    margin: 0;
+    padding: 8px 8px 8px 28px;
+    font-size: 12px;
+    line-height: 1.5;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.12);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
+}
+
+.range-select-list li {
+    padding: 4px 0;
+    color: rgba(255, 255, 255, 0.94);
+}
+
+.range-select-list li + li {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.range-select-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.range-select-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.range-select-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+}
+
+.range-select-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.34);
+    background-clip: padding-box;
+}
