@@ -2,6 +2,7 @@ let modalRoot;
 let modalBackdrop;
 let modalDialog;
 let modalContent;
+let onCloseHandler = null;
 
 export function initModal() {
   if (document.getElementById('appModalRoot')) return;
@@ -48,10 +49,19 @@ export function openModal(contentNode) {
 export function closeModal() {
   if (!modalRoot) return;
   modalRoot.classList.remove('show');
+  if (onCloseHandler) {
+    const handler = onCloseHandler;
+    onCloseHandler = null;
+    handler();
+  }
 }
 
 export function setModalContent(node) {
   if (!modalContent) return;
   modalContent.innerHTML = '';
   if (node) modalContent.appendChild(node);
+}
+
+export function setModalCloseHandler(handler) {
+  onCloseHandler = typeof handler === 'function' ? handler : null;
 }

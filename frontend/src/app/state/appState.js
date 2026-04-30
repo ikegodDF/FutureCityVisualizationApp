@@ -6,6 +6,7 @@ export const appState = {
   appliedPolicy: '施策なし',
   disasterState:"被災前",
   result: {},
+  selectedRanges: [],
 };
 
 export const setYear = (year) => {
@@ -79,5 +80,27 @@ export const allResetResult = (viewer) => {
   
   console.log('全リセット完了:', appState);
 }
+
+export const resetSelectedRanges = () => {
+  appState.selectedRanges = [];
+};
+
+export const appendSelectedRange = ({ polygon, models, order }) => {
+  appState.selectedRanges.push({ polygon, models, order });
+};
+
+export const getCommittedRangePolygon = () => appState.selectedRanges.map((range) => range.polygon);
+
+export const getCommittedRangeSelection = () => {
+  const selectionSet = new Set();
+  appState.selectedRanges.forEach((range) => {
+    (range.models ?? []).forEach((modelName) => {
+      if (typeof modelName === 'string' && modelName.trim()) {
+        selectionSet.add(modelName);
+      }
+    });
+  });
+  return Array.from(selectionSet);
+};
 
 

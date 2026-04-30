@@ -93,3 +93,17 @@
     background: rgba(255, 255, 255, 0.34);
     background-clip: padding-box;
 }
+
+.range-clear-button {
+    padding: 6px 10px;
+    border: 1px solid var(--ui-border-soft);
+    border-radius: 6px;
+    background: var(--ui-bg-soft);
+    color: var(--ui-text-main);
+    cursor: pointer;
+    font-family: var(--ui-font-family);
+}
+
+.range-clear-button:hover {
+    background: rgba(255, 255, 255, 0.14);
+}

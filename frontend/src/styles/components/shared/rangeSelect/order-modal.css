@@ -1,0 +1,11 @@
+.modal-content .range-order-title {
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.modal-content .range-order-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui-gap-sm);
+    margin-bottom: 10px;
+}

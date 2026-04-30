@@ -69,11 +69,11 @@ export function initGeneralLayout(viewer, models) {
   row.appendChild(btnFlyJapan);
   row.appendChild(btnRangeSelect);
   container.appendChild(row);
+  container.appendChild(createBuildingAgeLegend());
   
   const editMenuBar = createEditMenuBar({ title: 'モデル編集' });
   editMenuBar.content.appendChild(timeline.element);
   container.appendChild(editMenuBar.element);
-  container.appendChild(createBuildingAgeLegend());
 
   document.body.appendChild(container);
 
