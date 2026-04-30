@@ -1,6 +1,9 @@
 import { closeModal, openModal, setModalCloseHandler } from '../../editor/modal/modalRoot.js';
 
-export const openRangeOrderModal = () => new Promise((resolve) => {
+const RANGE_PERIOD_MAX_YEARS = 25;
+const RANGE_PERIOD_STEP_YEARS = 5;
+
+export const openRangeOrderModal = ({ currentYear }) => new Promise((resolve) => {
   let settled = false;
   const resolveOnce = (value) => {
     if (settled) return;
@@ -17,6 +20,41 @@ export const openRangeOrderModal = () => new Promise((resolve) => {
   title.className = 'range-order-title';
   title.textContent = 'この範囲に適用する処理を選択してください';
 
+  const periodWrap = document.createElement('div');
+  periodWrap.className = 'range-order-period';
+  const periodLabel = document.createElement('div');
+  periodLabel.className = 'range-order-period-label';
+  periodLabel.textContent = '適用期間';
+  const periodInputs = document.createElement('div');
+  periodInputs.className = 'range-order-period-inputs';
+
+  const startText = document.createElement('span');
+  startText.className = 'range-order-period-start-text';
+  startText.textContent = `${currentYear}年`;
+
+  const arrowText = document.createElement('span');
+  arrowText.className = 'range-order-period-arrow';
+  arrowText.textContent = '→';
+
+  const endSelect = document.createElement('select');
+  endSelect.className = 'range-order-period-end';
+  for (
+    let year = currentYear;
+    year <= currentYear + RANGE_PERIOD_MAX_YEARS;
+    year += RANGE_PERIOD_STEP_YEARS
+  ) {
+    const option = document.createElement('option');
+    option.value = String(year);
+    option.textContent = `${year}年`;
+    endSelect.appendChild(option);
+  }
+
+  periodInputs.appendChild(startText);
+  periodInputs.appendChild(arrowText);
+  periodInputs.appendChild(endSelect);
+  periodWrap.appendChild(periodLabel);
+  periodWrap.appendChild(periodInputs);
+
   const row = document.createElement('div');
   row.className = 'range-order-actions';
 
@@ -25,7 +63,13 @@ export const openRangeOrderModal = () => new Promise((resolve) => {
     button.type = 'button';
     button.textContent = label;
     button.addEventListener('click', () => {
-      resolveOnce(order);
+      resolveOnce({
+        order,
+        period: {
+          start: currentYear,
+          end: Number(endSelect.value),
+        },
+      });
       setModalCloseHandler(null);
       closeModal();
     });
@@ -46,6 +90,7 @@ export const openRangeOrderModal = () => new Promise((resolve) => {
   });
 
   wrap.appendChild(title);
+  wrap.appendChild(periodWrap);
   wrap.appendChild(row);
   wrap.appendChild(cancel);
   openModal(wrap);

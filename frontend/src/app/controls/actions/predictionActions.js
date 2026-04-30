@@ -1,5 +1,6 @@
 import { appState, setDisasterState, setYear, setResult } from '../../state/appState.js';
 import { renew3DModels } from '../../tiles/renew3DModels.js';
+import { refreshRangeVisibility } from './rangeSelectActions.js';
 
 export const prediction = async (viewer, models = []) => {
   if (appState.disasterState !== '被災前') {
@@ -9,6 +10,7 @@ export const prediction = async (viewer, models = []) => {
   if (appState.result[appState.appliedPolicy][appState.year + 5]) {
     setYear(appState.year + 5);
     renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + 5][appState.disasterState]);
+    refreshRangeVisibility(viewer);
     return;
   }
 
@@ -17,6 +19,7 @@ export const prediction = async (viewer, models = []) => {
     appStateYear: appState.year + 5,
     disasterState: appState.disasterState,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
+    
   };
 
   try {
@@ -34,6 +37,7 @@ export const prediction = async (viewer, models = []) => {
       ? data.result
       : appState.result?.[appState.appliedPolicy]?.[appState.year]?.[appState.disasterState];
     await renew3DModels(viewer, nextModels);
+    refreshRangeVisibility(viewer);
     console.log(appState);
     return;
   } catch (error) {
@@ -45,5 +49,6 @@ export const prediction = async (viewer, models = []) => {
 export const restore = async (viewer) => {
   setYear(appState.year - 5);
   renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year][appState.disasterState]);
+  refreshRangeVisibility(viewer);
   return;
 };

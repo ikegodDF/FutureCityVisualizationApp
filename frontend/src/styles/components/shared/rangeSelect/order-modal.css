@@ -9,3 +9,41 @@
     gap: var(--ui-gap-sm);
     margin-bottom: 10px;
 }
+
+.modal-content .range-order-period {
+    margin-bottom: 10px;
+}
+
+.modal-content .range-order-period-label {
+    margin-bottom: 6px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.modal-content .range-order-period-inputs {
+    display: flex;
+    align-items: center;
+    gap: var(--ui-gap-sm);
+    flex-wrap: wrap;
+}
+
+.modal-content .range-order-period-start-text {
+    min-width: 72px;
+    padding: 6px 8px;
+    border: 1px solid var(--ui-border-soft);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.modal-content .range-order-period-arrow {
+    opacity: 0.8;
+}
+
+.modal-content .range-order-period-inputs select {
+    min-width: 120px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--ui-text-main);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: 4px;
+}

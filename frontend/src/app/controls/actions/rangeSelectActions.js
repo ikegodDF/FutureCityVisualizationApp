@@ -3,6 +3,8 @@ import {
   appendSelectedRange,
   getCommittedRangePolygon as getCommittedRangePolygonFromState,
   getCommittedRangeSelection as getCommittedRangeSelectionFromState,
+  getSelectedRangesForYear,
+  hasAnySelectedRanges,
   resetSelectedRanges,
 } from '../../state/appState.js';
 import {
@@ -61,7 +63,7 @@ const isPointInPolygon = (point, polygon) => {
   return inside;
 };
 
-const hasSelectedRanges = () => Array.isArray(appState.selectedRanges) && appState.selectedRanges.length > 0;
+const hasSelectedRanges = () => hasAnySelectedRanges();
 
 const clearSelectedRangeSettings = () => {
   const viewer = activeRangeSession?.viewer ?? persistentRangeViewer;
@@ -156,6 +158,24 @@ const clearRangeSession = ({ preservePanel = false } = {}) => {
 
 const getRangeColorByOrder = (order) => RANGE_ORDER_COLORS[order] ?? Color.fromCssColorString('#B388FF');
 
+const createPersistentRangeFlatPolygon = (viewer, points, order) => {
+  const hierarchy = new PolygonHierarchy(
+    Cartesian3.fromDegreesArray(toHierarchyDegreesArray(points)),
+  );
+  const rangeColor = getRangeColorByOrder(order);
+
+  return viewer.entities.add({
+    polygon: {
+      hierarchy,
+      material: rangeColor.withAlpha(0.28),
+      outline: true,
+      outlineColor: rangeColor.withAlpha(0.95),
+      height: RANGE_POLYGON_BASE_HEIGHT,
+      perPositionHeight: false,
+    },
+  });
+};
+
 const createPersistentRangePolygon = (viewer, points, order) => {
   const hierarchy = new PolygonHierarchy(
     Cartesian3.fromDegreesArray(toHierarchyDegreesArray(points)),
@@ -189,21 +209,34 @@ const createPersistentRangePolygon = (viewer, points, order) => {
 };
 
 const rebuildPersistentRangePolygonsFromState = (viewer) => {
-  persistentRangeEntities.forEach((entity) => viewer.entities.remove(entity));
+  const removeTargetViewer = persistentRangeViewer ?? viewer;
+  persistentRangeEntities.forEach((entity) => removeTargetViewer.entities.remove(entity));
   persistentRangeEntities = [];
   persistentRangeViewer = null;
 
-  appState.selectedRanges.forEach((range) => {
-    const entities = createPersistentRangePolygon(
-      viewer,
-      range.polygon ?? [],
-      range.order,
-    );
+  getSelectedRangesForYear().forEach((range) => {
+    const polygonPoints = range.polygon ?? [];
+    const startYear = Number(range?.period?.start);
+    const isStartYearRange = Number.isFinite(startYear) && startYear === appState.year;
+
+    if (isStartYearRange) {
+      const flatEntity = createPersistentRangeFlatPolygon(viewer, polygonPoints, range.order);
+      persistentRangeEntities.push(flatEntity);
+      return;
+    }
+
+    const entities = createPersistentRangePolygon(viewer, polygonPoints, range.order);
     persistentRangeEntities.push(...entities);
   });
   if (persistentRangeEntities.length > 0) {
     persistentRangeViewer = viewer;
   }
+};
+
+export const refreshRangeVisibility = (viewer) => {
+  if (!viewer) return;
+  rebuildPersistentRangePolygonsFromState(viewer);
+  updateRangeClearButtonVisibility();
 };
 
 const resetCurrentPolygon = () => {
@@ -236,16 +269,18 @@ const finalizeCurrentPolygon = async () => {
 
   const polygonPoints = points.map((point) => ({ ...point }));
   const selectedModelNames = selectedEntities.map((entity, index) => getModelName(entity, index));
-  const selectedOrder = await openRangeOrderModal();
-  if (selectedOrder == null) {
+  const selectedOrderConfig = await openRangeOrderModal({ currentYear: appState.year });
+  if (selectedOrderConfig == null) {
     clearActiveDraftPolygon();
     setRangePanelStatus('処理の選択がキャンセルされました。現在の範囲は保存していません。');
     return;
   }
+  const { order: selectedOrder, period } = selectedOrderConfig;
   appendSelectedRange({
     polygon: polygonPoints,
     models: selectedModelNames,
     order: selectedOrder,
+    period,
   });
 
   activeRangeSession.pointEntities.forEach((entity) => viewer.entities.remove(entity));
@@ -270,6 +305,7 @@ const finalizeCurrentPolygon = async () => {
     selectedCount: committedRangeSelection.length,
     polygonCount: committedRangePolygon.length,
     order: selectedOrder,
+    period,
     selectedNames: selectedModelNames,
     year: appState.year,
     policy: appState.appliedPolicy,
@@ -290,8 +326,6 @@ export const startRangeSelection = (viewer) => {
     clearRangeSession();
     return;
   }
-
-  clearCommittedSelection();
 
   console.log('範囲選択モード開始', {
     year: appState.year,

@@ -6,7 +6,7 @@ export const appState = {
   appliedPolicy: '施策なし',
   disasterState:"被災前",
   result: {},
-  selectedRanges: [],
+  selectedRanges: {},
 };
 
 export const setYear = (year) => {
@@ -82,18 +82,38 @@ export const allResetResult = (viewer) => {
 }
 
 export const resetSelectedRanges = () => {
-  appState.selectedRanges = [];
+  appState.selectedRanges = {};
 };
 
-export const appendSelectedRange = ({ polygon, models, order }) => {
-  appState.selectedRanges.push({ polygon, models, order });
+export const appendSelectedRange = ({ polygon, models, order, period }) => {
+  const startYear = Number(period?.start ?? appState.year);
+  const endYear = Number(period?.end ?? startYear);
+  const [fromYear, toYear] = startYear <= endYear ? [startYear, endYear] : [endYear, startYear];
+  const stepYears = 5;
+
+  for (let year = fromYear; year <= toYear; year += stepYears) {
+    const yearKey = String(year);
+    if (!appState.selectedRanges[yearKey]) appState.selectedRanges[yearKey] = [];
+    appState.selectedRanges[yearKey].push({ polygon, models, order, period });
+  }
 };
 
-export const getCommittedRangePolygon = () => appState.selectedRanges.map((range) => range.polygon);
+export const getSelectedRangesForYear = (year = appState.year) => {
+  const yearKey = String(year);
+  return appState.selectedRanges[yearKey] ?? [];
+};
 
-export const getCommittedRangeSelection = () => {
+export const hasAnySelectedRanges = () => (
+  Object.values(appState.selectedRanges).some((ranges) => Array.isArray(ranges) && ranges.length > 0)
+);
+
+export const getCommittedRangePolygon = (year = appState.year) => (
+  getSelectedRangesForYear(year).map((range) => range.polygon)
+);
+
+export const getCommittedRangeSelection = (year = appState.year) => {
   const selectionSet = new Set();
-  appState.selectedRanges.forEach((range) => {
+  getSelectedRangesForYear(year).forEach((range) => {
     (range.models ?? []).forEach((modelName) => {
       if (typeof modelName === 'string' && modelName.trim()) {
         selectionSet.add(modelName);

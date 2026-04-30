@@ -1,6 +1,7 @@
 import { appState, setAppliedPolicy, setYear, setDisasterState } from '../../../../state/appState.js';
 import { renew3DModels } from '../../../../tiles/renew3DModels.js';
 import { result } from '../../../actions/resultActions.js';
+import { refreshRangeVisibility } from '../../../actions/rangeSelectActions.js';
 import { closeModal, openModal } from './modalRoot.js';
 
 export function openResultPicker(viewer, models, outputContainer) {
@@ -125,6 +126,7 @@ export function openResultPicker(viewer, models, outputContainer) {
     setYear(year);
     setDisasterState(disaster);
     renew3DModels(viewer, modelsSel);
+    refreshRangeVisibility(viewer);
     result(viewer, modelsSel, outputContainer);
     console.log(appState);
     closeModal();
