@@ -32,7 +32,7 @@ export const prediction = async (viewer, models = []) => {
     const data = await res.json();
     console.log('calculate response:', data);
     setYear(appState.year + 5);
-    setResult(data.result);
+    setResult(data.result, data.total_victims ?? 0);
     const nextModels = Array.isArray(data.result)
       ? data.result
       : appState.result?.[appState.appliedPolicy]?.[appState.year]?.[appState.disasterState];

@@ -19,7 +19,8 @@ const createModelDescription = ({
     buildingArea,
     buildingHeight,
     storeysAboveGround,
-    architecturalPeriod
+    architecturalPeriod,
+    peopleNum
 }) => {
     const yearText = isEstimatedYear ? `${displayValue(year)} (推定)` : displayValue(year);
     const usageLabel = resolveCodeLabel(buildingUsage, buildingUsageLabels);
@@ -31,7 +32,8 @@ const createModelDescription = ({
         "建物構造: " + displayValue(structureTypeLabel) + "<br>" +
         "建物面積: " + displayValue(buildingArea) + " m2<br>" +
         "建物高さ: " + displayValue(buildingHeight) + " m<br>" +
-        "建物階数: " + displayValue(storeysAboveGround) + " 階<br>"
+        "建物階数: " + displayValue(storeysAboveGround) + " 階<br>" +
+        "人数: " + displayValue(peopleNum) + " 人<br>"
 };
 
 // glTFモデル（施策適用前の3Dモデル）を読み込んで追加する
@@ -72,6 +74,7 @@ export async function addGltfModels(viewer) {
                     const buildingHeight = attrs?.k25_Tatemo ?? null;
                     const storeysAboveGround = attrs?.k15_Chijou ?? null;
                     const architecturalPeriod = attrs?.建築年_ ?? null;
+                    const peopleNum = parseInt(Math.random() * 10);
 
 
                     if (lat == null || lon == null) return null;
@@ -102,6 +105,7 @@ export async function addGltfModels(viewer) {
                         buildingHeight,
                         storeysAboveGround,
                         architecturalPeriod,
+                        peopleNum,
                         description: createModelDescription({
                             lat,
                             lon,
@@ -112,7 +116,8 @@ export async function addGltfModels(viewer) {
                             buildingArea,
                             buildingHeight,
                             storeysAboveGround,
-                            architecturalPeriod
+                            architecturalPeriod,
+                            peopleNum
                         })
                     });
                     model.model.color = modelColor;

@@ -36,7 +36,7 @@ const runDamageAssessment = async (viewer, disasterState, { expectedAfterState, 
     });
     const data = await res.json();
     console.log(appState);
-    setResult(data.result);
+    setResult(data.result, data.total_victims ?? 0);
     renew3DModels(viewer, data.result);
   } catch (error) {
     console.error('damage assessment error:', error);

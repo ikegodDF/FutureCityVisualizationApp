@@ -14,8 +14,12 @@ export const result = (viewer, models, outputContainer) => {
     : appState.disasterState === '津波発生後'
       ? '津波被害建物数'
       : '被害建物数';
+  
+  const policyKey = String(appState.appliedPolicy);
+  const peopleNum = appState.totalVictims?.[policyKey]?.[resultYear]?.[appState.disasterState] ?? 0;
+
   const disasterStateDisplay = appState.disasterState !== '被災前'
-    ? `<br>被害状況:${appState.disasterState}　　${damageCountLabel}:${damagedBuildingCount}`
+    ? `<br>被害状況:${appState.disasterState}　　${damageCountLabel}:${damagedBuildingCount}　　被災者数:${peopleNum}`
     : '';
   outputContainer.innerHTML = `施策:${appState.appliedPolicy}　　年度:${resultYear} 　　建物数:${visibleEntityCount}${disasterStateDisplay}`;
 };

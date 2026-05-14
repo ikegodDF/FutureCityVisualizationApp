@@ -24,6 +24,7 @@ class BuildingDetail(BaseModel):
     buildingArea: float =None
     buildingUsage: int =None
     architecturalPeriod: int =None
+    peopleNum: int =None
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None
@@ -46,6 +47,7 @@ class ComputeRequest(BaseModel):
 
 class ComputeResponse(BaseModel):
     result: List[Model3D]
+    total_victims: Optional[float] = 0
     duration_ms: float
     timestamp: datetime
 

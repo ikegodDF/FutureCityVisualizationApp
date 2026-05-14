@@ -6,6 +6,7 @@ export const appState = {
   appliedPolicy: '施策なし',
   disasterState:"被災前",
   result: {},
+  totalVictims: {},
   selectedRanges: {},
 };
 
@@ -21,12 +22,16 @@ export const setDisasterState = (disasterState) => {
   appState.disasterState = disasterState;
 }
 
-export const setResult = (result) => {
+export const setResult = (result, totalVictims = 0) => {
   const policyKey = String(appState.appliedPolicy);
   const yearKey = appState.year;
   if (!appState.result[policyKey]) appState.result[policyKey] = {};
   if (!appState.result[policyKey][yearKey]) appState.result[policyKey][yearKey] = {};
   appState.result[policyKey][yearKey][appState.disasterState] = result;
+  
+  if (!appState.totalVictims[policyKey]) appState.totalVictims[policyKey] = {};
+  if (!appState.totalVictims[policyKey][yearKey]) appState.totalVictims[policyKey][yearKey] = {};
+  appState.totalVictims[policyKey][yearKey][appState.disasterState] = totalVictims;
 }
 
 export const resetResult = (viewer) => {
