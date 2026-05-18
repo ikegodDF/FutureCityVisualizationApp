@@ -39,7 +39,7 @@ const createModelDescription = ({
 // glTFモデル（施策適用前の3Dモデル）を読み込んで追加する
 // 役割は addCityGmlModels の GLTF版
 export async function addGltfModels(viewer) {
-    const modelNumber = 2441;
+    const modelNumber = 2246;
 
     const models = [];
 
@@ -87,6 +87,7 @@ export async function addGltfModels(viewer) {
                     );
 
                     const model = viewer.entities.add({
+                        id: i,
                         name: `model_${i}`,
                         position: modelPosition,
                         orientation: modelOrientation,

@@ -30,7 +30,11 @@ export const createTimelineController = ({
     if ((normalizedYear - baseYear) % TIMELINE_STEP_YEARS !== 0) return;
 
     while (appState.year < normalizedYear) {
-      await prediction(viewer, models);
+      const ok = await prediction(viewer, models);
+      if (!ok) {
+        console.warn('prediction failed while moving to year', normalizedYear, 'current year', appState.year);
+        break;
+      }
     }
     while (appState.year > normalizedYear) {
       await restore(viewer);

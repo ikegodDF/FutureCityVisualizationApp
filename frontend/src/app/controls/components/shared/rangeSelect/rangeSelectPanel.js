@@ -2,13 +2,22 @@ const RANGE_PANEL_ID = 'rangeSelectPanel';
 const RANGE_CLEAR_BUTTON_ID = 'rangeSelectionClearButton';
 const RANGE_CLEAR_ROW_ID = 'rangeSelectionClearRow';
 
-const getSelectedBuildingLabel = (entity, index) => (
-  (typeof entity === 'string' ? entity : null)
-  ?? entity?.name
-  ?? entity?.id
-  ?? entity?.properties?.name?.getValue?.()
-  ?? `建物 ${index + 1}`
-);
+const getSelectedBuildingLabel = (entity, index) => {
+  if (typeof entity === 'number' && Number.isFinite(entity)) {
+    return `建物 ID: ${entity}`;
+  }
+  if (typeof entity === 'string' && entity.trim()) {
+    const fromName = Number(entity.replace(/^model_/, ''));
+    if (Number.isFinite(fromName)) return `建物 ID: ${fromName}`;
+    return entity;
+  }
+  return (
+    entity?.name
+    ?? entity?.id
+    ?? entity?.properties?.name?.getValue?.()
+    ?? `建物 ${index + 1}`
+  );
+};
 
 const getRangeSelectPanel = () => document.getElementById(RANGE_PANEL_ID);
 const getRangeClearButton = () => document.getElementById(RANGE_CLEAR_BUTTON_ID);

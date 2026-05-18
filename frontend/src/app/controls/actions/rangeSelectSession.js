@@ -19,7 +19,7 @@ import {
 } from 'cesium';
 import {
   clearActiveDraftPolygon,
-  getModelName,
+  getModelId,
   isPointInPolygon,
   rebuildPersistentRangePolygons,
 } from './rangeSelectVisualization.js';
@@ -37,14 +37,15 @@ let activeRangeSession = null;
 let persistentRangeEntities = [];
 let persistentRangeViewer = null;
 
-const collectPendingSelectionNames = (pendingRanges = []) => {
-  const nameSet = new Set();
+const collectPendingSelectionIds = (pendingRanges = []) => {
+  const idSet = new Set();
   pendingRanges.forEach((range) => {
-    (range.models ?? []).forEach((modelName) => {
-      if (typeof modelName === 'string' && modelName.trim()) nameSet.add(modelName);
+    (range.models ?? []).forEach((modelId) => {
+      const id = typeof modelId === 'number' ? modelId : Number(modelId);
+      if (Number.isFinite(id)) idSet.add(id);
     });
   });
-  return Array.from(nameSet);
+  return Array.from(idSet);
 };
 
 const setControlsVisibilityForRangeMode = (hidden, previousStates = []) => {
@@ -173,7 +174,9 @@ const finalizeCurrentPolygon = async () => {
   });
 
   const polygonPoints = points.map((point) => ({ ...point }));
-  const selectedModelNames = selectedEntities.map((entity, index) => getModelName(entity, index));
+  const selectedModelIds = selectedEntities
+    .map((entity) => getModelId(entity))
+    .filter((id) => id != null);
   const selectedOrderConfig = await openRangeOrderModal({ currentYear: appState.year });
   if (selectedOrderConfig == null) {
     clearActiveDraftPolygon(activeRangeSession);
@@ -190,7 +193,7 @@ const finalizeCurrentPolygon = async () => {
 
   activeRangeSession.pendingRanges.push({
     polygon: polygonPoints,
-    models: selectedModelNames,
+    models: selectedModelIds,
     order: selectedOrder,
     period,
   });
@@ -205,7 +208,7 @@ const finalizeCurrentPolygon = async () => {
   activeRangeSession.pointEntities = [];
   activeRangeSession.points = [];
 
-  const pendingSelection = collectPendingSelectionNames(activeRangeSession.pendingRanges);
+  const pendingSelection = collectPendingSelectionIds(activeRangeSession.pendingRanges);
   renderRangeSelectedList(pendingSelection);
   setRangePanelStatus(`領域を追加しました。現在 ${activeRangeSession.pendingRanges.length} 領域、${pendingSelection.length} 件を一時保持しています。`);
 };

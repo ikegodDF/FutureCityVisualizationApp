@@ -18,6 +18,13 @@ export const getModelName = (entity, index) => (
   ?? `建物 ${index + 1}`
 );
 
+/** Cesium エンティティから建物 ID（OID 番号）を取得 */
+export const getModelId = (entity) => {
+  const fromName = Number(String(entity?.name ?? '').replace(/^model_/, ''));
+  if (Number.isFinite(fromName) && fromName > 0) return fromName;
+  return null;
+};
+
 export const isPointInPolygon = (point, polygon) => {
   let inside = false;
   for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {

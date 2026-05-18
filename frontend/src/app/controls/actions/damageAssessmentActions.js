@@ -17,6 +17,7 @@ const runDamageAssessment = async (viewer, disasterState, { expectedAfterState, 
     appStateYear: appState.year,
     disasterState,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
+    selectedRanges: appState.selectedRanges[appState.year]
   };
 
   setDisasterState(disasterState);

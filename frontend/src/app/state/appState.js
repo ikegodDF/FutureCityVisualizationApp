@@ -119,10 +119,11 @@ export const getCommittedRangePolygon = (year = appState.year) => (
 export const getCommittedRangeSelection = (year = appState.year) => {
   const selectionSet = new Set();
   getSelectedRangesForYear(year).forEach((range) => {
-    (range.models ?? []).forEach((modelName) => {
-      if (typeof modelName === 'string' && modelName.trim()) {
-        selectionSet.add(modelName);
-      }
+    (range.models ?? []).forEach((modelId) => {
+      const id = typeof modelId === 'number'
+        ? modelId
+        : Number(String(modelId ?? '').replace(/^model_/, ''));
+      if (Number.isFinite(id)) selectionSet.add(id);
     });
   });
   return Array.from(selectionSet);

@@ -11,7 +11,7 @@ export const prediction = async (viewer, models = []) => {
     setYear(appState.year + 5);
     renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + 5][appState.disasterState]);
     refreshRangeVisibility(viewer);
-    return;
+    return true;
   }
 
   const payload = {
@@ -19,8 +19,10 @@ export const prediction = async (viewer, models = []) => {
     appStateYear: appState.year + 5,
     disasterState: appState.disasterState,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
-    
+    selectedRanges: appState.selectedRanges[appState.year]
   };
+  
+  console.log(payload);
 
   try {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -39,10 +41,10 @@ export const prediction = async (viewer, models = []) => {
     await renew3DModels(viewer, nextModels);
     refreshRangeVisibility(viewer);
     console.log(appState);
-    return;
+    return true;
   } catch (error) {
     console.error('calculate error:', error);
-    return;
+    return false;
   }
 };
 

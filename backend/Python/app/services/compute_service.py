@@ -5,7 +5,7 @@ import math
 import random
 import numpy as np
 from scipy.stats import norm, truncnorm
-from ..models.schemas import ComputeRequest, ComputeResponse, Model3D
+from ..models.schemas import ComputeRequest, ComputeResponse, Model3D, selectedRange
 from .seismic_data_service import SeismicDataService
 
 class ComputeService:
@@ -37,6 +37,7 @@ class ComputeService:
             request.method,
             request.params,
             request.appStateYear,
+            request.selectedRanges or [],
             missing_data_policy=missing_data_policy,
         )
         
@@ -60,6 +61,7 @@ class ComputeService:
         method: str,
         params: List[Model3D],
         appStateYear: int,
+        selectedRanges: List[selectedRange],
         *,
         missing_data_policy: str = "fallback_fixed",
     ) -> tuple[List[Model3D], float]:
@@ -99,9 +101,20 @@ class ComputeService:
         print("建物数乱数", generated_building_count)
         new_building_Num = 0
         victim_count = 0
+        
+        # 範囲フラグを整形化
+        id_dict = {}
+        for range in selectedRanges:
+            if range.period["end"] <= appStateYear - 5:
+                continue
+            order = range.order
+            for id in range.models:
+                id_dict[id] = order
+
         for param in params:
             if method == "building_retention_rate":
-                result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count)
+                order = id_dict.get(param.id)
+                result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count, order)
                 new_building_Num += num
             elif method == "earthquake_damage_assessment":
                 if param.show == True:
@@ -123,7 +136,7 @@ class ComputeService:
         print("被災者", victim_count)
         return results, victim_count
     
-    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, building_Num: int, generated_building_count: int) -> Model3D:
+    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, building_Num: int, generated_building_count: int, order: Optional[int]) -> Model3D:
         """建物存続確率分析"""
         # 築年齢別建物の確率
         calculateparam_age: Dict[str, List[float]] = {
@@ -135,6 +148,13 @@ class ComputeService:
             "over_46": [0.390645831, 0.059832469],
             "no_data": [0.142936261, 0.059832469]
         }
+
+        # 復活建物数のカウント用
+        num = 0
+
+        # 範囲設定による処理
+        if order == 1:
+            return param, num
 
         # yearがNoneのときはno_data扱い
         if param.year == 0:
@@ -166,7 +186,6 @@ class ComputeService:
 
         judgement = random.random()
         
-        num = 0
         if param.show == True:
             if judgement < lost_probability:
                 param.show = False
