@@ -516,6 +516,7 @@ class ComputeService:
             architecturalPeriod = 5
         else:
             architecturalPeriod = 6
+
         
         # 念のため数値化（strict時は既に揃っている前提）
         if floodDepth is None:

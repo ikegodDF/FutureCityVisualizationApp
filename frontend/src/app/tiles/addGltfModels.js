@@ -39,7 +39,7 @@ const createModelDescription = ({
 // glTFモデル（施策適用前の3Dモデル）を読み込んで追加する
 // 役割は addCityGmlModels の GLTF版
 export async function addGltfModels(viewer) {
-    const modelNumber = 2246;
+    const modelNumber = 2441;
 
     const models = [];
 
@@ -52,27 +52,26 @@ export async function addGltfModels(viewer) {
         const tasks = [];
         for (let i = start; i <= end; i++) {
             const task = (async () => {
-                const base = `/models/mukawa3D/mukawa3D/OID_${i}/`;
+                const base = `/models/mukawa3D/OID_${i}/`;
                 const jsonPath = `${base}esriGeometryMultiPatch_ESRI3DO.json`;
                 const gltfPath = `${base}esriGeometryMultiPatch.glb`;
-
                 try {
                     const res = await fetch(jsonPath);
                     if (!res.ok) return null;
                     const data = await res.json();
 
                     const attrs = data?.attributes ?? {};
-                    const lat = attrs?.緯度;
-                    const lon = attrs?.経度;
+                    const lat = attrs?.latitude;
+                    const lon = attrs?.longitude;
                     const alt = attrs?.高度 ?? 0;
-                    const sourceYear = attrs?.k14_Nendo;
+                    const sourceYear = attrs?.sourceYear;
                     const isEstimatedYear = !sourceYear;
                     const year = sourceYear || createModelYear();
-                    const buildingUsage = attrs?.用途区_ ?? null;
-                    const buildingStructureType = attrs?.建築構_ ?? null;
-                    const buildingArea = attrs?.面積 ?? null;
-                    const buildingHeight = attrs?.k25_Tatemo ?? null;
-                    const storeysAboveGround = attrs?.k15_Chijou ?? null;
+                    const buildingUsage = attrs?.usage ?? 1;
+                    const buildingStructureType = attrs?.structure ?? 3;
+                    const buildingArea = attrs?.area ?? 100;
+                    const buildingHeight = attrs?.height ?? 7;
+                    const storeysAboveGround = attrs?.above ?? 2;
                     const architecturalPeriod = attrs?.建築年_ ?? null;
                     const peopleNum = parseInt(Math.random() * 10);
 
