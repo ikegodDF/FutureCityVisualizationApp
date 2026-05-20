@@ -63,7 +63,7 @@ class SeismicDataService:
                     or row.get("MESHCODE")
                     or row.get("CODE")
                 )
-                si_value = row.get("BI") or row.get("bi")
+                si_value = row.get("SI") or row.get("si")
 
                 if not meshcode or not si_value:
                     continue  # 空値や欠損がある行はスキップ
@@ -109,7 +109,7 @@ class SeismicDataService:
                 or row.get("MESHCODE")
                 or row.get("CODE")
             )
-            intensity_raw = row.get("BI") or row.get("bi")
+            intensity_raw = row.get("SI") or row.get("si")
 
             if meshcode_raw is None or intensity_raw is None:
                 continue
@@ -122,6 +122,23 @@ class SeismicDataService:
 
             mesh_map[meshcode] = intensity
         return mesh_map
+    
+    def get_distribution(self) -> list:
+        """
+        フロントエンド配信用に、全メッシュの震度データを辞書の配列形式で一括取得する。
+        出力形式: [{'meshcode': 'xxxx', 'BI': yyy}, ...]
+        """
+        if not self._mesh_intensity_map:
+            return []
+
+        # 内部の辞書マップ（メッシュコード: 震度）を、フロント用の辞書配列に変換
+        return [
+            {
+                "meshcode": meshcode,
+                "SI": float(intensity)
+            }
+            for meshcode, intensity in self._mesh_intensity_map.items()
+        ]
 
     @staticmethod
     def _normalize_mesh_code(code: Union[str, int]) -> str:

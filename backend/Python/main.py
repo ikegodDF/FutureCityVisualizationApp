@@ -5,6 +5,7 @@ from app.api.v1.endpoints.models import router as models_router
 from app.api.v1.endpoints.analysis import router as analysis_router
 from app.api.v1.endpoints.damage_prediction import router as damage_prediction_router
 from app.api.v1.endpoints.files import router as files_router
+from app.api.v1.endpoints.get_distribution import router as get_distribution_router
 from app.core.config import settings
 
 
@@ -48,6 +49,9 @@ try:
     
     app.include_router(files_router, prefix="/api/v1", tags=["files"])
     print("Files router registered")
+
+    app.include_router(get_distribution_router, prefix="/api/v1", tags=["get_distribution"])
+    print("Distribution router registered")
     
     print("All routers registered successfully!")
 except Exception as e:

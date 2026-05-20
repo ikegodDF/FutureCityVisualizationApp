@@ -65,3 +65,11 @@ class AnalysisResponse(BaseModel):
     result: List[List[int]]
     duration_ms: float
     timestamp: datetime
+
+class DistributionRequest(BaseModel):
+    pass
+
+class DistributionResponse(BaseModel):
+    distribution: dict
+    duration_ms: float
+    timestamp: datetime

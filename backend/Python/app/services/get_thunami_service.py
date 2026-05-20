@@ -1,6 +1,6 @@
 import math
 from app.models.schemas import Model3D
-from app.services.thunami_data_servicw import ThunamiDataService
+from app.services.thunami_data_service import ThunamiDataService
 from typing import List
 
 class GetThunamiService:
@@ -49,7 +49,7 @@ class GetThunamiService:
                 continue
 
             inundation_depth = self.thunami_data_service.get_inundation_depth(latitude, longitude)
-            if inundation_depth is None:
+            if inundation_depth is None or inundation_depth < 0 :
                 building.thunami_inundation_depth = 0.0
             else:
                 building.thunami_inundation_depth = float(inundation_depth)

@@ -8,6 +8,7 @@ export const appState = {
   result: {},
   totalVictims: {},
   selectedRanges: {},
+  distribution: null
 };
 
 export const setYear = (year) => {
@@ -32,6 +33,10 @@ export const setResult = (result, totalVictims = 0) => {
   if (!appState.totalVictims[policyKey]) appState.totalVictims[policyKey] = {};
   if (!appState.totalVictims[policyKey][yearKey]) appState.totalVictims[policyKey][yearKey] = {};
   appState.totalVictims[policyKey][yearKey][appState.disasterState] = totalVictims;
+}
+
+export const setDistribution = (distribution) => {
+  appState.distribution = distribution;
 }
 
 export const resetResult = (viewer) => {
