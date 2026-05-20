@@ -12,8 +12,8 @@ class Settings(BaseSettings):
     data_dir: str = "data"
     models_file: str = "models.json"
     config_file: str = "config.json"
-    seismic_intensity_file: str = "seismic/seismic_intensity.csv"
-    thunami_inundation_depth_file: str = "thunami/thunami_inundation_depth.csv"
+    seismic_intensity_file: str = "seismic/seismic_intensity_kuromathunai.csv"
+    thunami_inundation_depth_file: str = "thunami/thunami_inundation_depth_toyoura.csv"
     # CORS
     cors_origins: str = "http://localhost:5173"
     

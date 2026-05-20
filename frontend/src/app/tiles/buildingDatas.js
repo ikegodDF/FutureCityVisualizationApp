@@ -1,4 +1,4 @@
-export const structureTypes = {
+export const PLATEAU_structureTypes = {
     "601": "木造・土蔵造",
     "602": "鉄骨鉄筋コンクリート造",
     "603": "鉄筋コンクリート造",
@@ -9,9 +9,9 @@ export const structureTypes = {
     "611": "不明",
     "612": "簡易耐火",
     "613": "耐火"
-}
+};
 
-export const usages = {
+export const PLATEAU_usages = {
     "401": "業務施設",
     "402": "商業施設",
     "403": "宿泊施設",
@@ -30,4 +30,20 @@ export const usages = {
     "453": "防衛施設",
     "454": "その他",
     "461": "不明"
+};
+
+export const buildingUsageLabels = {
+    "1": "住宅",
+    "2": "専用住宅以外の住宅",
+    "3": "商業系建物",
+    "4": "工業系建物",
+    "5": "公共交通系建物",
+    "6": "その他"
+}
+
+export const buildingStructureTypeLabels = {
+    "1": "鉄筋コンクリート造",
+    "2": "鉄骨造",
+    "3": "木造",
+    "4": "軽量鉄骨造",
 }

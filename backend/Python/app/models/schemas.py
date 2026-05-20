@@ -3,6 +3,14 @@ from pydantic import BaseModel, ConfigDict
 from typing import Optional, List, Literal
 from datetime import datetime
 
+class BuildingDetail(BaseModel):
+    buildingStructureType: int = None
+    storeysAboveGround: int = None
+    buildingArea: float = None
+    buildingUsage: int = None
+    architecturalPeriod: int = None
+    peopleNum: int = None
+
 class Model3D(BaseModel):
     model_config = ConfigDict(extra="allow")
     id: int
@@ -18,12 +26,11 @@ class Model3D(BaseModel):
     earthquake_uncomputable: Optional[bool] = None
     thunami_uncomputable: Optional[bool] = None
 
-class BuildingDetail(BaseModel):
-    buildingStructureType: int =None
-    storeysAboveGround: int =None
-    buildingArea: float =None
-    buildingUsage: int =None
-    architecturalPeriod: int =None
+class selectedRange(BaseModel):
+    models: List[int]
+    order: int
+    period: dict
+    polygon: List[dict]
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None
@@ -43,9 +50,11 @@ class ComputeRequest(BaseModel):
     # - fallback_fixed: 欠損があっても固定値で補完して計算する（現状互換のデフォルト）
     missing_data_policy: Literal["strict", "fallback_fixed"] = "strict"
     params: List[Model3D]
+    selectedRanges: Optional[List[selectedRange]] = []
 
 class ComputeResponse(BaseModel):
     result: List[Model3D]
+    total_victims: Optional[float] = 0
     duration_ms: float
     timestamp: datetime
 
@@ -54,5 +63,13 @@ class Models(BaseModel):
 
 class AnalysisResponse(BaseModel):
     result: List[List[int]]
+    duration_ms: float
+    timestamp: datetime
+
+class DistributionRequest(BaseModel):
+    pass
+
+class DistributionResponse(BaseModel):
+    distribution: dict
     duration_ms: float
     timestamp: datetime

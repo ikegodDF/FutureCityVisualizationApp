@@ -66,6 +66,7 @@ class ThunamiDataService:
         return None
 
     def _parse_rows(self, reader: csv.DictReader) -> Tuple[List[Tuple[float, float]], List[float]]:
+        
         """
         CSVのヘッダは以下を想定:
           - lat, lon, SIN_MAX
@@ -96,6 +97,24 @@ class ThunamiDataService:
             self.depth_values = []
 
         return points, depths
+
+    def get_distribution(self) -> List[dict]:
+        """
+        フロントエンド配信用に、全地点の津波浸水深データを辞書の配列形式で一括取得する。
+        出力形式: [{'latitude': xxx, 'longitude': yyy, 'depth': zzz}, ...]
+        """
+        if not self._points or not self._depths:
+            return []
+
+        # 緯度経度のペアリスト(_points)と、浸水深のリスト(_depths)を合流させて辞書配列を作る
+        return [
+            {
+                "latitude": float(point[0]),
+                "longitude": float(point[1]),
+                "depth": float(depth)
+            }
+            for point, depth in zip(self._points, self._depths)
+        ]
 
     @staticmethod
     def _normalize_mesh_code(code: str) -> str:

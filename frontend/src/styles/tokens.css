@@ -1,0 +1,10 @@
+:root {
+    --ui-font-family: Arial, sans-serif;
+    --ui-bg-soft: rgba(56, 56, 56, 0.8);
+    --ui-border-soft: rgba(255, 255, 255, 0.24);
+    --ui-text-main: rgba(255, 255, 255, 0.94);
+    --ui-gap-sm: 8px;
+    --ui-radius-sm: 5px;
+    --ui-radius-md: 8px;
+    --general-edit-menu-offset: 0px;
+}

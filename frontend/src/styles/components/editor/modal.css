@@ -1,0 +1,93 @@
+#appModalRoot {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 2000;
+}
+
+#appModalRoot.show {
+    display: block;
+}
+
+.modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-dialog {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(560px, 90vw);
+    background: var(--ui-bg-soft);
+    color: var(--ui-text-main);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: var(--ui-radius-md);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--ui-border-soft);
+}
+
+.modal-title {
+    font-weight: bold;
+}
+
+.modal-close {
+    border: none;
+    background: transparent;
+    color: var(--ui-text-main);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.modal-content {
+    padding: 12px;
+    line-height: 1.6;
+}
+
+.modal-content .form-row {
+    margin-bottom: 10px;
+}
+
+.modal-content label {
+    display: block;
+    margin-bottom: 6px;
+    line-height: 1.6;
+}
+
+.modal-content input[type="file"] {
+    display: block;
+}
+
+.modal-content .selects,
+.modal-content .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ui-gap-sm);
+}
+
+.modal-content select {
+    min-width: 160px;
+    padding: 6px 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: var(--ui-text-main);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: 4px;
+}
+
+.modal-content button {
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--ui-text-main);
+    border: 1px solid var(--ui-border-soft);
+    border-radius: 6px;
+}

@@ -15,6 +15,7 @@ export const toPayload = (e) => {
             buildingHeight: e?.buildingHeight ?? null,
             storeysAboveGround: e?.storeysAboveGround ?? null,
             architecturalPeriod: e?.architecturalPeriod ?? null,
+            peopleNum: e?.peopleNum ?? e?.BuildingDetail?.peopleNum ?? null,
         },
     };
 };

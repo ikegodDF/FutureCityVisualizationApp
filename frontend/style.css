@@ -2,3 +2,7 @@ html, body, #cesiumContainer {
     height: 100%;
     margin: 0;
 }
+
+#cesiumContainer .cesium-infoBox {
+    margin-top: 48px !important;
+}

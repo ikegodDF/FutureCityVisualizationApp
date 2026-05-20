@@ -1,11 +1,17 @@
-import { appState, setYear, setResult } from '../../state/appState.js';
+import { appState, setDisasterState, setYear, setResult } from '../../state/appState.js';
 import { renew3DModels } from '../../tiles/renew3DModels.js';
+import { refreshRangeVisibility } from './rangeSelectActions.js';
 
 export const prediction = async (viewer, models = []) => {
+  if (appState.disasterState !== '被災前') {
+    setDisasterState('被災前');
+  }
+
   if (appState.result[appState.appliedPolicy][appState.year + 5]) {
     setYear(appState.year + 5);
     renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + 5][appState.disasterState]);
-    return;
+    refreshRangeVisibility(viewer);
+    return true;
   }
 
   const payload = {
@@ -13,7 +19,10 @@ export const prediction = async (viewer, models = []) => {
     appStateYear: appState.year + 5,
     disasterState: appState.disasterState,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
+    selectedRanges: appState.selectedRanges[appState.year]
   };
+  
+  console.log(payload);
 
   try {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
@@ -25,22 +34,23 @@ export const prediction = async (viewer, models = []) => {
     const data = await res.json();
     console.log('calculate response:', data);
     setYear(appState.year + 5);
-    setResult(data.result);
+    setResult(data.result, data.total_victims ?? 0);
     const nextModels = Array.isArray(data.result)
       ? data.result
       : appState.result?.[appState.appliedPolicy]?.[appState.year]?.[appState.disasterState];
     await renew3DModels(viewer, nextModels);
+    refreshRangeVisibility(viewer);
     console.log(appState);
-    return;
+    return true;
   } catch (error) {
     console.error('calculate error:', error);
-    return;
+    return false;
   }
 };
 
 export const restore = async (viewer) => {
   setYear(appState.year - 5);
   renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year][appState.disasterState]);
+  refreshRangeVisibility(viewer);
   return;
 };
-

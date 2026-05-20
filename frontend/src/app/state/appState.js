@@ -6,6 +6,9 @@ export const appState = {
   appliedPolicy: '施策なし',
   disasterState:"被災前",
   result: {},
+  totalVictims: {},
+  selectedRanges: {},
+  distribution: null
 };
 
 export const setYear = (year) => {
@@ -20,12 +23,20 @@ export const setDisasterState = (disasterState) => {
   appState.disasterState = disasterState;
 }
 
-export const setResult = (result) => {
+export const setResult = (result, totalVictims = 0) => {
   const policyKey = String(appState.appliedPolicy);
   const yearKey = appState.year;
   if (!appState.result[policyKey]) appState.result[policyKey] = {};
   if (!appState.result[policyKey][yearKey]) appState.result[policyKey][yearKey] = {};
   appState.result[policyKey][yearKey][appState.disasterState] = result;
+  
+  if (!appState.totalVictims[policyKey]) appState.totalVictims[policyKey] = {};
+  if (!appState.totalVictims[policyKey][yearKey]) appState.totalVictims[policyKey][yearKey] = {};
+  appState.totalVictims[policyKey][yearKey][appState.disasterState] = totalVictims;
+}
+
+export const setDistribution = (distribution) => {
+  appState.distribution = distribution;
 }
 
 export const resetResult = (viewer) => {
@@ -79,5 +90,48 @@ export const allResetResult = (viewer) => {
   
   console.log('全リセット完了:', appState);
 }
+
+export const resetSelectedRanges = () => {
+  appState.selectedRanges = {};
+};
+
+export const appendSelectedRange = ({ polygon, models, order, period }) => {
+  const startYear = Number(period?.start ?? appState.year);
+  const endYear = Number(period?.end ?? startYear);
+  const [fromYear, toYear] = startYear <= endYear ? [startYear, endYear] : [endYear, startYear];
+  const stepYears = 5;
+
+  for (let year = fromYear; year <= toYear; year += stepYears) {
+    const yearKey = String(year);
+    if (!appState.selectedRanges[yearKey]) appState.selectedRanges[yearKey] = [];
+    appState.selectedRanges[yearKey].push({ polygon, models, order, period });
+  }
+};
+
+export const getSelectedRangesForYear = (year = appState.year) => {
+  const yearKey = String(year);
+  return appState.selectedRanges[yearKey] ?? [];
+};
+
+export const hasAnySelectedRanges = () => (
+  Object.values(appState.selectedRanges).some((ranges) => Array.isArray(ranges) && ranges.length > 0)
+);
+
+export const getCommittedRangePolygon = (year = appState.year) => (
+  getSelectedRangesForYear(year).map((range) => range.polygon)
+);
+
+export const getCommittedRangeSelection = (year = appState.year) => {
+  const selectionSet = new Set();
+  getSelectedRangesForYear(year).forEach((range) => {
+    (range.models ?? []).forEach((modelId) => {
+      const id = typeof modelId === 'number'
+        ? modelId
+        : Number(String(modelId ?? '').replace(/^model_/, ''));
+      if (Number.isFinite(id)) selectionSet.add(id);
+    });
+  });
+  return Array.from(selectionSet);
+};
 
 

@@ -1,7 +1,7 @@
 import { Color, Cartesian3, Transforms, HeadingPitchRoll, Math as CesiumMath } from 'cesium';
 import { getModelColor } from './getModelColor.js';
 import { loadCityGMLFromURL, parseCityGML } from './cityGmlParser.js';
-import { structureTypes, usages } from './PLATEAUData.js';
+import { PLATEAU_structureTypes, PLATEAU_usages } from './buildingDatas.js';
 
 /**
  * PLATEAUのCityGMLデータを読み込んで3Dモデルとして追加
@@ -115,8 +115,8 @@ export async function add3DModelsFromCityGML(viewer, cityGmlUrls, options = {}) 
                                 storeysAboveGround,
                                 citygmlData: building, // 元のCityGMLデータを保持
                                 description: "緯度: " + lat.toFixed(6) + " 経度: " + lon.toFixed(6) + "<br>" + 
-                                "建物用途: " + usages[usage] + "<br>" +
-                                "建物構造: " + structureTypes[structureType] + "<br>" +
+                                "建物用途: " + PLATEAU_usages[usage] + "<br>" +
+                                "建物構造: " + PLATEAU_structureTypes[structureType] + "<br>" +
                                 "建物面積: " + buildingArea + " m2<br>" +
                                 "建物高さ: " + buildingHeight + " m<br>" +
                                 "建物階数: " + storeysAboveGround + "階<br>" +
