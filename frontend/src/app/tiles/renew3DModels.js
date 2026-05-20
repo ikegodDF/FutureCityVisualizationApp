@@ -3,7 +3,7 @@ import { getModelColor } from './getModelColor.js';
 
 export const renew3DModels = async (viewer, renewModels) => {
     viewer.entities.values.forEach(entity => {
-        const renewModel = renewModelByName.get(entity.name);
+        const renewModel = renewModels.find(model => model.name === entity.name);
         if (!renewModel) return;
 
         // backend の結果に合わせて基本情報を同期
