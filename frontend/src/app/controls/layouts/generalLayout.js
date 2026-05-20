@@ -32,11 +32,11 @@ export function initGeneralLayout(viewer, models) {
   btnRangeSelect.addEventListener('click', () => {
     startRangeSelection(viewer);
   })
-  
+
   const btnAddDistribution = document.createElement('button');
   btnAddDistribution.textContent = '分布取得';
   btnAddDistribution.addEventListener('click', () => {
-    getDistribution();
+    getDistribution(viewer);
   });
 
   const timelineController = createTimelineController({

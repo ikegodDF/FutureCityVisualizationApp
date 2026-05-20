@@ -1,7 +1,8 @@
 import { appState, setDisasterState, setDistribution } from '../../state/appState.js';
+import { addDistributionModel } from '../../tiles/addDistribution.js';
 
 
-export const getDistribution = async () => {
+export const getDistribution = async (viewer) => {
 
     if (appState.distribution !== null ) {
         
@@ -19,6 +20,7 @@ export const getDistribution = async () => {
 
         setDistribution(data.distribution)
         console.log(appState);
+        addDistributionModel(viewer, 'tsunami')
         return true;
     } catch (error) {
         console.error('calculate error:', error);
