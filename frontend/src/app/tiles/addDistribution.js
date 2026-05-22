@@ -14,34 +14,41 @@ let tsunamiEntities = [];
 /**
  * 計測震度（SI）に応じた色を取得
  */
+/**
+ * 震度（si）に応じた色を取得
+ * 💡 気象庁の計測震度の正確な区切りに修正し、カラーパレットをパターン1(調整版)に更新しました
+ */
 function getSindoColor(si) {
     const alpha = 0.6; // 少し透けさせて下の地図が見えるようにする
-    if (si < 0.5) return Cesium.Color.WHITE.withAlpha(alpha);
-    else if (si < 1.5) return Cesium.Color.fromCssColorString('#00FF00').withAlpha(alpha);
-    else if (si < 2.5) return Cesium.Color.fromCssColorString('#33CC00').withAlpha(alpha);
-    else if (si < 3.5) return Cesium.Color.fromCssColorString('#66AA00').withAlpha(alpha);
-    else if (si < 4.5) return Cesium.Color.fromCssColorString('#999900').withAlpha(alpha);
-    else if (si < 5.0) return Cesium.Color.fromCssColorString('#CC6600').withAlpha(alpha);
-    else if (si < 5.5) return Cesium.Color.fromCssColorString('#FF3300').withAlpha(alpha);
-    else if (si < 6.0) return Cesium.Color.fromCssColorString('#FF6600').withAlpha(alpha);
-    else if (si < 6.5) return Cesium.Color.fromCssColorString('#FF0000').withAlpha(alpha);
-    else return Cesium.Color.fromCssColorString('#800000').withAlpha(alpha);
+
+    if (si < 0.5)  return Cesium.Color.WHITE.withAlpha(alpha); // 震度0
+    if (si < 1.5)  return Cesium.Color.fromCssColorString('#A0F080').withAlpha(alpha); // 震度1
+    if (si < 2.5)  return Cesium.Color.fromCssColorString('#00D000').withAlpha(alpha); // 震度2
+    if (si < 3.5)  return Cesium.Color.fromCssColorString('#1040FF').withAlpha(alpha); // 震度3
+    if (si < 4.5)  return Cesium.Color.fromCssColorString('#FFFF00').withAlpha(alpha); // 震度4
+    if (si < 5.0)  return Cesium.Color.fromCssColorString('#FFD700').withAlpha(alpha); // 震度5弱 (4.5〜4.9)
+    if (si < 5.5)  return Cesium.Color.fromCssColorString('#FF9900').withAlpha(alpha); // 震度5強 (5.0〜5.4)
+    if (si < 6.0)  return Cesium.Color.fromCssColorString('#FF3300').withAlpha(alpha); // 震度6弱 (5.5〜5.9)
+    if (si < 6.5)  return Cesium.Color.fromCssColorString('#99001A').withAlpha(alpha); // 👑震度6強 (6.0〜6.4)
+    return Cesium.Color.fromCssColorString('#4A0010').withAlpha(alpha);                // 👑震度7   (6.5以上)
 }
 
 /**
  * 津波浸水深（depth）に応じた色を取得
+ * 💡 凡例のカラーパレットと100%一致するように色コードを同期しました
  */
 function getTsunamiColor(depth) {
     const alpha = 0.7; // 水の表現なので少し不透明度を上げる
-    if (depth <= 0.01) return Cesium.Color.fromCssColorString('#00FF00').withAlpha(alpha);
-    else if (depth <= 0.3) return Cesium.Color.fromCssColorString('#33CC00').withAlpha(alpha);
-    else if (depth <= 1.0) return Cesium.Color.fromCssColorString('#66AA00').withAlpha(alpha);
-    else if (depth <= 2.0) return Cesium.Color.fromCssColorString('#999900').withAlpha(alpha);
-    else if (depth <= 4.0) return Cesium.Color.fromCssColorString('#CC6600').withAlpha(alpha);
-    else if (depth <= 6.0) return Cesium.Color.fromCssColorString('#FF3300').withAlpha(alpha);
-    else if (depth <= 8.0) return Cesium.Color.fromCssColorString('#FF6600').withAlpha(alpha);
-    else if (depth <= 10.0) return Cesium.Color.fromCssColorString('#FF0000').withAlpha(alpha);
-    else return Cesium.Color.fromCssColorString('#800000').withAlpha(alpha);
+
+    if (depth <= 0.01) return Cesium.Color.fromCssColorString('#A0F080').withAlpha(alpha);
+    if (depth <= 0.3)  return Cesium.Color.fromCssColorString('#00D000').withAlpha(alpha);
+    if (depth <= 1.0)  return Cesium.Color.fromCssColorString('#1040FF').withAlpha(alpha);
+    if (depth <= 2.0)  return Cesium.Color.fromCssColorString('#FFFF00').withAlpha(alpha);
+    if (depth <= 4.0)  return Cesium.Color.fromCssColorString('#FFD700').withAlpha(alpha);
+    if (depth <= 6.0)  return Cesium.Color.fromCssColorString('#FF9900').withAlpha(alpha);
+    if (depth <= 8.0)  return Cesium.Color.fromCssColorString('#FF3300').withAlpha(alpha);
+    if (depth <= 10.0) return Cesium.Color.fromCssColorString('#99001A').withAlpha(alpha);
+    return Cesium.Color.fromCssColorString('#4A0010').withAlpha(alpha);
 }
 
 /**
@@ -101,7 +108,7 @@ function decodeJapanMeshFromPython(meshcode) {
 export const clearDistributionModels = (viewer, mode) => {
     if (!viewer) return;
 
-    if (mode === 'seismic' || !mode) {
+    if (mode === 'earthquake' || !mode) {
         if (seismicEntities.length > 0) {
             console.log(`🧹 古い震度モデルを削除中... (${seismicEntities.length}件)`);
             seismicEntities.forEach(entity => viewer.entities.remove(entity));
@@ -145,7 +152,7 @@ export const addDistributionModel = (viewer, mode) => {
     // --------------------------------------------------
     // 🔥 【地震（震度メッシュ）の平面描画】
     // --------------------------------------------------
-    if (mode === 'seismic' && seismic && seismic.length > 0) {
+    if (mode === 'earthquake' && seismic && seismic.length > 0) {
         console.log(`⏳ 震度メッシュ (${seismic.length}件) のマッピングを開始...`);
         
         seismic.forEach((item, index) => {

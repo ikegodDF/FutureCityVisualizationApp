@@ -52,7 +52,7 @@ export async function addGltfModels(viewer) {
         const tasks = [];
         for (let i = start; i <= end; i++) {
             const task = (async () => {
-                const base = `/models/mukawa3D/OID_${i}/`;
+                const base = `/models/toyoura3D/OID_${i}/`;
                 const jsonPath = `${base}esriGeometryMultiPatch_ESRI3DO.json`;
                 const gltfPath = `${base}esriGeometryMultiPatch.glb`;
                 try {

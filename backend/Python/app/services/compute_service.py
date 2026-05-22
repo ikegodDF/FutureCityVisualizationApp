@@ -550,7 +550,6 @@ class ComputeService:
             return param, 0.0
 
         damageRate = 1/(1+math.exp( -(calculateparam["section"][judgementparam] + calculateparam["floodDepth"][judgementparam] * floodDepth_f + calculateparam["floors"][judgementparam] * floors + calculateparam["area"][judgementparam] * area + calculateparam[f"structureType{structureType}"][judgementparam] + calculateparam[f"architecturalPeriod{architecturalPeriod}"][judgementparam]  + calculateparam[f"purpose{purpose}"][judgementparam] )))
-
         if damageRate > 0.5:
             param.show = False
             param.isDamage = True

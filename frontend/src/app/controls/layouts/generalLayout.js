@@ -7,6 +7,7 @@ import { createTimelineView } from '../components/general/timeline/timelineView.
 import { createTimelineController, TIMELINE_MAX_YEARS, TIMELINE_STEP_YEARS } from '../components/general/timeline/timelineController.js';
 import { createEditMenuBar } from '../components/general/editMenu/editMenuBar.js';
 import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
+import { createDistributionLegend, updateLegendContent } from '../components/shared/scales/distributionLegend.js';
 
 let outputContainer;
 
@@ -46,6 +47,8 @@ export function initGeneralLayout(viewer, models) {
     baseYear,
   });
 
+  const legendElement = createDistributionLegend();
+
   const timeline = createTimelineView({
     baseYear,
     currentYear: appState.year,
@@ -61,6 +64,7 @@ export function initGeneralLayout(viewer, models) {
     onDisasterChange: async (disasterState) => {
       await timelineController.applyDisasterState(disasterState);
       timeline.setDisasterState(appState.disasterState);
+      updateLegendContent(legendElement)
     },
     onPolicyChange: async (policyName) => {
       await timelineController.applyPolicy(policyName);
@@ -78,6 +82,7 @@ export function initGeneralLayout(viewer, models) {
   row.appendChild(btnAddDistribution);
   container.appendChild(row);
   container.appendChild(createBuildingAgeLegend());
+  container.appendChild(legendElement);
   
   const editMenuBar = createEditMenuBar({ title: 'モデル編集' });
   editMenuBar.content.appendChild(timeline.element);

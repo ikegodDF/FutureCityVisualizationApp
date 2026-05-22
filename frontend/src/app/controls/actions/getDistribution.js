@@ -20,7 +20,7 @@ export const getDistribution = async (viewer) => {
 
         setDistribution(data.distribution)
         console.log(appState);
-        addDistributionModel(viewer, 'tsunami')
+        addDistributionModel(viewer, 'earthquake')
         return true;
     } catch (error) {
         console.error('calculate error:', error);
