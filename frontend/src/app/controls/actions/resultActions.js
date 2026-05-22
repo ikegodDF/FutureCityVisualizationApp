@@ -8,7 +8,7 @@ export const result = (viewer, models, outputContainer) => {
   for (const entity of viewer.entities.values) {
     if (modelNames.has(entity.name) && entity.show === true) visibleEntityCount += 1;
   }
-  const damagedBuildingCount = safeModels.filter((model) => model?.show === false).length;
+  const damagedBuildingCount = appState.result[appState.appliedPolicy][appState.year][appState.disasterState].filter((model) => model?.isDamage === true).length;
   const damageCountLabel = appState.disasterState === '地震発生後'
     ? '地震被害建物数'
     : appState.disasterState === '津波発生後'

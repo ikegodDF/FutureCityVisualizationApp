@@ -8,7 +8,7 @@ from scipy.spatial import KDTree
 
 from ..core.config import settings
 
-class ThunamiDataService:
+class TsunamiDataService:
     def __init__(self):
         # (lat, lon) の点群と、それに対応する浸水深の配列
         self._points: List[Tuple[float, float]] = []
@@ -18,7 +18,7 @@ class ThunamiDataService:
         self.depth_values: List[float] = []
 
     def ensure_loaded_from_directory(self) -> None:
-        file_path = os.path.join(settings.data_dir, settings.thunami_inundation_depth_file)
+        file_path = os.path.join(settings.data_dir, settings.tsunami_inundation_depth_file)
         self._load_from_path(file_path)
 
     def load_from_file(self, file_obj: Union[TextIOBase, bytes]) -> None:

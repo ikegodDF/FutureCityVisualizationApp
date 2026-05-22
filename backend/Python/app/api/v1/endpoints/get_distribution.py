@@ -5,13 +5,13 @@ from fastapi import APIRouter
 # ※型定義に合わせて適宜インポートを調整してください
 from app.models.schemas import DistributionRequest, DistributionResponse
 from app.services.seismic_data_service import SeismicDataService
-from app.services.thunami_data_service import ThunamiDataService
+from app.services.tsunami_data_service import TsunamiDataService
 
 router = APIRouter(prefix="/get_distribution")
 
 # サーバー起動時に1回だけインスタンス化（中身はまだ空）
 get_seismic_service = SeismicDataService()
-get_thunami_service = ThunamiDataService()
+get_tsunami_service = TsunamiDataService()
 
 @router.post("/", response_model=DistributionResponse)
 def get_distribution(request: DistributionRequest):
@@ -20,13 +20,13 @@ def get_distribution(request: DistributionRequest):
     
     # 2. データをロード（すでにロード済みの場合は内部キャッシュでスキップされます）
     get_seismic_service.ensure_loaded_from_directory()
-    get_thunami_service.ensure_loaded_from_directory()
+    get_tsunami_service.ensure_loaded_from_directory()
     
     # 3. フロント返却用のデータをそれぞれのサービスから取得
     # ※前回の「既存コードを汚さない追加関数」を呼び出しています
     export = {
         "seismic": get_seismic_service.get_distribution(),
-        "thunami": get_thunami_service.get_distribution()
+        "tsunami": get_tsunami_service.get_distribution()
     }
     
     # 4. かかった時間をミリ秒（ms）に変換

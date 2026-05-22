@@ -17,14 +17,15 @@ class Model3D(BaseModel):
     name: str
     year: Optional[int] = None
     show: bool
+    isDamage: Optional[bool] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     seismic_intensity: Optional[float] = None
-    thunami_inundation_depth: Optional[float] = None
+    tsunami_inundation_depth: Optional[float] = None
     BuildingDetail: Optional[dict] = None
     # 被害計算ができなかったかどうかを示すフラグ（フロントで黒表示などに使用）
     earthquake_uncomputable: Optional[bool] = None
-    thunami_uncomputable: Optional[bool] = None
+    tsunami_uncomputable: Optional[bool] = None
 
 class selectedRange(BaseModel):
     models: List[int]

@@ -123,9 +123,9 @@ class ComputeService:
                 else:
                     result = param
                 
-            elif method == "thunami_damage_assessment":
+            elif method == "tsunami_damage_assessment":
                 if param.show == True:
-                    result, victim_num = self._calculate_thunami_damage_assessment(param, missing_data_policy=missing_data_policy)
+                    result, victim_num = self._calculate_tsunami_damage_assessment(param, missing_data_policy=missing_data_policy)
                     victim_count += victim_num
                 else:
                     result = param
@@ -192,6 +192,7 @@ class ComputeService:
         else:
             if judgement < revival_probability:
                 param.show = True
+                param.isDamage = False
                 param.year = appStateYear
                 num = 1
         return param, num
@@ -250,6 +251,7 @@ class ComputeService:
         )
         if damage_rate > 0.5:
             param.show = False
+            param.isDamage = True
 
         building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
         people_num = building_detail.get("peopleNum", 0) if building_detail else 0
@@ -324,6 +326,7 @@ class ComputeService:
         # 被害判定
         if damage_rate[6] > 0.5:
             param.show = False
+            param.isDamage = True
         
         #各損傷度区間別の損失空間内人口の計算
 
@@ -417,7 +420,7 @@ class ComputeService:
             missing_data_policy=missing_data_policy,
         )
     
-    def _calculate_thunami_damage_assessment(
+    def _calculate_tsunami_damage_assessment(
         self,
         param: Model3D,
         *,
@@ -479,7 +482,7 @@ class ComputeService:
         judgementparam = 1
 
         building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
-        floodDepth = param.thunami_inundation_depth
+        floodDepth = param.tsunami_inundation_depth
         floors = building_detail.get("storeysAboveGround") if building_detail else None
         area = building_detail.get("buildingArea") if building_detail else None
         structureType = building_detail.get("buildingStructureType") if building_detail else None
@@ -487,7 +490,7 @@ class ComputeService:
         architecturalPeriod = param.year if param.year else None # 現状ロジック踏襲（必要なら将来年次から推定）
 
         # 計算不能フラグを一旦リセット（前回計算結果が残らないようにする）
-        param.thunami_uncomputable = False
+        param.tsunami_uncomputable = False
 
         if missing_data_policy == "strict":
             # 浸水深 + 建物詳細（階数/面積/構造/用途）が揃わない場合は計算しない
@@ -499,14 +502,14 @@ class ComputeService:
                 or purpose is None
             ):
                 # フロント側で「計算不能」を判定できるようフラグを立てる
-                param.thunami_uncomputable = True
-                param.thunami_inundation_depth = None
+                param.tsunami_uncomputable = True
+                param.tsunami_inundation_depth = None
                 return param, 0.0
         else:
             # fallback_fixed: 欠損があれば固定値で補完
             if floodDepth is None:
                 floodDepth = float(default_depth)
-                param.thunami_inundation_depth = float(default_depth)
+                param.tsunami_inundation_depth = float(default_depth)
             floors = int(floors) if floors is not None else int(default_floors)
             area = float(area) if area is not None else float(default_area)
             structureType = int(structureType) if structureType else int(default_structure_type)
@@ -543,13 +546,14 @@ class ComputeService:
         try:
             floodDepth_f = float(floodDepth)
         except (TypeError, ValueError):
-            param.thunami_inundation_depth = None if missing_data_policy == "strict" else float(default_depth)
+            param.tsunami_inundation_depth = None if missing_data_policy == "strict" else float(default_depth)
             return param, 0.0
 
         damageRate = 1/(1+math.exp( -(calculateparam["section"][judgementparam] + calculateparam["floodDepth"][judgementparam] * floodDepth_f + calculateparam["floors"][judgementparam] * floors + calculateparam["area"][judgementparam] * area + calculateparam[f"structureType{structureType}"][judgementparam] + calculateparam[f"architecturalPeriod{architecturalPeriod}"][judgementparam]  + calculateparam[f"purpose{purpose}"][judgementparam] )))
 
         if damageRate > 0.5:
             param.show = False
+            param.isDamage = True
 
         # 津波による人的被害は別手法で実装予定のため、ここでは合計に加算しない
         return param, 0.0

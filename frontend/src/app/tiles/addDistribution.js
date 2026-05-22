@@ -134,7 +134,7 @@ export const addDistributionModel = (viewer, mode) => {
         return false;
     }
 
-    const { seismic, thunami } = appState.distribution;
+    const { seismic, tsunami } = appState.distribution;
     
     // パフォーマンス向上のため、描画イベントを一時停止
     viewer.entities.suspendEvents();
@@ -179,12 +179,12 @@ export const addDistributionModel = (viewer, mode) => {
     // --------------------------------------------------
     // 🔥 【津波浸水域の3D高さ有描画】
     // --------------------------------------------------
-    if ((mode === 'tsunami' || mode === 'thunami') && thunami && thunami.length > 0) {
-        console.log(`⏳ 津波浸水域 (${thunami.length}件) のマッピングを開始...`);
+    if ((mode === 'tsunami' || mode === 'tsunami') && tsunami && tsunami.length > 0) {
+        console.log(`⏳ 津波浸水域 (${tsunami.length}件) のマッピングを開始...`);
         
-        thunami.forEach((item, index) => {
+        tsunami.forEach((item, index) => {
             if (index > 0 && index % 1000 === 0) {
-                console.log(` 👀 津波処理中... ${index}/${thunami.length} 件完了`);
+                console.log(` 👀 津波処理中... ${index}/${tsunami.length} 件完了`);
             }
             
             const lat = item.latitude;

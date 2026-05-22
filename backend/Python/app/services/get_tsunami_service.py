@@ -1,12 +1,12 @@
 import math
 from app.models.schemas import Model3D
-from app.services.thunami_data_service import ThunamiDataService
+from app.services.tsunami_data_service import TsunamiDataService
 from typing import List
 
-class GetThunamiService:
+class GetTsunamiService:
     def __init__(self):
-        self.thunami_data_service = ThunamiDataService()
-        self.thunami_data_service.ensure_loaded_from_directory()
+        self.tsunami_data_service = TsunamiDataService()
+        self.tsunami_data_service.ensure_loaded_from_directory()
     
     def get_depth(self, latitude: float, longitude: float) -> float:
         if self.tree is None:
@@ -15,7 +15,7 @@ class GetThunamiService:
         
 
     
-    def get_thunami_data(self, buildings: List[Model3D]) -> List[Model3D]:
+    def get_tsunami_data(self, buildings: List[Model3D]) -> List[Model3D]:
         """
         各建物に津波浸水深を付与する。
 
@@ -23,9 +23,9 @@ class GetThunamiService:
         という前提のため、ここでは欠損を 0.0 に正規化する。
         （missing_data_policy は後方互換のために残している）
         """
-        return self.get_thunami_data_with_policy(buildings)
+        return self.get_tsunami_data_with_policy(buildings)
 
-    def get_thunami_data_with_policy(
+    def get_tsunami_data_with_policy(
         self,
         buildings: List[Model3D],
         *,
@@ -45,13 +45,13 @@ class GetThunamiService:
             latitude = building.latitude
             longitude = building.longitude
             if latitude is None or longitude is None:
-                building.thunami_inundation_depth = 0.0
+                building.tsunami_inundation_depth = 0.0
                 continue
 
-            inundation_depth = self.thunami_data_service.get_inundation_depth(latitude, longitude)
+            inundation_depth = self.tsunami_data_service.get_inundation_depth(latitude, longitude)
             if inundation_depth is None or inundation_depth < 0 :
-                building.thunami_inundation_depth = 0.0
+                building.tsunami_inundation_depth = 0.0
             else:
-                building.thunami_inundation_depth = float(inundation_depth)
+                building.tsunami_inundation_depth = float(inundation_depth)
 
         return buildings

@@ -57,7 +57,7 @@ export const earthquakeDamageAssessment = async (viewer, models = [], disasterSt
 export const tsunamiDamageAssessment = async (viewer, models = [], disasterState) => {
     return runDamageAssessment(viewer, disasterState, {
         expectedAfterState: '津波発生後',
-        method: 'thunami_damage_assessment',
-        apiPath: '/api/v1/damage_prediction/thunami',
+        method: 'tsunami_damage_assessment',
+        apiPath: '/api/v1/damage_prediction/tsunami',
     });
 }

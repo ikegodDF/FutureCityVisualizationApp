@@ -86,9 +86,9 @@ export function initEditorLayout(viewer, models) {
     result(viewer, models, outputContainer);
   });
 
-  const btnThunamiDamageAssessment = document.createElement('button');
-  btnThunamiDamageAssessment.textContent = '津波被害予測';
-  btnThunamiDamageAssessment.addEventListener('click', async () => {
+  const btnTsunamiDamageAssessment = document.createElement('button');
+  btnTsunamiDamageAssessment.textContent = '津波被害予測';
+  btnTsunamiDamageAssessment.addEventListener('click', async () => {
     await tsunamiDamageAssessment(viewer, models, '津波発生後');
     result(viewer, models, outputContainer);
   });
@@ -107,7 +107,7 @@ export function initEditorLayout(viewer, models) {
     'break',
     btnAnalysis,
     btnEarthquakeDamageAssessment,
-    btnThunamiDamageAssessment,
+    btnTsunamiDamageAssessment,
   ];
 
   const createRow = () => {
