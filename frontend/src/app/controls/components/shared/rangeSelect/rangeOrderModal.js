@@ -77,9 +77,9 @@ export const openRangeOrderModal = ({ currentYear }) => new Promise((resolve) =>
     return button;
   };
 
-  row.appendChild(createOptionButton(1, '1: 範囲内建物を残す'));
-  row.appendChild(createOptionButton(2, '2: 範囲外建物を新築化'));
-  row.appendChild(createOptionButton(3, '3: continue'));
+  row.appendChild(createOptionButton(1, '1: 都市機能集約'));
+  row.appendChild(createOptionButton(2, '2: 範囲内建物を新築化'));
+  row.appendChild(createOptionButton(3, '3: 居住誘導'));
 
   const cancel = document.createElement('button');
   cancel.type = 'button';

@@ -154,6 +154,8 @@ class ComputeService:
 
         # 範囲設定による処理
         if order == 1:
+            if appStateYear - param.year > 50 and random.random() > 0.5:
+                param.year = appStateYear
             return param, num
 
         # yearがNoneのときはno_data扱い

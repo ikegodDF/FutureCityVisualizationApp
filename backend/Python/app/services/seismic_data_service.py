@@ -63,7 +63,8 @@ class SeismicDataService:
                     or row.get("MESHCODE")
                     or row.get("CODE")
                 )
-                si_value = row.get("SI") or row.get("si")
+                si_value = row.get("BI") or row.get("bi")
+                print(si_value)
 
                 if not meshcode or not si_value:
                     continue  # 空値や欠損がある行はスキップ
@@ -76,7 +77,7 @@ class SeismicDataService:
                 mesh_list.append(
                     {
                         "meshcode": self._normalize_mesh_code(meshcode),
-                        "BI": intensity,
+                        "SI": intensity,
                     }
                 )
 
@@ -109,7 +110,7 @@ class SeismicDataService:
                 or row.get("MESHCODE")
                 or row.get("CODE")
             )
-            intensity_raw = row.get("SI") or row.get("si")
+            intensity_raw = row.get("BI") or row.get("bi")
 
             if meshcode_raw is None or intensity_raw is None:
                 continue
