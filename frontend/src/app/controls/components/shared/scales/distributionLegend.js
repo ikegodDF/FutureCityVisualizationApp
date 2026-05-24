@@ -47,15 +47,15 @@ export function updateLegendContent(container) {
   if (appState.disasterState === "津波発生後") {
     title.textContent = '浸水深スケール';
     legendItems = [
-      {color:'#00FF00', label: '～0.01m' },
-      {color:'#33CC00', label: '0.01～0.3m' },
-      {color:'#66AA00', label: '0.3～1.0m' },
-      {color:'#999900', label: '1.0m～2.0m' },
-      {color:'#CC6600', label: '2.0～4.0m' },
-      {color:'#FF3300', label: '4.0～6.0m' },
-      {color:'#FF6600', label: '6.0～8.0m' },
-      {color:'#FF0000', label: '8.0～10.0m' },
-      {color:'#800000', label: '10.0m～' },
+      {color:'#A0F080', label: '～0.01m' },
+      {color:'#00D000', label: '0.01～0.3m' },
+      {color:'#1040FF', label: '0.3～1.0m' },
+      {color:'#FFFF00', label: '1.0m～2.0m' },
+      {color:'#FFD700', label: '2.0～4.0m' },
+      {color:'#FF9900', label: '4.0～6.0m' },
+      {color:'#FF3300', label: '6.0～8.0m' },
+      {color:'#99001A', label: '8.0～10.0m' },
+      {color:'#4A0010', label: '10.0m～' },
     ];
   }
 
