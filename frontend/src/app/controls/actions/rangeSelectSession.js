@@ -5,9 +5,9 @@ import {
   renderRangeSelectedList,
   setRangePanelStatus,
   updateRangeClearButtonVisibility as syncRangeClearButtonVisibility,
-} from '../components/shared/rangeSelect/rangeSelectPanel.js';
-import { openRangeOrderModal } from '../components/shared/rangeSelect/rangeOrderModal.js';
-import { twoDView } from '../../utils/camera.js';
+} from "../components/shared/rangeSelect/rangeSelectPanel.js";
+import { openRangeOrderModal } from "../components/shared/rangeSelect/rangeOrderModal.js";
+import { twoDView } from "../../utils/camera.js";
 import {
   Cartesian3,
   Color,
@@ -16,13 +16,13 @@ import {
   ScreenSpaceEventType,
   defined,
   Math as CesiumMath,
-} from 'cesium';
+} from "cesium";
 import {
   clearActiveDraftPolygon,
   getModelId,
   isPointInPolygon,
   rebuildPersistentRangePolygons,
-} from './rangeSelectVisualization.js';
+} from "./rangeSelectVisualization.js";
 import {
   appState,
   appendSelectedRange,
@@ -31,7 +31,7 @@ import {
   getSelectedRangesForYear,
   hasAnySelectedRanges,
   resetSelectedRanges,
-} from '../../state/appState.js';
+} from "../../state/appState.js";
 
 let activeRangeSession = null;
 let persistentRangeEntities = [];
@@ -41,7 +41,7 @@ const collectPendingSelectionIds = (pendingRanges = []) => {
   const idSet = new Set();
   pendingRanges.forEach((range) => {
     (range.models ?? []).forEach((modelId) => {
-      const id = typeof modelId === 'number' ? modelId : Number(modelId);
+      const id = typeof modelId === "number" ? modelId : Number(modelId);
       if (Number.isFinite(id)) idSet.add(id);
     });
   });
@@ -49,10 +49,12 @@ const collectPendingSelectionIds = (pendingRanges = []) => {
 };
 
 const setControlsVisibilityForRangeMode = (hidden, previousStates = []) => {
-  const controls = document.getElementById('uiControls');
+  const controls = document.getElementById("uiControls");
   if (!controls) return [];
 
-  const targets = Array.from(controls.querySelectorAll('button, .edit-menu-bar'));
+  const targets = Array.from(
+    controls.querySelectorAll("button, .edit-menu-bar"),
+  );
   if (!hidden) {
     previousStates.forEach(({ element, display }) => {
       if (element) element.style.display = display;
@@ -60,9 +62,12 @@ const setControlsVisibilityForRangeMode = (hidden, previousStates = []) => {
     return [];
   }
 
-  const states = targets.map((element) => ({ element, display: element.style.display }));
+  const states = targets.map((element) => ({
+    element,
+    display: element.style.display,
+  }));
   targets.forEach((element) => {
-    element.style.display = 'none';
+    element.style.display = "none";
   });
   return states;
 };
@@ -98,12 +103,14 @@ const clearSelectedRangeSettings = () => {
 
   if (activeRangeSession) {
     const { committedPolygonEntities } = activeRangeSession;
-    committedPolygonEntities.forEach((entity) => viewer.entities.remove(entity));
+    committedPolygonEntities.forEach((entity) =>
+      viewer.entities.remove(entity),
+    );
     activeRangeSession.committedPolygonEntities = [];
     clearActiveDraftPolygon(activeRangeSession);
     activeRangeSession.pendingRanges = [];
     renderRangeSelectedList([]);
-    setRangePanelStatus('選択済みの範囲設定を解除しました。');
+    setRangePanelStatus("選択済みの範囲設定を解除しました。");
   }
 
   updateRangeClearButtonVisibility();
@@ -137,7 +144,10 @@ const clearRangeSession = ({ preservePanel = false } = {}) => {
   const defaultHandler = viewer.cesiumWidget?.screenSpaceEventHandler;
   if (defaultHandler) {
     if (defaultLeftDoubleClickAction) {
-      defaultHandler.setInputAction(defaultLeftDoubleClickAction, ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+      defaultHandler.setInputAction(
+        defaultLeftDoubleClickAction,
+        ScreenSpaceEventType.LEFT_DOUBLE_CLICK,
+      );
     } else {
       defaultHandler.removeInputAction(ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
     }
@@ -156,14 +166,16 @@ const resetCurrentPolygon = () => {
   activeRangeSession.committedPolygonEntities = [];
   activeRangeSession.pendingRanges = [];
   renderRangeSelectedList([]);
-  setRangePanelStatus('このモード内で設定中の範囲をリセットしました。');
+  setRangePanelStatus("このモード内で設定中の範囲をリセットしました。");
 };
 
 const finalizeCurrentPolygon = async () => {
   if (!activeRangeSession) return;
   const { points, viewer } = activeRangeSession;
   if (points.length < 3) {
-    setRangePanelStatus('点が3つ未満のため確定できません。3点以上を選択してください。');
+    setRangePanelStatus(
+      "点が3つ未満のため確定できません。3点以上を選択してください。",
+    );
     return;
   }
 
@@ -177,17 +189,25 @@ const finalizeCurrentPolygon = async () => {
   const selectedModelIds = selectedEntities
     .map((entity) => getModelId(entity))
     .filter((id) => id != null);
-  const selectedOrderConfig = await openRangeOrderModal({ currentYear: appState.year });
+  const selectedOrderConfig = await openRangeOrderModal({
+    currentYear: appState.year,
+  });
   if (selectedOrderConfig == null) {
     clearActiveDraftPolygon(activeRangeSession);
-    setRangePanelStatus('処理の選択がキャンセルされました。現在の範囲は保存していません。');
+    setRangePanelStatus(
+      "処理の選択がキャンセルされました。現在の範囲は保存していません。",
+    );
     return;
   }
 
   const { order: selectedOrder, period } = selectedOrderConfig;
-  if (!period || Number(period.start) < appState.year || Number(period.end) < appState.year) {
+  if (
+    !period ||
+    Number(period.start) < appState.year ||
+    Number(period.end) < appState.year
+  ) {
     clearActiveDraftPolygon(activeRangeSession);
-    setRangePanelStatus('現在年より前の年代は選択できません。');
+    setRangePanelStatus("現在年より前の年代は選択できません。");
     return;
   }
 
@@ -198,24 +218,36 @@ const finalizeCurrentPolygon = async () => {
     period,
   });
 
-  activeRangeSession.pointEntities.forEach((entity) => viewer.entities.remove(entity));
+  activeRangeSession.pointEntities.forEach((entity) =>
+    viewer.entities.remove(entity),
+  );
   if (activeRangeSession.polygonEntity) {
-    activeRangeSession.polygonEntity.polygon.material = Color.CYAN.withAlpha(0.12);
-    activeRangeSession.polygonEntity.polygon.outlineColor = Color.CYAN.withAlpha(0.55);
-    activeRangeSession.committedPolygonEntities.push(activeRangeSession.polygonEntity);
+    activeRangeSession.polygonEntity.polygon.material =
+      Color.CYAN.withAlpha(0.12);
+    activeRangeSession.polygonEntity.polygon.outlineColor =
+      Color.CYAN.withAlpha(0.55);
+    activeRangeSession.committedPolygonEntities.push(
+      activeRangeSession.polygonEntity,
+    );
     activeRangeSession.polygonEntity = null;
   }
   activeRangeSession.pointEntities = [];
   activeRangeSession.points = [];
 
-  const pendingSelection = collectPendingSelectionIds(activeRangeSession.pendingRanges);
+  const pendingSelection = collectPendingSelectionIds(
+    activeRangeSession.pendingRanges,
+  );
   renderRangeSelectedList(pendingSelection);
-  setRangePanelStatus(`領域を追加しました。現在 ${activeRangeSession.pendingRanges.length} 領域、${pendingSelection.length} 件を一時保持しています。`);
+  setRangePanelStatus(
+    `領域を追加しました。現在 ${activeRangeSession.pendingRanges.length} 領域、${pendingSelection.length} 件を一時保持しています。`,
+  );
 };
 
 const finishRangeSelectionMode = () => {
   if (!activeRangeSession) return;
-  activeRangeSession.pendingRanges.forEach((range) => appendSelectedRange(range));
+  activeRangeSession.pendingRanges.forEach((range) =>
+    appendSelectedRange(range),
+  );
   rebuildPersistentRangePolygonsFromState(activeRangeSession.viewer);
   clearRangeSession();
   updateRangeClearButtonVisibility();
@@ -267,17 +299,26 @@ export const startRangeSelection = (viewer) => {
   };
 
   ensureRangeSelectPanel();
-  bindRangeSelectPanelActions({ onReset: resetCurrentPolygon, onFinish: finishRangeSelectionMode });
+  bindRangeSelectPanelActions({
+    onReset: resetCurrentPolygon,
+    onFinish: finishRangeSelectionMode,
+  });
   renderRangeSelectedList([]);
-  setRangePanelStatus('範囲選択モードです。地図をクリックして点を追加し、ダブルクリックで1領域を確定します。');
+  setRangePanelStatus(
+    "範囲選択モードです。地図をクリックして点を追加し、ダブルクリックで1領域を確定します。",
+  );
   updateRangeClearButtonVisibility();
 
   const addPointFromClick = (click) => {
     if (!activeRangeSession) return;
-    const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
+    const cartesian = viewer.camera.pickEllipsoid(
+      click.position,
+      viewer.scene.globe.ellipsoid,
+    );
     if (!defined(cartesian)) return;
 
-    const asCartographic = viewer.scene.globe.ellipsoid.cartesianToCartographic(cartesian);
+    const asCartographic =
+      viewer.scene.globe.ellipsoid.cartesianToCartographic(cartesian);
     const lon = CesiumMath.toDegrees(asCartographic.longitude);
     const lat = CesiumMath.toDegrees(asCartographic.latitude);
 
@@ -294,9 +335,14 @@ export const startRangeSelection = (viewer) => {
     activeRangeSession.pointEntities.push(pointEntity);
 
     const hierarchy = new PolygonHierarchy(
-      Cartesian3.fromDegreesArray(activeRangeSession.points.flatMap((p) => [p.lon, p.lat])),
+      Cartesian3.fromDegreesArray(
+        activeRangeSession.points.flatMap((p) => [p.lon, p.lat]),
+      ),
     );
-    if (!activeRangeSession.polygonEntity && activeRangeSession.points.length >= 3) {
+    if (
+      !activeRangeSession.polygonEntity &&
+      activeRangeSession.points.length >= 3
+    ) {
       activeRangeSession.polygonEntity = viewer.entities.add({
         polygon: {
           hierarchy,
@@ -310,12 +356,19 @@ export const startRangeSelection = (viewer) => {
       activeRangeSession.polygonEntity.polygon.hierarchy = hierarchy;
     }
 
-    setRangePanelStatus(`点を ${activeRangeSession.points.length} 個追加しました。`);
+    setRangePanelStatus(
+      `点を ${activeRangeSession.points.length} 個追加しました。`,
+    );
   };
 
   handler.setInputAction(addPointFromClick, ScreenSpaceEventType.LEFT_CLICK);
-  handler.setInputAction(finalizeCurrentPolygon, ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
+  handler.setInputAction(
+    finalizeCurrentPolygon,
+    ScreenSpaceEventType.LEFT_DOUBLE_CLICK,
+  );
 };
 
-export const getCommittedRangeSelection = () => getCommittedRangeSelectionFromState();
-export const getCommittedRangePolygon = () => getCommittedRangePolygonFromState();
+export const getCommittedRangeSelection = () =>
+  getCommittedRangeSelectionFromState();
+export const getCommittedRangePolygon = () =>
+  getCommittedRangePolygonFromState();
