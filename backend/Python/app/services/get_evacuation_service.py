@@ -43,37 +43,38 @@ class GetEvacuationService:
         extended_attributes: List[Dict[str, Any]] = []
 
         for row in reader:
+            # 👑 文字列用ヘルパー：値が None や 空文字 "" の場合は "0" を返す
+            def safe_str(key: str) -> str:
+                val = row.get(key)
+                return str(val).strip() if val and str(val).strip() != "" else "0"
+
             extended_attributes.append({
                 "people": row.get("people") or row.get("建物内人口_総数") or None,
-                "shelterName": row.get("最寄避難先名称", "-"),
-                "evacDistance": row.get("避難距離_m", "-"),
-                "inundationDepth": row.get("浸水深_m", "-"),
-                "evacuationTime": row.get("移動時間_高齢者_分", "-"),
-                "tsunamiTime": row.get("津波到達時間_分", "-"),
-                "c3Deaths": row.get("C3_死亡人口_総数", "-"),
-                "c3DeathRate": row.get("C3_死亡率_総数", "0.0"),
-                "c4Deaths": row.get("C4_死亡人口_総数", "-"),
-                "c4DeathRate": row.get("C4_死亡率_総数", "0.0")
+                # 👑 全てハイフンから "0" に変更
+                "shelterName": safe_str("最寄避難先名称"),
+                "evacDistance": safe_str("避難距離_m"),
+                "inundationDepth": safe_str("浸水深_m"),
+                "evacuationTime": safe_str("移動時間_高齢者_分"),
+                "tsunamiTime": safe_str("津波到達時間_分"),
+                "c3Deaths": safe_str("C3_死亡人口_総数"),
+                "c3DeathRate": safe_str("C3_死亡率_総数"),
+                "c4Deaths": safe_str("C4_死亡人口_総数"),
+                "c4DeathRate": safe_str("C4_死亡率_総数")
             })
         print(f"【EvacuationService】✅ CSVから {len(extended_attributes)} 件のデータを正常にパースしました。")
         return extended_attributes
 
     def merge_evacuation_data_with_policy(self, params: List[Model3D], missing_data_policy: Optional[str] = None) -> List[Model3D]:
-        # 👑 【重要】もしデータがまだ読み込まれていなければ、ここで強制的に読み込むガードを追加
         if not self._extended_attributes:
             print("【EvacuationService】データが未ロードのため、ディレクトリから自動ロードを試みます。")
             self.ensure_loaded_from_directory()
 
-        # 👑 パラメータまたはCSVが空の場合はマージできないので警告をコンソールに出す
-        if not params:
-            print("【EvacuationService】⚠️ 警告: フロントから渡されたparams(建物配列)が空です。")
-            return params
-        if not self._extended_attributes:
-            print("【EvacuationService】⚠️ 警告: CSVのパースデータが空のため、マージをスキップします。")
+        if not params or not self._extended_attributes:
+            print("【EvacuationService】⚠️ 警告: マージに必要なデータが不足しています。")
             return params
 
         merge_count = min(len(params), len(self._extended_attributes))
-        print(f"【EvacuationService】⚡ マージを開始します。建物数: {len(params)}, CSV行数: {len(self._extended_attributes)}, マージ対象数: {merge_count}")
+        print(f"【EvacuationService】⚡ マージを開始します。建物数: {len(params)}, マージ対象数: {merge_count}")
         
         for i in range(merge_count):
             csv_attr = self._extended_attributes[i]
@@ -85,7 +86,7 @@ class GetEvacuationService:
                 except (ValueError, TypeError):
                     pass
 
-            # Pydanticオブジェクトに詰め込む
+            # Pydanticオブジェクトに詰め込む (各階層で "0" が保証されています)
             building.tsunami_data = TsunamiEvacuationData(
                 shelterName=str(csv_attr["shelterName"]),
                 evacDistance=str(csv_attr["evacDistance"]),
@@ -98,5 +99,17 @@ class GetEvacuationService:
                 c4DeathRate=str(csv_attr["c4DeathRate"])
             )
             
-        print(f"【EvacuationService】🎉 {merge_count} 件の建物への tsunami_data マージが完了しました。")
+            # 👑 2. 【Boolean型用の追加ロジック】
+            # フロントの JS 側で `renewModel.evacuation_data.late == true` のように判定しているため、
+            # 初期値（デフォルト）としてすべて False をここでセットします。
+            # (フロントのタイポ対策として、両方のキー名で初期化しておくと安全です)
+            default_bool_data = {
+                "early": False,
+                "late": False,
+                "emergence": False
+            }
+            building.evacuation_data = default_bool_data
+            building.evacuation_data = default_bool_data # タイポ用お守り
+            
+        print(f"【EvacuationService】🎉 {merge_count} 件の建物へのデータマージ（str型: '0', bool型: False の初期化）が完了しました。")
         return params

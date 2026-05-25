@@ -89,7 +89,7 @@ export const renewTsunamiModels = (viewer, renewModels, casenum) => {
 
     // 🎨 2. 【避難が間に合わない建物だけを黒にする】
     // バックエンドのデータが存在し、かつ該当の避難タイプがTrue（避難不可能）の場合のみ黒に変更
-    const evacData = renewModel.evacuation_data || renewModel.evacation_data;
+    const evacData = renewModel.evacuation_data || renewModel.evacuation_data;
     if (
       evacData &&
       typeof evacData === "object" &&

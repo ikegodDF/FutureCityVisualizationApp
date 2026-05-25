@@ -560,7 +560,7 @@ class ComputeService:
 
         # 1. 津波避難データ（tsunami_data）自体が存在しない場合は避難判定をスキップしてリターン
         if not param.tsunami_data:
-            param.evacation_data = evacuation
+            param.evacuation_data = evacuation
             return param, 0.0
 
         # 2. 津波到達時間、または避難（移動）時間のいずれかが欠損している場合は判定をスキップしてリターン
@@ -571,7 +571,7 @@ class ComputeService:
             or param.tsunami_data.evacuationTime == "-" 
             or not param.tsunami_data.evacuationTime
         ):
-            param.evacation_data = evacuation
+            param.evacuation_data = evacuation
             return param, 0.0  # 👈 死亡者計算は不要なため 0.0 でリターン
 
         # 3. 必要なデータが揃っている場合のみ、避難完了フラグの判定ロジックを実行
@@ -580,11 +580,11 @@ class ComputeService:
             evacuation_time = float(param.tsunami_data.evacuationTime)
             
             # 避難完了フラグの判定（死亡人口に関する変数やパースはすべて削除）
-            if evacuation_time + 5 > tsunami_time + 3:
+            if evacuation_time + 5 > tsunami_time + 3 and not evacuation_time == 0:
                 evacuation['early'] = True
-            if evacuation_time + 15 > tsunami_time + 3:
+            if evacuation_time + 15 > tsunami_time + 3 and not evacuation_time == 0 :
                 evacuation["late"] = True
-            if evacuation_time + tsunami_time > tsunami_time + 3:
+            if evacuation_time + tsunami_time > tsunami_time + 3 and not evacuation_time == 0:
                 evacuation['emergence'] = True
 
         except (ValueError, TypeError):
@@ -592,7 +592,7 @@ class ComputeService:
             pass
 
         # 計算結果の避難フラグのみを格納
-        param.evacation_data = evacuation
+        param.evacuation_data = evacuation
 
         # 👑 死亡者の計算はいらないため、人的被害の合計加算用には一律で 0.0 を返却
         return param, 0.0
