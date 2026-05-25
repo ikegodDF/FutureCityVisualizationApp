@@ -109,7 +109,7 @@ class SeismicDataService:
                 or row.get("MESHCODE")
                 or row.get("CODE")
             )
-            intensity_raw = row.get("SI") or row.get("si")
+            intensity_raw = row.get("BI") or row.get("bi")
 
             if meshcode_raw is None or intensity_raw is None:
                 continue

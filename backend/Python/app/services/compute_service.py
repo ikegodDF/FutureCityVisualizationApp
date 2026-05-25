@@ -154,7 +154,10 @@ class ComputeService:
 
         # 範囲設定による処理
         if order == 1:
+            if appStateYear - param.year > 50 and random.random() > 0.5:
+                param.year = appStateYear
             return param, num
+            
 
         # yearがNoneのときはno_data扱い
         if param.year == 0:
@@ -185,6 +188,14 @@ class ComputeService:
         # revival_probability = generated_building_count / building_Num
 
         judgement = random.random()
+
+        if order == 3 and param.show == False:
+            if judgement < revival_probability * (2246/1897):
+                param.show = True
+                param.isDamage = False
+                param.year = appStateYear
+                num = 1
+            return param, num
         
         if param.show == True:
             if judgement < lost_probability:
