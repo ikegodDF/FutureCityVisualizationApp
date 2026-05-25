@@ -1,15 +1,23 @@
-# Pydanticスキーマ
-from pydantic import BaseModel, ConfigDict
-from typing import Optional, List, Literal
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Optional, List, Literal, Dict, Any
 from datetime import datetime
 
 class BuildingDetail(BaseModel):
-    buildingStructureType: int = None
-    storeysAboveGround: int = None
-    buildingArea: float = None
-    buildingUsage: int = None
-    architecturalPeriod: int = None
-    peopleNum: int = None
+    buildingStructureType: Optional[int] = None
+    storeysAboveGround: Optional[int] = None
+    buildingArea: Optional[float] = None
+    buildingUsage: Optional[int] = None
+    architecturalPeriod: Optional[int] = None
+    peopleNum: Optional[int] = None
+
+# 👑 【新設】フロントエンドのポップアップ(Description)に渡す津波避難属性用のスキーマ
+class TsunamiEvacuationData(BaseModel):
+    shelterName: str = Field(default="-", description="最寄避難先名称")
+    evacDistance: str = Field(default="-", description="避難距離_m")
+    inundationDepth: str = Field(default="-", description="浸水深_m")
+    tsunamiTime: str = Field(default="-", description="津波到達時間_分")
+    c1Deaths: str = Field(default="-", description="C3_死亡人口_総数")
+    c1DeathRate: str = Field(default="0.0", description="C3_死亡率_総数")
 
 class Model3D(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -23,15 +31,30 @@ class Model3D(BaseModel):
     seismic_intensity: Optional[float] = None
     tsunami_inundation_depth: Optional[float] = None
     BuildingDetail: Optional[dict] = None
-    # 被害計算ができなかったかどうかを示すフラグ（フロントで黒表示などに使用）
+    
+    # 👑 【追加】PythonのCSVマージやフロントで参照される人口・津波避難データ用フィールド
+    people: Optional[int] = None
+    tsunami_data: Optional[TsunamiEvacuationData] = None # 👈 これで辞書を入れても型安全に返却されます
+
+    # 被害計算ができなかったかどうかを示すフラグ
     earthquake_uncomputable: Optional[bool] = None
     tsunami_uncomputable: Optional[bool] = None
 
+# 👑 【詳細化】ポリゴンの座標構造
+class PolygonCoordinate(BaseModel):
+    lat: float
+    lon: float
+
+# 👑 【詳細化】施策の適用期間
+class PolicyPeriod(BaseModel):
+    start: int
+    end: int
+
 class selectedRange(BaseModel):
     models: List[int]
-    order: int
-    period: dict
-    polygon: List[dict]
+    order: str = Field(description="施策名（文字列に対応できるよう str に修正）") # 👈 int から str へ修正
+    period: PolicyPeriod
+    polygon: List[PolygonCoordinate]
 
 class ModelSearchQuery(BaseModel):
     min_lat: Optional[float] = None
@@ -46,9 +69,6 @@ class ComputeRequest(BaseModel):
     method: str
     appStateYear: int
     disasterState: str
-    # 欠損データの扱い方針（UIから選択）
-    # - strict: 欠損がある建物は計算しない（フロントで黒表示などに使える）
-    # - fallback_fixed: 欠損があっても固定値で補完して計算する（現状互換のデフォルト）
     missing_data_policy: Literal["strict", "fallback_fixed"] = "strict"
     params: List[Model3D]
     selectedRanges: Optional[List[selectedRange]] = []

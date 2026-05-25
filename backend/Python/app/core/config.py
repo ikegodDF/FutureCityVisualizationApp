@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     config_file: str = "config.json"
     seismic_intensity_file: str = "seismic/seismic_intensity.csv"
     tsunami_inundation_depth_file: str = "tsunami/tsunami_inundation_depth_mukawa.csv"
+    tsunami_evacuation_file: str = "tsunami/津波避難データ_豊浦.csv"
     # CORS
     cors_origins: str = "http://localhost:5173"
     
