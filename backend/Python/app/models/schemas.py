@@ -10,14 +10,18 @@ class BuildingDetail(BaseModel):
     architecturalPeriod: Optional[int] = None
     peopleNum: Optional[int] = None
 
-# 👑 【新設】フロントエンドのポップアップ(Description)に渡す津波避難属性用のスキーマ
 class TsunamiEvacuationData(BaseModel):
     shelterName: str = Field(default="-", description="最寄避難先名称")
     evacDistance: str = Field(default="-", description="避難距離_m")
     inundationDepth: str = Field(default="-", description="浸水深_m")
+    evacuationTime: str = Field(default="-", description="移動時間_高齢者_分")
     tsunamiTime: str = Field(default="-", description="津波到達時間_分")
-    c1Deaths: str = Field(default="-", description="C3_死亡人口_総数")
-    c1DeathRate: str = Field(default="0.0", description="C3_死亡率_総数")
+    
+    # 👑 C3, C4 の死亡人口・死亡率を追加
+    c3Deaths: str = Field(default="-", description="C3_死亡人口_総数")
+    c3DeathRate: str = Field(default="0.0", description="C3_死亡率_総数")
+    c4Deaths: str = Field(default="-", description="C4_死亡人口_総数")
+    c4DeathRate: str = Field(default="0.0", description="C4_死亡率_総数")
 
 class Model3D(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -35,6 +39,7 @@ class Model3D(BaseModel):
     # 👑 【追加】PythonのCSVマージやフロントで参照される人口・津波避難データ用フィールド
     people: Optional[int] = None
     tsunami_data: Optional[TsunamiEvacuationData] = None # 👈 これで辞書を入れても型安全に返却されます
+    evacuation_data: Optional[Dict] = None
 
     # 被害計算ができなかったかどうかを示すフラグ
     earthquake_uncomputable: Optional[bool] = None
