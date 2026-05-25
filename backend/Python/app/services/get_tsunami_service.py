@@ -53,5 +53,6 @@ class GetTsunamiService:
                 building.tsunami_inundation_depth = 0.0
             else:
                 building.tsunami_inundation_depth = float(inundation_depth)
+                print(building.tsunami_inundation_depth)
 
         return buildings

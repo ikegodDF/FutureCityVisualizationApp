@@ -578,13 +578,18 @@ class ComputeService:
         try:
             tsunami_time = float(param.tsunami_data.tsunamiTime)
             evacuation_time = float(param.tsunami_data.evacuationTime)
+            inundation_depth = param.tsunami_inundation_depth
+
+            if tsunami_time == 0 or inundation_depth == 0.0 or evacuation_time == 0:
+                param.evacuation_data = evacuation
+                return param, 0.0
             
             # 避難完了フラグの判定（死亡人口に関する変数やパースはすべて削除）
             if evacuation_time + 5 > tsunami_time + 3 and not evacuation_time == 0:
                 evacuation['early'] = True
             if evacuation_time + 15 > tsunami_time + 3 and not evacuation_time == 0 :
                 evacuation["late"] = True
-            if evacuation_time + tsunami_time > tsunami_time + 3 and not evacuation_time == 0:
+            if evacuation_time + tsunami_time > tsunami_time + 3:
                 evacuation['emergence'] = True
 
         except (ValueError, TypeError):
