@@ -1,0 +1,98 @@
+.region-selector-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 16, 32, 0.82);
+  backdrop-filter: blur(6px);
+}
+
+.region-selector-panel {
+  width: min(720px, calc(100vw - 32px));
+  padding: 32px;
+  border-radius: 16px;
+  background: #101828;
+  color: #f8fafc;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+}
+
+.region-selector-title {
+  margin: 0 0 8px;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.region-selector-description {
+  margin: 0 0 24px;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.region-selector-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.region-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.region-card:hover,
+.region-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: #38bdf8;
+  background: rgba(30, 41, 59, 0.95);
+  outline: none;
+}
+
+.region-card-label {
+  font-size: 1.125rem;
+  font-weight: 700;
+}
+
+.region-card-description {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.5;
+}
+
+.region-current-label {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 9000;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.82);
+  color: #e2e8f0;
+  font-size: 0.875rem;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.region-change-button {
+  margin-left: 8px;
+  padding: 2px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+  background: transparent;
+  color: #93c5fd;
+  cursor: pointer;
+}
+
+.region-change-button:hover {
+  background: rgba(59, 130, 246, 0.15);
+}

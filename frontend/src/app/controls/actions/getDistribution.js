@@ -1,9 +1,9 @@
 import {
     appState,
-    setDisasterState,
     setDistribution,
 } from "../../state/appState.js";
 import { addDistributionModel } from "../../tiles/addDistribution.js";
+import { buildComputePayload } from "../../region/regionState.js";
 
 export const getDistribution = async (viewer) => {
     if (appState.distribution !== null) {
@@ -15,7 +15,7 @@ export const getDistribution = async (viewer) => {
     const res = await fetch(`${apiBaseUrl}/api/v1/get_distribution/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify(buildComputePayload({})),
     });
     const data = await res.json();
     console.log("distribution response:", data);

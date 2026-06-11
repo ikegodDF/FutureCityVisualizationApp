@@ -1,4 +1,4 @@
-import { flyToMukawa } from '../../utils/camera.js';
+import { flyToRegion } from '../../utils/camera.js';
 import '../../../styles/ui.css';
 import { prediction, result, restore, analysis, earthquakeDamageAssessment, tsunamiDamageAssessment, startRangeSelection } from '../actions/index.js';
 import { openResultPicker } from '../components/editor/modal/resultPickerModal.js';
@@ -23,7 +23,7 @@ export function initEditorLayout(viewer, models) {
 
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
-  btnFlyJapan.addEventListener('click', () => flyToMukawa(viewer));
+  btnFlyJapan.addEventListener('click', () => flyToRegion(viewer));
 
   const btnAllReset = document.createElement('button');
   btnAllReset.textContent = '全リセット';

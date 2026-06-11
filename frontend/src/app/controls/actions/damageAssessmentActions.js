@@ -1,5 +1,6 @@
 import { appState, setDisasterState, setResult } from '../../state/appState.js';
 import { renew3DModels } from '../../tiles/renew3DModels.js';
+import { buildComputePayload } from '../../region/regionState.js';
 
 const runDamageAssessment = async (viewer, disasterState, { expectedAfterState, method, apiPath }) => {
   if (appState.disasterState !== '被災前') {
@@ -12,13 +13,13 @@ const runDamageAssessment = async (viewer, disasterState, { expectedAfterState, 
     setDisasterState('被災前');
   }
 
-  const payload = {
+  const payload = buildComputePayload({
     method,
     appStateYear: appState.year,
     disasterState,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
     selectedRanges: appState.selectedRanges[appState.year]
-  };
+  });
 
   setDisasterState(disasterState);
   if (appState.result[appState.appliedPolicy][appState.year][appState.disasterState]) {

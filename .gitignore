@@ -3,7 +3,8 @@ CESIUM_JS_REF_DOC.md
 CESIUM_ION_REST_API.md
 
 # Data files
-backend/Python/data/
+backend/Python/data/*
+!backend/Python/data/regions.json
 
 # Dependencies
 node_modules/

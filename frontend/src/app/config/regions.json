@@ -1,0 +1,48 @@
+{
+  "regions": [
+    {
+      "id": "mukawa",
+      "label": "むかわ町",
+      "description": "北海道勇払郡むかわ町",
+      "model": {
+        "loader": "gltf-oid",
+        "basePath": "/models/mukawa3D",
+        "count": 2441
+      },
+      "camera": {
+        "longitude": 141.925,
+        "latitude": 42.563,
+        "height": 500,
+        "twoDLongitude": 141.925,
+        "twoDLatitude": 42.575,
+        "twoDHeight": 1500
+      },
+      "data": {
+        "seismicFile": "seismic/seismic_intensity.csv",
+        "tsunamiFile": "tsunami/tsunami_inundation_depth_mukawa.csv"
+      }
+    },
+    {
+      "id": "toyoura",
+      "label": "豊浦町",
+      "description": "北海道虻田郡豊浦町",
+      "model": {
+        "loader": "gltf-oid",
+        "basePath": "/models/toyoura3D",
+        "count": 2441
+      },
+      "camera": {
+        "longitude": 140.6,
+        "latitude": 42.575,
+        "height": 500,
+        "twoDLongitude": 140.6,
+        "twoDLatitude": 42.575,
+        "twoDHeight": 1500
+      },
+      "data": {
+        "seismicFile": "seismic/seismic_intensity_kuromatsunai.csv",
+        "tsunamiFile": "tsunami/tsunami_inundation_depth_toyoura.csv"
+      }
+    }
+  ]
+}

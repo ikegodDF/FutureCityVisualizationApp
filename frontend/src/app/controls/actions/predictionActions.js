@@ -1,6 +1,7 @@
 import { appState, setDisasterState, setYear, setResult } from '../../state/appState.js';
 import { renew3DModels } from '../../tiles/renew3DModels.js';
 import { refreshRangeVisibility } from './rangeSelectActions.js';
+import { buildComputePayload } from '../../region/regionState.js';
 
 export const prediction = async (viewer, models = []) => {
   if (appState.disasterState !== '被災前') {
@@ -14,13 +15,13 @@ export const prediction = async (viewer, models = []) => {
     return true;
   }
 
-  const payload = {
+  const payload = buildComputePayload({
     method: 'building_retention_rate',
     appStateYear: appState.year + 5,
     disasterState: appState.disasterState,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
     selectedRanges: appState.selectedRanges[appState.year]
-  };
+  });
   
   console.log(payload);
 

@@ -1,4 +1,4 @@
-import { flyToMukawa } from '../../utils/camera.js';
+import { flyToRegion } from '../../utils/camera.js';
 import '../../../styles/ui.css';
 import { appState } from '../../state/appState.js';
 import { startRangeSelection } from '../actions/index.js';
@@ -26,7 +26,7 @@ export function initGeneralLayout(viewer, models) {
 
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
-  btnFlyJapan.addEventListener('click', () => flyToMukawa(viewer));
+  btnFlyJapan.addEventListener('click', () => flyToRegion(viewer));
 
   const btnRangeSelect = document.createElement('button');
   btnRangeSelect.textContent = '範囲選択して編集';

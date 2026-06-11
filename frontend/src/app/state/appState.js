@@ -5,6 +5,7 @@ export const appState = {
   year: new Date().getFullYear(),
   appliedPolicy: '施策なし',
   disasterState:"被災前",
+  region: null,
   result: {},
   totalVictims: {},
   selectedRanges: {},
@@ -21,6 +22,10 @@ export const setAppliedPolicy = (appliedPolicy) => {
 
 export const setDisasterState = (disasterState) => {
   appState.disasterState = disasterState;
+}
+
+export const setRegion = (region) => {
+  appState.region = region;
 }
 
 export const setResult = (result, totalVictims = 0) => {

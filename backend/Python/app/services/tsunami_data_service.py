@@ -71,6 +71,7 @@ class TsunamiDataService:
         CSVのヘッダは以下を想定:
           - lat, lon, SIN_MAX
         lat/lon は10mメッシュ中心点、SIN_MAX は浸水深。
+        備考: -9999.0 は欠損値なのでスキップ
         """
         points: List[Tuple[float, float]] = []
         depths: List[float] = []
@@ -85,6 +86,9 @@ class TsunamiDataService:
                 lon_val = float(longitude)
                 inundation_depth = float(inundation_depth_raw)
             except (ValueError, TypeError):
+                continue
+            # -9999 は欠損値なのでスキップ
+            if inundation_depth == -9999.0:
                 continue
             points.append((lat_val, lon_val))
             depths.append(inundation_depth)

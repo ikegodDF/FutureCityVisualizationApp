@@ -52,6 +52,10 @@ try:
 
     app.include_router(get_distribution_router, prefix="/api/v1", tags=["get_distribution"])
     print("Distribution router registered")
+
+    from app.api.v1.endpoints.regions import router as regions_router
+    app.include_router(regions_router, prefix="/api/v1", tags=["regions"])
+    print("Regions router registered")
     
     print("All routers registered successfully!")
 except Exception as e:

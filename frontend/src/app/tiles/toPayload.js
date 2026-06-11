@@ -1,5 +1,7 @@
 export const toPayload = (e) => {
-    const id = Number(String(e?.name ?? '').replace('model_', ''));
+    const id = typeof e?.id === 'number'
+        ? e.id
+        : Number(String(e?.name ?? '').replace('model_', ''));
     const [lat, lon] = e?.latlon ?? [];
     return {
         id,

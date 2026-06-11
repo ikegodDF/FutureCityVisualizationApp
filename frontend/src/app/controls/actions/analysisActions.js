@@ -1,12 +1,13 @@
 import { appState } from '../../state/appState.js';
 import { analysisExportJSON } from '../../utils/analysisExport.js';
+import { buildComputePayload } from '../../region/regionState.js';
 
 export const analysis = async (viewer, models = []) => {
-  const payload = {
+  const payload = buildComputePayload({
     method: 'building_retention_rate',
     appStateYear: appState.year,
     params: appState.result[appState.appliedPolicy][appState.year][appState.disasterState],
-  };
+  });
 
   try {
     const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';

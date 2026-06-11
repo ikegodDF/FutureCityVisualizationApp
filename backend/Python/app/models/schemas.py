@@ -46,6 +46,7 @@ class ComputeRequest(BaseModel):
     method: str
     appStateYear: int
     disasterState: str
+    region: str = "mukawa"
     # 欠損データの扱い方針（UIから選択）
     # - strict: 欠損がある建物は計算しない（フロントで黒表示などに使える）
     # - fallback_fixed: 欠損があっても固定値で補完して計算する（現状互換のデフォルト）
@@ -68,9 +69,14 @@ class AnalysisResponse(BaseModel):
     timestamp: datetime
 
 class DistributionRequest(BaseModel):
-    pass
+    region: str = "mukawa"
 
 class DistributionResponse(BaseModel):
     distribution: dict
+    duration_ms: float
+    timestamp: datetime
+
+class RegionListResponse(BaseModel):
+    regions: List[dict]
     duration_ms: float
     timestamp: datetime
