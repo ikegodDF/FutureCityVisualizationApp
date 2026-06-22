@@ -8,7 +8,7 @@ export function createViewer(containerId) {
     // 消す: CesiumデフォルトUI
     animation: false,
     timeline: false,
-    baseLayerPicker: false,
+    baseLayerPicker: true,
     geocoder: false,
     homeButton: false,
     sceneModePicker: false,

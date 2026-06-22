@@ -4,6 +4,7 @@ import {
   HeadingPitchRoll,
   Math as CesiumMath,
   ShadowMode,
+  HeightReference,
 } from "cesium";
 import { getModelColor } from "./getModelColor.js";
 import { createModelYear } from "./createModelDetails.js";
@@ -129,6 +130,7 @@ export async function addGltfModels(viewer, regionConfig) {
               uri: gltfPath,
               scale: 1,
               shadows: ShadowMode.DISABLED,
+              heightReference: HeightReference.CLAMP_TO_GROUND
             },
             year: year,
             isEstimatedYear,

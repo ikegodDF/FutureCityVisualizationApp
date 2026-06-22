@@ -12,6 +12,7 @@ import { promptRegionSelection } from './app/region/regionSelector.js';
 import { getActiveRegion } from './app/region/regionState.js';
 import { setInitialCamera } from './app/utils/camera.js';
 import { mountRegionBadge } from './app/region/regionBadge.js';
+import { Terrain, CesiumTerrainProvider } from 'cesium';
 
 window.CESIUM_BASE_URL = '/cesium';
 setupIon();
@@ -29,7 +30,15 @@ const viewer = (async function bootstrap() {
   const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
   viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
+  viewer.scene.setTerrain(
+    new Terrain(
+      CesiumTerrainProvider.fromIonAssetId(2767062),
+    ),
+  );
+
   const models = await addGltfModels(viewer, region);
+
+  viewer.scene.globe.depthTestAgainstTerrain = true;
 
   if (models.length > 0) {
     const target = models.find((m) => m.latitude != null && m.longitude != null);
