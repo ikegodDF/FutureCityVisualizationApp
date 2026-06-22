@@ -22,6 +22,7 @@ class Model3D(BaseModel):
     longitude: Optional[float] = None
     seismic_intensity: Optional[float] = None
     tsunami_inundation_depth: Optional[float] = None
+    tsunami_arrival_time: Optional[int] = None
     BuildingDetail: Optional[dict] = None
     # 被害計算ができなかったかどうかを示すフラグ（フロントで黒表示などに使用）
     earthquake_uncomputable: Optional[bool] = None
