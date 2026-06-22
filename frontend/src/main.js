@@ -40,17 +40,6 @@ const viewer = (async function bootstrap() {
 
   viewer.scene.globe.depthTestAgainstTerrain = true;
 
-  if (models.length > 0) {
-    const target = models.find((m) => m.latitude != null && m.longitude != null);
-    if (target) {
-      const { latitude, longitude } = target;
-      viewer.camera.setView({
-        destination: Cartesian3.fromDegrees(longitude, latitude, 500),
-        orientation: { heading: 0, pitch: -20 * CesiumMath.PI / 180, roll: 0 },
-      });
-    }
-  }
-
   setResult(models.map(toPayload));
   initUI(viewer, models);
   console.log('Region', getActiveRegion());
