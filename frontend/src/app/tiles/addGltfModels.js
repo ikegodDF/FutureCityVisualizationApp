@@ -98,9 +98,10 @@ export async function addGltfModels(viewer, regionConfig) {
           const data = await res.json();
 
           const attrs = data?.attributes ?? {};
-          const lat = attrs?.latitude;
-          const lon = attrs?.longitude;
-          const sourceYear = attrs?.sourceYear;
+          const lat = attrs?.latitude || attrs?.緯度;
+          const lon = attrs?.longitude || attrs?.経度;
+          const alt = attrs?.altitude || attrs?.高度;
+          const sourceYear = attrs?.sourceYear
           const isEstimatedYear = !sourceYear;
           const year = sourceYear || createModelYear();
           const buildingUsage = attrs?.usage ?? 1;
@@ -130,7 +131,7 @@ export async function addGltfModels(viewer, regionConfig) {
               uri: gltfPath,
               scale: 1,
               shadows: ShadowMode.DISABLED,
-              heightReference: HeightReference.CLAMP_TO_GROUND
+              // heightReference: HeightReference.CLAMP_TO_GROUND
             },
             year: year,
             isEstimatedYear,

@@ -7,7 +7,7 @@
       "model": {
         "loader": "gltf-oid",
         "basePath": "/models/mukawa3D",
-        "count": 2441
+        "count": 2246
       },
       "camera": {
         "longitude": 141.925,
