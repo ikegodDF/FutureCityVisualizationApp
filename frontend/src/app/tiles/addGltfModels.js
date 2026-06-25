@@ -104,11 +104,11 @@ export async function addGltfModels(viewer, regionConfig) {
           const sourceYear = attrs?.sourceYear || attrs?.築年度;
           const isEstimatedYear = !sourceYear;
           const year = sourceYear || createModelYear();
-          const buildingUsage = attrs?.usage ?? 1;
-          const buildingStructureType = attrs?.structure ?? 3;
-          const buildingArea = attrs?.area ?? 100;
-          const buildingHeight = attrs?.height ?? 7;
-          const storeysAboveGround = attrs?.above ?? 2;
+          const buildingUsage = attrs?.usage || 1;
+          const buildingStructureType = attrs?.structure || 3;
+          const buildingArea = attrs?.area || 100;
+          const buildingHeight = attrs?.height || 7;
+          const storeysAboveGround = attrs?.above || 2;
           const architecturalPeriod = attrs?.builtYear ?? attrs?.建築年_ ?? null;
           const peopleNum = parseInt(Math.random() * 10);
 

@@ -119,6 +119,7 @@ class TsunamiDataService:
             self.depth_values = []
             self.time_values = []
 
+
         return points, depths, times
 
     def get_distribution(self) -> List[dict]:

@@ -16,7 +16,6 @@ class GetTsunamiService:
         missing_data_policy: str = "fallback_fixed",
     ) -> List[Model3D]:
         tsunami_data_service = region_data_manager.get_tsunami_service(region)
-
         for building in buildings:
             if building.show is False:
                 continue
@@ -35,6 +34,8 @@ class GetTsunamiService:
                 building.tsunami_inundation_depth = 0.0
             else:
                 building.tsunami_inundation_depth = float(inundation_depth)
+                print(building.name)
+                print(building.tsunami_inundation_depth)
 
             arrival_time = tsunami_data_service.get_arrival_time(latitude, longitude)
             if arrival_time is None:
