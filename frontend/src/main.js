@@ -30,11 +30,11 @@ const viewer = (async function bootstrap() {
   const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
   viewer.clock.currentTime = JulianDate.fromDate(targetTime);
 
-  // viewer.scene.setTerrain(
-  //   new Terrain(
-  //     CesiumTerrainProvider.fromIonAssetId(2767062),
-  //   ),
-  // );
+  viewer.scene.setTerrain(
+    new Terrain(
+      CesiumTerrainProvider.fromIonAssetId(2767062),
+    ),
+  );
 
   const models = await addGltfModels(viewer, region);
 

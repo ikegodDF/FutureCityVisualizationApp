@@ -101,7 +101,7 @@ export async function addGltfModels(viewer, regionConfig) {
           const lat = attrs?.latitude || attrs?.緯度;
           const lon = attrs?.longitude || attrs?.経度;
           const alt = attrs?.altitude || attrs?.高度;
-          const sourceYear = attrs?.sourceYear
+          const sourceYear = attrs?.sourceYear || attrs?.築年度;
           const isEstimatedYear = !sourceYear;
           const year = sourceYear || createModelYear();
           const buildingUsage = attrs?.usage ?? 1;
@@ -116,7 +116,7 @@ export async function addGltfModels(viewer, regionConfig) {
 
           const modelColor = getModelColor(year);
 
-          const modelPosition = Cartesian3.fromDegrees(lon, lat, 0);
+          const modelPosition = Cartesian3.fromDegrees(lon, lat, alt );
           const modelOrientation = Transforms.headingPitchRollQuaternion(
             modelPosition,
             fixedHeadingPitchRoll,
@@ -138,6 +138,7 @@ export async function addGltfModels(viewer, regionConfig) {
             latlon: [lat, lon],
             latitude: lat,
             longitude: lon,
+            altitude: alt,
             buildingUsage,
             buildingStructureType,
             buildingArea,
