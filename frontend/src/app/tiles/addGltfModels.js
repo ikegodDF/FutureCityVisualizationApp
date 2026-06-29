@@ -116,7 +116,7 @@ export async function addGltfModels(viewer, regionConfig) {
 
           const modelColor = getModelColor(year);
 
-          const modelPosition = Cartesian3.fromDegrees(lon, lat, alt );
+          const modelPosition = Cartesian3.fromDegrees(lon, lat, alt + 33.7 );
           const modelOrientation = Transforms.headingPitchRollQuaternion(
             modelPosition,
             fixedHeadingPitchRoll,
