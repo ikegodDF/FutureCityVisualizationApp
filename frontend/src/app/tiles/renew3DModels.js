@@ -1,5 +1,5 @@
 import { ShadowMode } from "cesium";
-import { getModelColor } from "./getModelColor.js";
+import { getModelColor, getEscappeColor } from "./getModelColor.js";
 import { Color } from "cesium";
 import { appState } from "../state/appState.js";
 
@@ -84,19 +84,25 @@ export const renewTsunamiModels = (viewer, renewModels, casenum) => {
       entity.show = true;
     }
 
+    let color = getEscappeColor(
+      (renewModel.tsunami_data.tsunamiTime % 10) * 10,
+    );
+
+    // ランダムで間に合わなくする感じのやつ
+
     // 🎨 1. ベースの色を取得（デフォルトは元の年代の色）
-    let color = getModelColor(renewModel.year);
+    // let color = getModelColor(renewModel.year);
 
     // 🎨 2. 【避難が間に合わない建物だけを黒にする】
     // バックエンドのデータが存在し、かつ該当の避難タイプがTrue（避難不可能）の場合のみ黒に変更
-    const evacData = renewModel.evacuation_data || renewModel.evacuation_data;
-    if (
-      evacData &&
-      typeof evacData === "object" &&
-      evacData[evacuationType] == true
-    ) {
-      color = Color.BLACK.withAlpha(0.8); // 避難不可能な建物だけを黒に
-    }
+    // const evacData = renewModel.evacuation_data || renewModel.evacuation_data;
+    // if (
+    //   evacData &&
+    //   typeof evacData === "object" &&
+    //   evacData[evacuationType] == true
+    // ) {
+    //   color = Color.BLACK.withAlpha(0.8); // 避難不可能な建物だけを黒に
+    // }
 
     // 🎨 3. 計算不能な建物は年代色（または黒）を半透明にする（元の仕様通り）
     if (renewModel.earthquake_uncomputable || renewModel.thunami_uncomputable) {
