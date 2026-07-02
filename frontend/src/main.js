@@ -5,6 +5,7 @@ import { createViewer } from './app/viewer.js';
 import { initUI, outputContainer } from './app/controls/index.js';
 import { setupIon } from './app/services/ion.js';
 import { addGltfModels } from './app/tiles/addGltfModels.js';
+import { addRoad, findAndDrawMultipleRoutes, findAndDrawRoute} from './app/tiles/addRoad.js';
 import { result } from './app/controls/actions/index.js';
 import { appState, setRegion, setResult } from './app/state/appState.js';
 import { toPayload } from './app/tiles/toPayload.js';
@@ -26,6 +27,7 @@ const viewer = (async function bootstrap() {
   mountRegionBadge(async () => {
     window.location.reload();
   });
+  
 
   const targetTime = new Date(Date.UTC(2025, 0, 1, 0, 0, 0));
   viewer.clock.currentTime = JulianDate.fromDate(targetTime);
@@ -37,6 +39,10 @@ const viewer = (async function bootstrap() {
   );
 
   const models = await addGltfModels(viewer, region);
+  const road = await addRoad(viewer);
+  const buildingA_Position = Cartesian3.fromDegrees(140.724535,  42.585048); // 東京駅付近
+  const buildingB_Position = Cartesian3.fromDegrees(140.701832, 42.587170);
+  findAndDrawRoute(viewer, road, buildingA_Position, buildingB_Position);
 
   viewer.scene.globe.depthTestAgainstTerrain = true;
 
