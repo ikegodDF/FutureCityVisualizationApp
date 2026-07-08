@@ -1,5 +1,6 @@
 import { appState, setResult } from '../../state/appState.js';
 import { buildComputePayload } from '../../region/regionState.js';
+import { renew3DModels } from '../../tiles/renew3DModels.js';
 
 export const renewBuildingPopulation = async(viewer) => {
 
@@ -24,6 +25,7 @@ export const renewBuildingPopulation = async(viewer) => {
         const data = await res.json();
         console.log('calculate response:', data);
         setResult(data.result, data.total_victims ?? 0);
+        await renew3DModels(viewer, data.result);
         console.log(appState);
         return true;
       } catch (error) {

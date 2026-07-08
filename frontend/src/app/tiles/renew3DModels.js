@@ -1,14 +1,18 @@
 import { ShadowMode } from 'cesium';
 import { getModelColor } from './getModelColor.js';
+import { applyModelPayloadToEntity } from './modelDescription.js';
+
+const findRenewModel = (renewModels, entity) => (
+  renewModels.find((model) => model.name === entity.name)
+  ?? renewModels.find((model) => model.id === entity.id)
+);
 
 export const renew3DModels = async (viewer, renewModels) => {
     viewer.entities.values.forEach(entity => {
-        const renewModel = renewModels.find(model => model.name === entity.name);
+        const renewModel = findRenewModel(renewModels, entity);
         if (!renewModel) return;
 
-        // backend の結果に合わせて基本情報を同期
-        entity.year = renewModel.year;
-        entity.show = renewModel.show;
+        applyModelPayloadToEntity(entity, renewModel);
 
         // ベースの年代色
         let color = getModelColor(renewModel.year);
@@ -33,4 +37,4 @@ export const renew3DModels = async (viewer, renewModels) => {
         }
     });
     return renewModels;
-}
+};
