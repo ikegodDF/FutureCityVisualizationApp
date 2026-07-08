@@ -4,7 +4,6 @@ import {
   HeadingPitchRoll,
   Math as CesiumMath,
   ShadowMode,
-  HeightReference,
 } from "cesium";
 import { getModelColor } from "./getModelColor.js";
 import { createModelYear } from "./createModelDetails.js";
@@ -94,13 +93,16 @@ export async function addGltfModels(viewer, regionConfig) {
         const gltfPath = `${base}esriGeometryMultiPatch.glb`;
         try {
           const res = await fetch(jsonPath);
-          if (!res.ok) return null;
+          if (!res.ok) {
+            console.log(`${jsonPath} not found`);
+            return null;
+          }
           const data = await res.json();
 
           const attrs = data?.attributes ?? {};
           const lat = attrs?.latitude || attrs?.緯度;
           const lon = attrs?.longitude || attrs?.経度;
-          const alt = attrs?.altitude || attrs?.高度;
+          const alt = attrs?.altitude ?? attrs?.高度 ?? 0;
           const sourceYear = attrs?.sourceYear || attrs?.築年度;
           const isEstimatedYear = !sourceYear;
           const year = sourceYear || createModelYear();
@@ -109,14 +111,14 @@ export async function addGltfModels(viewer, regionConfig) {
           const buildingArea = attrs?.area || 100;
           const buildingHeight = attrs?.height || 7;
           const storeysAboveGround = attrs?.above || 2;
-          const architecturalPeriod = attrs?.builtYear ?? attrs?.建築年_ ?? null;
+          const architecturalPeriod = attrs?.builtYear ?? attrs?.建築年_ ?? 1;
           const buildingPopulation = 0;
 
           if (lat == null || lon == null) return null;
 
           const modelColor = getModelColor(year);
 
-          const modelPosition = Cartesian3.fromDegrees(lon, lat, alt + 33.7 );
+          const modelPosition = Cartesian3.fromDegrees(lon, lat, alt + 33.7);
           const modelOrientation = Transforms.headingPitchRollQuaternion(
             modelPosition,
             fixedHeadingPitchRoll,
@@ -131,7 +133,6 @@ export async function addGltfModels(viewer, regionConfig) {
               uri: gltfPath,
               scale: 1,
               shadows: ShadowMode.DISABLED,
-              // heightReference: HeightReference.CLAMP_TO_GROUND
             },
             year: year,
             isEstimatedYear,
@@ -163,6 +164,7 @@ export async function addGltfModels(viewer, regionConfig) {
           model.model.color = modelColor;
           return model;
         } catch {
+          console.log(`${jsonPath} not found`);
           return null;
         }
       })();
