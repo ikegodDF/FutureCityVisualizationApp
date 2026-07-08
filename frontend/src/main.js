@@ -5,6 +5,7 @@ import { createViewer } from './app/viewer.js';
 import { initUI, outputContainer } from './app/controls/index.js';
 import { setupIon } from './app/services/ion.js';
 import { addGltfModels } from './app/tiles/addGltfModels.js';
+import { addPopulationMesh } from './app/tiles/addPopulationMesh.js';
 import { result } from './app/controls/actions/index.js';
 import { appState, setRegion, setResult } from './app/state/appState.js';
 import { toPayload } from './app/tiles/toPayload.js';
@@ -37,7 +38,7 @@ const viewer = (async function bootstrap() {
   );
 
   const models = await addGltfModels(viewer, region);
-
+  await addPopulationMesh(viewer, region);
   viewer.scene.globe.depthTestAgainstTerrain = true;
 
   setResult(models.map(toPayload));

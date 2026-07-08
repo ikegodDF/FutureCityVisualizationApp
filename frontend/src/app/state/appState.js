@@ -9,7 +9,8 @@ export const appState = {
   result: {},
   totalVictims: {},
   selectedRanges: {},
-  distribution: null
+  distribution: null,
+  population: null,
 };
 
 export const setYear = (year) => {
@@ -42,6 +43,10 @@ export const setResult = (result, totalVictims = 0) => {
 
 export const setDistribution = (distribution) => {
   appState.distribution = distribution;
+}
+
+export const setPopulation = (population) => {
+  appState.population = population;
 }
 
 export const resetResult = (viewer) => {

@@ -9,6 +9,9 @@
         "basePath": "/models/mukawa3D",
         "count": 2246
       },
+      "populationMesh": {
+        "meshPath": "/mukawa_meshPopulation.json"
+      },
       "camera": {
         "longitude": 141.925,
         "latitude": 42.563,
@@ -31,6 +34,9 @@
         "basePath": "/models/toyoura3D_terrain",
         "count": 3686
       },
+      "populationMesh": {
+        "meshPath": "/toyoura_meshPopulation.json"
+      },
       "camera": {
         "longitude": 140.715,
         "latitude": 42.567,
@@ -52,6 +58,9 @@
         "loader": "gltf-oid",
         "basePath": "/models/toyoura3D_terrain",
         "count": 3686
+      },
+      "populationMesh": {
+        "meshPath": "/taiki_meshPopulation.json"
       },
       "camera": {
         "longitude": 140.6,
