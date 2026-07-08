@@ -14,7 +14,7 @@ export const renew3DModels = async (viewer, renewModels) => {
         let color = getModelColor(renewModel.year);
 
         // 計算不能な建物は年代色を半透明にする
-        if (renewModel.earthquake_uncomputable || renewModel.thunami_uncomputable) {
+        if (renewModel.earthquake_uncomputable || renewModel.tsunami_uncomputable) {
             color = color.withAlpha(0.3);
         }
 

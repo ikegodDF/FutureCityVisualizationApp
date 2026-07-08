@@ -8,6 +8,7 @@ from scipy.stats import norm, truncnorm
 from ..models.schemas import ComputeRequest, ComputeResponse, Model3D, selectedRange, BuildingPopulationRequest
 from .seismic_data_service import SeismicDataService
 
+
 class ComputeService:
     def __init__(self):
         self.cache = {}  # 簡単なメモリキャッシュ
@@ -255,8 +256,8 @@ class ComputeService:
             param.show = False
             param.isDamage = True
 
-        building_detail = param.buildingDetail if isinstance(param.buildingDetail, dict) else None
-        people_num = building_detail.get("buildingPopulation", 0) if building_detail else 0
+        detail = param.buildingDetail
+        people_num = detail.buildingPopulation if detail and detail.buildingPopulation is not None else 0
         victim_num = people_num * damage_rate * 0.177
 
         return param, victim_num
@@ -344,7 +345,8 @@ class ComputeService:
             else:
                 damage_rate_delta[x] = damage_rate[x-1] - damage_rate[x]
 
-            people_num = param.buildingDetail.get('buildingPopulation', 0) if isinstance(param.buildingDetail, dict) else 0
+            detail = param.buildingDetail
+            people_num = detail.buildingPopulation if detail and detail.buildingPopulation is not None else 0
             target_people[x] = people_num * damage_rate_delta[x]
             inside_people[x] = target_people[x] * PARAM_W[x]
             victim_num += inside_people[x]
@@ -361,11 +363,8 @@ class ComputeService:
         default_intensity: float = 0,
     ) -> tuple[Model3D, float]:
         """地震被害判定。構造種別に応じて木造用／非木造用の関数へ振り分ける。"""
-        # BuildingDetail は dict 想定（schemas.py で Optional[dict]）
-        building_detail = param.buildingDetail if isinstance(param.buildingDetail, dict) else None
-        structure_type = None
-        if building_detail is not None:
-            structure_type = building_detail.get("buildingStructureType")
+        detail = param.buildingDetail
+        structure_type = detail.buildingStructureType if detail else None
 
         # 計算不能フラグを一旦リセット（前回計算結果が残らないようにする）
         param.earthquake_uncomputable = False
@@ -373,7 +372,7 @@ class ComputeService:
         # strict: 必要情報が欠けている建物は「計算不能」として扱う（showは変更しない）
         if missing_data_policy == "strict":
             # 震度 + 建築年 + 構造種別が揃わない場合は計算しない
-            if param.seismic_intensity is None or param.year is None or not structure_type:
+            if param.seismic_intensity is None or param.year is None or structure_type is None:
                 # フロント側で「計算不能」を判定できるようフラグを立てる
                 param.earthquake_uncomputable = True
                 # 震度は欠損状態に寄せる（既存仕様を維持）
@@ -483,12 +482,12 @@ class ComputeService:
 
         judgementparam = 1
 
-        building_detail = param.buildingDetail if isinstance(param.buildingDetail, dict) else None
+        detail = param.buildingDetail
         floodDepth = param.tsunami_inundation_depth
-        floors = building_detail.get("storeysAboveGround") if building_detail else None
-        area = building_detail.get("buildingArea") if building_detail else None
-        structureType = building_detail.get("buildingStructureType") if building_detail else None
-        purpose = building_detail.get("buildingUsage") if building_detail else None
+        floors = detail.storeysAboveGround if detail else None
+        area = detail.buildingArea if detail else None
+        structureType = detail.buildingStructureType if detail else None
+        purpose = detail.buildingUsage if detail else None
         architecturalPeriod = param.year if param.year else None # 現状ロジック踏襲（必要なら将来年次から推定）
 
         # 計算不能フラグを一旦リセット（前回計算結果が残らないようにする）
@@ -500,7 +499,7 @@ class ComputeService:
                 floodDepth is None
                 or floors is None
                 or area is None
-                or not structureType
+                or structureType is None
                 or purpose is None
             ):
                 # フロント側で「計算不能」を判定できるようフラグを立てる
@@ -525,9 +524,9 @@ class ComputeService:
 
         if architecturalPeriod is None:
             if structureType == 3:
-                architecturalPeriod = building_detail.get("architecturalPeriod")
+                architecturalPeriod = detail.architecturalPeriod if detail else None
             else:
-                architecturalPeriod = building_detail.get("architecturalPeriod") + 2
+                architecturalPeriod = (detail.architecturalPeriod if detail and detail.architecturalPeriod is not None else 0) + 2
         elif architecturalPeriod < 1952:
             architecturalPeriod = 1
         elif architecturalPeriod < 1962:
