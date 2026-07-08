@@ -9,7 +9,7 @@ import {
 import { setPopulation } from "../state/appState";
 
 
-export async function addPopulationMesh(viewer, regionConfig) {
+export const addPopulationMesh = async(viewer, regionConfig) =>  {
     console.log(regionConfig)
 
     const basePath = "/populationMesh";
@@ -21,4 +21,5 @@ export async function addPopulationMesh(viewer, regionConfig) {
     const meshData = await populationMesh.json();
 
     setPopulation(meshData);
+
 }

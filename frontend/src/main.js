@@ -14,6 +14,7 @@ import { getActiveRegion } from './app/region/regionState.js';
 import { setInitialCamera } from './app/utils/camera.js';
 import { mountRegionBadge } from './app/region/regionBadge.js';
 import { Terrain, CesiumTerrainProvider } from 'cesium';
+import { renewBuildingPopulation } from './app/controls/actions/renewBuildingPopulationAction.js';
 
 window.CESIUM_BASE_URL = '/cesium';
 setupIon();
@@ -37,11 +38,12 @@ const viewer = (async function bootstrap() {
     ),
   );
 
-  const models = await addGltfModels(viewer, region);
   await addPopulationMesh(viewer, region);
+  const models = await addGltfModels(viewer, region);
   viewer.scene.globe.depthTestAgainstTerrain = true;
 
   setResult(models.map(toPayload));
+  await renewBuildingPopulation(viewer);
   initUI(viewer, models);
   console.log('Region', getActiveRegion());
   console.log('Models', models);

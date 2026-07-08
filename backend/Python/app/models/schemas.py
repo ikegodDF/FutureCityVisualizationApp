@@ -9,7 +9,8 @@ class BuildingDetail(BaseModel):
     buildingArea: float = None
     buildingUsage: int = None
     architecturalPeriod: int = None
-    peopleNum: int = None
+    buildingPopulation: int = None
+
 
 class Model3D(BaseModel):
     model_config = ConfigDict(extra="allow")
@@ -23,7 +24,7 @@ class Model3D(BaseModel):
     seismic_intensity: Optional[float] = None
     tsunami_inundation_depth: Optional[float] = None
     tsunami_arrival_time: Optional[int] = None
-    BuildingDetail: Optional[dict] = None
+    buildingDetail: Optional[BuildingDetail] = None
     # 被害計算ができなかったかどうかを示すフラグ（フロントで黒表示などに使用）
     earthquake_uncomputable: Optional[bool] = None
     tsunami_uncomputable: Optional[bool] = None
@@ -76,6 +77,9 @@ class DistributionResponse(BaseModel):
     distribution: dict
     duration_ms: float
     timestamp: datetime
+
+class BuildingPopulationRequest(ComputeRequest):
+    population: dict
 
 class RegionListResponse(BaseModel):
     regions: List[dict]

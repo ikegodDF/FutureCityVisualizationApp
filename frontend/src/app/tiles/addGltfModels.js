@@ -30,7 +30,7 @@ const createModelDescription = ({
   buildingHeight,
   storeysAboveGround,
   architecturalPeriod,
-  peopleNum,
+  buildingPopulation,
 }) => {
   const yearText = isEstimatedYear
     ? `${displayValue(year)} (推定)`
@@ -66,7 +66,7 @@ const createModelDescription = ({
     displayValue(storeysAboveGround) +
     " 階<br>" +
     "人数: " +
-    displayValue(peopleNum) +
+    displayValue(buildingPopulation) +
     " 人<br>"
   );
 };
@@ -110,7 +110,7 @@ export async function addGltfModels(viewer, regionConfig) {
           const buildingHeight = attrs?.height || 7;
           const storeysAboveGround = attrs?.above || 2;
           const architecturalPeriod = attrs?.builtYear ?? attrs?.建築年_ ?? null;
-          const peopleNum = parseInt(Math.random() * 10);
+          const buildingPopulation = 0;
 
           if (lat == null || lon == null) return null;
 
@@ -145,7 +145,7 @@ export async function addGltfModels(viewer, regionConfig) {
             buildingHeight,
             storeysAboveGround,
             architecturalPeriod,
-            peopleNum,
+            buildingPopulation,
             description: createModelDescription({
               lat,
               lon,
@@ -157,7 +157,7 @@ export async function addGltfModels(viewer, regionConfig) {
               buildingHeight,
               storeysAboveGround,
               architecturalPeriod,
-              peopleNum,
+              buildingPopulation,
             }),
           });
           model.model.color = modelColor;

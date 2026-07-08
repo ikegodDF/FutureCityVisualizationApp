@@ -5,7 +5,7 @@ import math
 import random
 import numpy as np
 from scipy.stats import norm, truncnorm
-from ..models.schemas import ComputeRequest, ComputeResponse, Model3D, selectedRange
+from ..models.schemas import ComputeRequest, ComputeResponse, Model3D, selectedRange, BuildingPopulationRequest
 from .seismic_data_service import SeismicDataService
 
 class ComputeService:
@@ -255,8 +255,8 @@ class ComputeService:
             param.show = False
             param.isDamage = True
 
-        building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
-        people_num = building_detail.get("peopleNum", 0) if building_detail else 0
+        building_detail = param.buildingDetail if isinstance(param.buildingDetail, dict) else None
+        people_num = building_detail.get("buildingPopulation", 0) if building_detail else 0
         victim_num = people_num * damage_rate * 0.177
 
         return param, victim_num
@@ -344,7 +344,7 @@ class ComputeService:
             else:
                 damage_rate_delta[x] = damage_rate[x-1] - damage_rate[x]
 
-            people_num = param.BuildingDetail.get('peopleNum', 0) if isinstance(param.BuildingDetail, dict) else 0
+            people_num = param.buildingDetail.get('buildingPopulation', 0) if isinstance(param.buildingDetail, dict) else 0
             target_people[x] = people_num * damage_rate_delta[x]
             inside_people[x] = target_people[x] * PARAM_W[x]
             victim_num += inside_people[x]
@@ -362,7 +362,7 @@ class ComputeService:
     ) -> tuple[Model3D, float]:
         """地震被害判定。構造種別に応じて木造用／非木造用の関数へ振り分ける。"""
         # BuildingDetail は dict 想定（schemas.py で Optional[dict]）
-        building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
+        building_detail = param.buildingDetail if isinstance(param.buildingDetail, dict) else None
         structure_type = None
         if building_detail is not None:
             structure_type = building_detail.get("buildingStructureType")
@@ -483,7 +483,7 @@ class ComputeService:
 
         judgementparam = 1
 
-        building_detail = param.BuildingDetail if isinstance(param.BuildingDetail, dict) else None
+        building_detail = param.buildingDetail if isinstance(param.buildingDetail, dict) else None
         floodDepth = param.tsunami_inundation_depth
         floors = building_detail.get("storeysAboveGround") if building_detail else None
         area = building_detail.get("buildingArea") if building_detail else None
@@ -558,3 +558,60 @@ class ComputeService:
 
         # 津波による人的被害は別手法で実装予定のため、ここでは合計に加算しない
         return param, 0.0
+
+    def building_population(self, request: BuildingPopulationRequest) -> ComputeResponse:
+        """計算リクエストを処理"""
+        start_time = time.time()
+        
+        # 実際の計算
+        result = self._calculate_building_population(
+            request.params,
+            request.appStateYear,
+            request.selectedRanges or [],
+            request.population,
+        )
+        
+        duration_ms = (time.time() - start_time) * 1000
+
+        return ComputeResponse(
+            result=result,
+            duration_ms=duration_ms,
+            timestamp=datetime.now()
+        )
+
+    from typing import List
+
+    def _calculate_building_population(self, params: List[Model3D], appStateYear: int, selectedRanges: List[selectedRange], population: dict) -> List[Model3D]:
+    
+        for target_mesh in population.values():
+            target_population = target_mesh[str(appStateYear)]
+
+            active_buildings = []
+            total_area = 0
+
+            for building_id in target_mesh["buildings"]:
+                idx = int(building_id) - 1
+            
+                if idx < 0 or idx >= len(params):
+                    print(f"建物ID {building_id} に対応する要素が params にありません")
+                    continue
+                
+                building = params[idx]
+
+                if building is None:
+                    print("建物ない")
+                    continue
+
+                if building.show:
+
+                    if building.buildingDetail is None:
+                        print(f"建物ID {building_id} は buildingDetail が空のためスキップします")
+                        continue
+                    active_buildings.append(building)
+                    total_area += building.buildingDetail.buildingArea
+            
+            if total_area == 0:
+                continue
+            for target_building in active_buildings:
+                target_building.buildingDetail.buildingPopulation = int(target_population["total"] * (target_building.buildingDetail.buildingArea / total_area))
+        return params
