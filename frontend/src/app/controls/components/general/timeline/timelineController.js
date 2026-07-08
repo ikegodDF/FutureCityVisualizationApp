@@ -1,4 +1,4 @@
-import { prediction, restore, result, earthquakeDamageAssessment, tsunamiDamageAssessment } from '../../../actions/index.js';
+import { prediction, restore, result, earthquakeDamageAssessment, tsunamiDamageAssessment, renewBuildingPopulation } from '../../../actions/index.js';
 import { appState, setAppliedPolicy, setDisasterState } from '../../../../state/appState.js';
 import { renew3DModels } from '../../../../tiles/renew3DModels.js';
 
@@ -31,6 +31,7 @@ export const createTimelineController = ({
 
     while (appState.year < normalizedYear) {
       const ok = await prediction(viewer, models);
+      await renewBuildingPopulation(viewer);
       if (!ok) {
         console.warn('prediction failed while moving to year', normalizedYear, 'current year', appState.year);
         break;
