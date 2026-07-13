@@ -102,17 +102,6 @@ class ComputeService:
         print("建物数乱数", generated_building_count)
         new_building_Num = 0
         victim_count = 0
-
-        visivle_building_count = 0
-        invisible_building_count = 0
-        for param in params:
-            if param.show == True:
-                visivle_building_count += 1
-            else:
-                invisible_building_count += 1
-        
-        building_count = {"visible": visivle_building_count, "invisible": invisible_building_count}
-
         # 範囲フラグを整形化
         id_dict = {}
         for range in selectedRanges:
@@ -122,26 +111,35 @@ class ComputeService:
             for id in range.models:
                 id_dict[id] = order
 
-        for param in params:
-            if method == "building_retention_rate":
+        if method == "building_retention_rate":
+            building_count = {"visible": 0, "invisible": 0}
+            for param in params:
+                if param.show == True:
+                    building_count["visible"] += 1
+                else:
+                    building_count["invisible"] += 1
+            
+            for param in params:
                 order = id_dict.get(param.id)
                 result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count, order, building_count)
                 new_building_Num += num
-            elif method == "earthquake_damage_assessment":
+                results.append(result)
+        elif method == "earthquake_damage_assessment":
+            for param in params:
                 if param.show == True:
                     result, victim_num = self._calculate_earthquake_damage_assessment(param, missing_data_policy=missing_data_policy)
                     victim_count += victim_num
                 else:
                     result = param
-                
-            elif method == "tsunami_damage_assessment":
+                results.append(result)
+        elif method == "tsunami_damage_assessment":
+            for param in params:
                 if param.show == True:
                     result, victim_num = self._calculate_tsunami_damage_assessment(param, missing_data_policy=missing_data_policy)
                     victim_count += victim_num
                 else:
                     result = param
-
-            results.append(result)
+                results.append(result)
             
         print("増えた建物数", new_building_Num)
         print("被災者", victim_count)
@@ -190,8 +188,9 @@ class ComputeService:
                 building_AgeType = "over_46"
 
 
+
         lost_probability = calculateparam_age[building_AgeType][0]
-        revival_probability = calculateparam_age[building_AgeType][1] * (building_count["visible"] / building_count["invisible"]) 
+        revival_probability = calculateparam_age[building_AgeType][1] * (building_count["visible"] / (building_count["invisible"] + 0.0001 )) 
 
 
         # 特定範囲数からランダムで復活
