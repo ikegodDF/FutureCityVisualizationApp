@@ -102,7 +102,17 @@ class ComputeService:
         print("建物数乱数", generated_building_count)
         new_building_Num = 0
         victim_count = 0
+
+        visivle_building_count = 0
+        invisible_building_count = 0
+        for param in params:
+            if param.show == True:
+                visivle_building_count += 1
+            else:
+                invisible_building_count += 1
         
+        building_count = {"visible": visivle_building_count, "invisible": invisible_building_count}
+
         # 範囲フラグを整形化
         id_dict = {}
         for range in selectedRanges:
@@ -115,7 +125,7 @@ class ComputeService:
         for param in params:
             if method == "building_retention_rate":
                 order = id_dict.get(param.id)
-                result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count, order)
+                result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count, order, building_count)
                 new_building_Num += num
             elif method == "earthquake_damage_assessment":
                 if param.show == True:
@@ -137,7 +147,7 @@ class ComputeService:
         print("被災者", victim_count)
         return results, victim_count
     
-    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, building_Num: int, generated_building_count: int, order: Optional[int]) -> Model3D:
+    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, building_Num: int, generated_building_count: int, order: Optional[int], building_count: Dict[str, int]) -> Model3D:
         """建物存続確率分析"""
         # 築年齢別建物の確率
         calculateparam_age: Dict[str, List[float]] = {
@@ -181,7 +191,7 @@ class ComputeService:
 
 
         lost_probability = calculateparam_age[building_AgeType][0]
-        revival_probability = calculateparam_age[building_AgeType][1]
+        revival_probability = calculateparam_age[building_AgeType][1] * (building_count["visible"] / building_count["invisible"]) 
 
 
         # 特定範囲数からランダムで復活
