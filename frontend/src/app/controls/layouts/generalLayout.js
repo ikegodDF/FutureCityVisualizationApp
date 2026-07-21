@@ -8,6 +8,7 @@ import { createTimelineController, TIMELINE_MAX_YEARS, TIMELINE_STEP_YEARS } fro
 import { createEditMenuBar } from '../components/general/editMenu/editMenuBar.js';
 import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
 import { createDistributionLegend, updateLegendContent } from '../components/shared/scales/distributionLegend.js';
+import { exportResultSerializable } from '../../utils/export.js';
 
 let outputContainer;
 
@@ -26,8 +27,11 @@ export function initGeneralLayout(viewer, models) {
 
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
-  btnFlyJapan.addEventListener('click', () => flyToRegion(viewer));
-
+  btnFlyJapan.addEventListener('click', () => {
+    flyToRegion(viewer);
+    const filename = `result_${Date.now()}.json`;
+    exportResultSerializable(filename, appState.result);
+  });
   const btnRangeSelect = document.createElement('button');
   btnRangeSelect.textContent = '範囲選択して編集';
   btnRangeSelect.addEventListener('click', () => {

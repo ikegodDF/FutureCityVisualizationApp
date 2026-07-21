@@ -34,8 +34,6 @@ class GetTsunamiService:
                 building.tsunami_inundation_depth = 0.0
             else:
                 building.tsunami_inundation_depth = float(inundation_depth)
-                print(building.name)
-                print(building.tsunami_inundation_depth)
 
             arrival_time = tsunami_data_service.get_arrival_time(latitude, longitude)
             if arrival_time is None:

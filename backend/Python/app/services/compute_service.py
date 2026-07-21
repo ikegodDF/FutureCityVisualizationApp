@@ -68,39 +68,7 @@ class ComputeService:
     ) -> tuple[List[Model3D], float]:
         """実際の計算ロジック"""
         results = []
-        building_Num = len([p for p in params if p.show == False])
-        if building_Num == 0:
-            building_Num = 1
-        
-        # 1. パラメーターの定義
-        historical_mean = 39.62
-        historical_std_dev = 32.80
-        # building_Num は上で計算済み（showがFalseの建物数）
-        # コメント: 分母となる比較対象の建物数は既に計算済み
 
-        # 2. 四分位範囲 (Q1とQ3) の定義
-        a_min_limit = 19  # 最小値 (Q1)
-        b_max_limit = 67  # 最大値 (Q3)
-
-        # 3. 切断正規分布のためのパラメーター計算
-        # truncnormは、標準正規分布 (μ=0, σ=1) の範囲を定義するため、
-        # aとbの値を標準化（Zスコア化）する必要があります。
-
-        # 標準化: Z = (X - μ) / σ
-        a = (a_min_limit - historical_mean) / historical_std_dev
-        b = (b_max_limit - historical_mean) / historical_std_dev
-
-        # 4. 切断正規分布から乱数生成
-        # loc=μ, scale=σ で元の分布のスケールに戻します
-        # size=1 で1つの乱数を生成
-        random_number_array = truncnorm.rvs(a, b, loc=historical_mean, scale=historical_std_dev, size=1)
-
-        # 5. 建物数として処理（整数に丸める）
-        # 生成される値は既に範囲内にあるため、クリッピング(a_min=0)は不要ですが、
-        # 念のため0未満にならないよう処理し、整数に丸めます。
-        generated_building_count = np.round(np.clip(random_number_array, a_min=0, a_max=None)).astype(int)[0]
-        print("建物数乱数", generated_building_count)
-        new_building_Num = 0
         victim_count = 0
         # 範囲フラグを整形化
         id_dict = {}
@@ -121,9 +89,20 @@ class ComputeService:
             
             for param in params:
                 order = id_dict.get(param.id)
-                result, num = self._calculate_building_retention_rate(param, appStateYear, building_Num, generated_building_count, order, building_count)
-                new_building_Num += num
+                result = self._calculate_building_retention_rate(param, appStateYear, order, building_count)
                 results.append(result)
+            
+            if appStateYear == datetime.now().year + 5:
+                building_count["invisible"]  = 0
+                for result in results:
+                    if not result.show:
+                        building_count["invisible"] += 1
+                print("削除建物数の修正", building_count["invisible"])
+                for i, result in enumerate(results):
+                    if not result.show:
+                        order = id_dict.get(result.id)
+                        results[i] = self._calculate_building_retention_rate(results[i], appStateYear, order, building_count)
+
         elif method == "earthquake_damage_assessment":
             for param in params:
                 if param.show == True:
@@ -132,6 +111,7 @@ class ComputeService:
                 else:
                     result = param
                 results.append(result)
+                
         elif method == "tsunami_damage_assessment":
             for param in params:
                 if param.show == True:
@@ -141,11 +121,10 @@ class ComputeService:
                     result = param
                 results.append(result)
             
-        print("増えた建物数", new_building_Num)
         print("被災者", victim_count)
         return results, victim_count
     
-    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, building_Num: int, generated_building_count: int, order: Optional[int], building_count: Dict[str, int]) -> Model3D:
+    def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, order: Optional[int], building_count: Dict[str, int]) -> Model3D:
         """建物存続確率分析"""
         # 築年齢別建物の確率
         calculateparam_age: Dict[str, List[float]] = {
@@ -158,14 +137,11 @@ class ComputeService:
             "no_data": [0.142936261, 0.059832469]
         }
 
-        # 復活建物数のカウント用
-        num = 0
-
         # 範囲設定による処理
         if order == 1:
             if appStateYear - param.year > 50 and random.random() > 0.5:
                 param.year = appStateYear
-            return param, num
+            return param
 
         # yearがNoneのときはno_data扱い
         if param.year == 0:
@@ -193,9 +169,6 @@ class ComputeService:
         revival_probability = calculateparam_age[building_AgeType][1] * (building_count["visible"] / (building_count["invisible"] + 0.0001 )) 
 
 
-        # 特定範囲数からランダムで復活
-        # revival_probability = generated_building_count / building_Num
-
         judgement = random.random()
         
         if param.show == True:
@@ -206,8 +179,7 @@ class ComputeService:
                 param.show = True
                 param.isDamage = False
                 param.year = appStateYear
-                num = 1
-        return param, num
+        return param
 
     
     @staticmethod
