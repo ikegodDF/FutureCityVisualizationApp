@@ -15,8 +15,8 @@ class AnalysisService:
                 first_count += 1
         results = []
         results.append(first_count)
-        for i in range(20):
-            result = self.compute_service.compute(ComputeRequest(method=request.method, appStateYear=request.appStateYear + 5*i, params=target_params))
+        for i in range(5):
+            result = self.compute_service.compute(ComputeRequest(method=request.method, appStateYear=request.appStateYear + 5*i, disasterState=request.disasterState, selectedRanges=request.selectedRanges, params=target_params))
             target_params = result.result  # 次の年は前の年の結果を使用
             count = 0
             for param in target_params:

@@ -18,6 +18,8 @@ def analysis(request: ComputeRequest):
         current_request = ComputeRequest(
             method=request.method,
             appStateYear=request.appStateYear,
+            disasterState=request.disasterState,
+            selectedRanges=request.selectedRanges,
             params=original_params_copy
         )
         

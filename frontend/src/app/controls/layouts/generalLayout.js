@@ -9,6 +9,7 @@ import { createEditMenuBar } from '../components/general/editMenu/editMenuBar.js
 import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
 import { createDistributionLegend, updateLegendContent } from '../components/shared/scales/distributionLegend.js';
 import { exportResultSerializable } from '../../utils/export.js';
+import { analysis } from '../actions/analysisActions.js';
 
 let outputContainer;
 
@@ -42,6 +43,12 @@ export function initGeneralLayout(viewer, models) {
   btnAddDistribution.textContent = '分布取得';
   btnAddDistribution.addEventListener('click', () => {
     getDistribution(viewer);
+  });
+
+  const btnAnalyze = document.createElement('button');
+  btnAnalyze.textContent = '分析';
+  btnAnalyze.addEventListener('click', () => {
+    analysis(viewer, models);
   });
 
   const timelineController = createTimelineController({
@@ -84,6 +91,7 @@ export function initGeneralLayout(viewer, models) {
   row.appendChild(btnFlyJapan);
   row.appendChild(btnRangeSelect);
   row.appendChild(btnAddDistribution);
+  row.appendChild(btnAnalyze);
   container.appendChild(row);
   container.appendChild(createBuildingAgeLegend());
   container.appendChild(legendElement);
