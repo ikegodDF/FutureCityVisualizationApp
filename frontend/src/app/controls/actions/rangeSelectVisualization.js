@@ -65,9 +65,9 @@ const createPersistentRangeFlatPolygon = (viewer, points, order) => {
     polygon: {
       hierarchy,
       material: rangeColor.withAlpha(0.28),
+      clampToGround: true,
       outline: true,
       outlineColor: rangeColor.withAlpha(0.95),
-      height: RANGE_POLYGON_BASE_HEIGHT,
       perPositionHeight: false,
     },
   });
@@ -79,11 +79,13 @@ const createPersistentRangePolygon = (viewer, points, order) => {
   );
   const rangeColor = getRangeColorByOrder(order);
 
+  const TERRAIN_OFFSET = 33.7
+
   const layerHeight = (RANGE_POLYGON_EXTRUDED_HEIGHT - RANGE_POLYGON_BASE_HEIGHT) / RANGE_POLYGON_LAYER_COUNT;
   const entities = [];
 
   for (let i = 0; i < RANGE_POLYGON_LAYER_COUNT; i += 1) {
-    const layerBottom = RANGE_POLYGON_BASE_HEIGHT + layerHeight * i;
+    const layerBottom = RANGE_POLYGON_BASE_HEIGHT + TERRAIN_OFFSET + layerHeight * i;
     const layerTop = layerBottom + layerHeight;
     const alpha = 0.9 * (1 - (i / (RANGE_POLYGON_LAYER_COUNT - 1 || 1)));
 

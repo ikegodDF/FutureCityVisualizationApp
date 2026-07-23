@@ -86,6 +86,7 @@ class ComputeService:
                     building_count["visible"] += 1
                 else:
                     building_count["invisible"] += 1
+            print("建物数", building_count)
             
             for param in params:
                 order = id_dict.get(param.id)
@@ -111,6 +112,7 @@ class ComputeService:
                 else:
                     result = param
                 results.append(result)
+            print("被災者", victim_count)
                 
         elif method == "tsunami_damage_assessment":
             for param in params:
@@ -120,8 +122,9 @@ class ComputeService:
                 else:
                     result = param
                 results.append(result)
+            print("被災者", victim_count)
             
-        print("被災者", victim_count)
+        
         return results, victim_count
     
     def _calculate_building_retention_rate(self, param: Model3D, appStateYear: int, order: Optional[int], building_count: Dict[str, int]) -> Model3D:

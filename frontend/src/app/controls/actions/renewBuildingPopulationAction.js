@@ -12,6 +12,7 @@ export const renewBuildingPopulation = async(viewer) => {
         selectedRanges: appState.selectedRanges[appState.year],
         population: appState.population
     });
+    
       
     console.log(payload);
     

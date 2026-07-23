@@ -7,6 +7,7 @@ class BuildingDetail(BaseModel):
     buildingStructureType: int = None
     storeysAboveGround: int = None
     buildingArea: float = None
+    buildingHeight: float = None
     buildingUsage: int = None
     architecturalPeriod: int = None
     buildingPopulation: int = None
@@ -66,7 +67,7 @@ class Models(BaseModel):
     models: List[Model3D]
 
 class AnalysisResponse(BaseModel):
-    result: List[List[int]]
+    result: List[List[List[int]]]
     duration_ms: float
     timestamp: datetime
 
