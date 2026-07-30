@@ -128,18 +128,13 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
     let buildingAttempts = 0;
     const maxAttempts = count * 100;
 
-    // 現在作成を試みている建物の形状データ
     let currentBuildingShape = null;
-
-    console.time("⏱ 生成所要時間");
 
     while (newEntities.length < count && totalAttempts < maxAttempts) {
         totalAttempts++;
         buildingAttempts++;
 
-        // ★ 最初の試行、または 100回試しても建たない場合は建物の形を作り直す
         if (!currentBuildingShape || buildingAttempts % 100 === 1) {
-            // 100回を超えるたびに、入りやすいように最大面積を徐々に小さくする (例: 100回超で最大サイズ50%, 200回超で25%...)
             const shrinkFactor = Math.pow(0.5, Math.floor((buildingAttempts - 1) / 100));
             const effectiveMaxArea = Math.max(minArea, maxArea * shrinkFactor);
 
@@ -148,13 +143,6 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
             const { width, depth } = calculateRectDimensions(area, aspect);
 
             currentBuildingShape = { area, aspect, width, depth };
-
-            if (buildingAttempts > 1) {
-                console.warn(
-                    `🔄 [試行 ${buildingAttempts} 回目] 建つ場所が見つからないため、建物の形を作り直しました ` +
-                    `(目標面積: ${Math.round(area)}㎡, サイズ: ${Math.round(width)}m × ${Math.round(depth)}m)`
-                );
-            }
         }
 
         const selectedZone = zones.length > 0 ? zones[0] : null;
@@ -180,11 +168,19 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
         const currentPt = turf.point([lon, lat]);
         const newRadius = Math.hypot(width / 2, depth / 2);
 
-        // 衝突判定①：建物
+        // 1m のバッファ（離隔距離）を設定して判定用ポリゴンを作成
+        const bufferDistance = 1; // 1メートル
+        const newPolyBuffered = turf.buffer(newPoly, bufferDistance, { units: "meters" });
+
+        // 衝突判定①：建物同士（1mのスキマを確保）
         const isOverlapBuilding = existingBuildings.some((item) => {
             const dist = turf.distance(currentPt, item.pt, { units: "meters" });
-            if (dist > (newRadius + item.radius)) return false;
-            return turf.booleanIntersects(newPoly, item.poly);
+            
+            // スキップ判定にもバッファ分を加算
+            if (dist > (newRadius + item.radius + bufferDistance * 2)) return false;
+
+            // 膨らませたポリゴンで交差チェック
+            return turf.booleanIntersects(newPolyBuffered, item.poly);
         });
         if (isOverlapBuilding) continue;
 
@@ -211,8 +207,7 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
                 height: baseHeight,
                 extrudedHeight: topHeight,
                 material: modelColor,
-                outline: true,
-                outlineColor: Color.BLACK,
+                outline: false,
             },
             isNewBuilding: true,
             year: targetYear,
@@ -233,31 +228,9 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
 
         newEntities.push(entity);
 
-        console.log(
-            `🏠 建物 #${newEntities.length} 配置成功 | ` +
-            `試行: ${buildingAttempts} 回 | ` +
-            `面積: ${Math.round(area)}㎡ (${Math.round(width)}m × ${Math.round(depth)}m)`
-        );
-
-        // 次の建物のためにリセット
         buildingAttempts = 0;
         currentBuildingShape = null;
     }
-
-    const avgAttempts = newEntities.length > 0 
-        ? (totalAttempts / newEntities.length).toFixed(1) 
-        : 0;
-
-    console.log("--------------------------------------------------");
-    console.log(`📊 【生成完了レポート】`);
-    console.log(`・生成目標: ${count} 軒 / 達成: ${newEntities.length} 軒`);
-    console.log(`・総試行回数: ${totalAttempts} 回`);
-    console.log(`・1軒あたりの平均試行回数: ${avgAttempts} 回`);
-    if (newEntities.length < count) {
-        console.warn(`⚠️ 空きスペース不足のため ${count - newEntities.length} 軒の生成を諦めました。`);
-    }
-    console.log("--------------------------------------------------");
-    console.timeEnd("⏱ 生成所要時間");
 
     return [...currentModels, ...newEntities];
 }

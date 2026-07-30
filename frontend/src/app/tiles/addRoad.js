@@ -16,7 +16,7 @@ export const addRoad = async (viewer) => {
 
         // ★ 2. 新築機能で使うための Turf.js 空間データを生成する
         const roadSegments = turf.lineSegment(rawGeoJson);
-        const roadBuffer = turf.buffer(rawGeoJson, 4.5, { units: 'meters' }); // 道路幅6m + セットバック1.5m想定
+        const roadBuffer = turf.buffer(rawGeoJson, 4.0, { units: 'meters' }); // 道路幅6m + セットバック1.5m想定
 
         // --- 🔷 3. CesiumにGeoJSONオブジェクトを渡して描画 ---
         const dataSource = await viewer.dataSources.add(
