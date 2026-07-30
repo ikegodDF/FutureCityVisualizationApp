@@ -15,9 +15,9 @@ export const addRoad = async (viewer) => {
     try {
         // --- 🔷 1. CesiumにGeoJSONをロードして描画 ---
         const dataSource = await viewer.dataSources.add(
-            await GeoJsonDataSource.load('/models/N13-24_6340.geojson', {
+            await GeoJsonDataSource.load('/models/mukawaroad.geojson', {
                 stroke: Color.YELLOW,
-                strokeWidth: 4,
+                strokeWidth: 1,
                 clampToGround: true
             })
         );
