@@ -1,7 +1,8 @@
-import { GeoJsonDataSource, Color, Cartesian3 } from 'cesium';
+import { GeoJsonDataSource, Color, Cartesian3, Cartographic } from 'cesium';
 
 // 座標系のエラー対策
 GeoJsonDataSource.crsNames['urn:ogc:def:crs:EPSG::6668'] = GeoJsonDataSource.crsNames['urn:ogc:def:crs:OGC:1.3:CRS84'];
+GeoJsonDataSource.crsNames['urn:ogc:def:crs:EPSG::6680'] = GeoJsonDataSource.crsNames['urn:ogc:def:crs:OGC:1.3:CRS84'];
 
 export const addRoad = async (viewer) => {
     // 1. 交差点（座標）にIDを振るためのマップ
@@ -393,4 +394,157 @@ export const findAndDrawMultipleRoutes = (viewer, networkData, buildingAPos, bui
     if (pathEntities.length > 0) {
         viewer.flyTo(pathEntities);
     }
+};
+
+/**
+ * 道路網（隣接リスト）から行き止まり（ヒゲ状の道路）を連鎖的に除去する関数
+ */
+const pruneDeadEnds = (adjacencyList) => {
+    // グラフの構造を作業用にコピー
+    const graph = {};
+    for (const node in adjacencyList) {
+        graph[node] = adjacencyList[node].map(edge => ({ ...edge }));
+    }
+
+    // 次数が1以下のノード（行き止まり）を初期キューに登録
+    const queue = [];
+    for (const node in graph) {
+        if (graph[node].length <= 1) {
+            queue.push(Number(node));
+        }
+    }
+
+    // キューが空になるまで連鎖的に行き止まりノード・エッジを削る
+    while (queue.length > 0) {
+        const deadNode = queue.shift();
+        const edges = graph[deadNode] || [];
+
+        if (edges.length === 0) {
+            delete graph[deadNode];
+            continue;
+        }
+
+        // 行き止まりノードから伸びている接続先ノード
+        const neighborNode = edges[0].to;
+
+        // 行き止まりノード自体を削除
+        delete graph[deadNode];
+
+        // 接続先ノード側のリストから、削除したノードへのエッジを取り除く
+        if (graph[neighborNode]) {
+            graph[neighborNode] = graph[neighborNode].filter(edge => edge.to !== deadNode);
+
+            // エッジ削除の結果、接続先ノードも行き止まり（次数1以下）になったらキューに追加
+            if (graph[neighborNode].length <= 1 && !queue.includes(neighborNode)) {
+                queue.push(neighborNode);
+            }
+        }
+    }
+
+    return graph;
+};
+
+/**
+ * Cartesian3 座標から 2D 平面上の角度（ラジアン）を計算する
+ */
+const getAngle = (fromPos, toPos) => {
+    const fromCarto = Cartographic.fromCartesian(fromPos);
+    const toCarto = Cartographic.fromCartesian(toPos);
+    
+    const dLon = toCarto.longitude - fromCarto.longitude;
+    const dLat = toCarto.latitude - fromCarto.latitude;
+    
+    return Math.atan2(dLat, dLon);
+};
+
+/**
+ * 道路網（隣接リスト）から四方を囲まれた閉領域（Polygon）の配列を抽出する
+ */
+export const extractEnclosedRegions = (rawAdjacencyList) => {
+    // 0. 🌟 前処理：領域の内外にある「行き止まり道路（ヒゲ）」を連鎖的に削除
+    const adjacencyList = pruneDeadEnds(rawAdjacencyList);
+
+    // 1. 各ノードからの接続エッジを、角度順（反時計回り）にソートする
+    const sortedGraph = {};
+    
+    for (const nodeId in adjacencyList) {
+        const edges = adjacencyList[nodeId];
+        if (edges.length < 2) continue; // 行き止まりは前処理で消えているが念のため
+
+        const basePos = edges[0].positions[0];
+
+        const edgesWithAngle = edges.map(edge => {
+            const nextPos = edge.positions[edge.positions.length - 1];
+            const angle = getAngle(basePos, nextPos);
+            return { ...edge, angle };
+        });
+
+        edgesWithAngle.sort((a, b) => a.angle - b.angle);
+        sortedGraph[nodeId] = edgesWithAngle;
+    }
+
+    const visitedEdges = new Set();
+    const regions = [];
+
+    // 2. すべての有向エッジを起点にして最小サイクルを探索
+    for (const u in sortedGraph) {
+        const fromNode = Number(u);
+        const edges = sortedGraph[fromNode];
+
+        for (const edge of edges) {
+            const toNode = edge.to;
+            const edgeKey = `${fromNode}->${toNode}`;
+
+            if (visitedEdges.has(edgeKey)) continue;
+
+            const currentPath = [fromNode];
+            const polygonPositions = [];
+            
+            let curr = fromNode;
+            let next = toNode;
+            let isClosed = false;
+
+            while (true) {
+                const key = `${curr}->${next}`;
+                if (visitedEdges.has(key)) break;
+
+                visitedEdges.add(key);
+                currentPath.push(next);
+
+                const currentEdges = sortedGraph[curr];
+                const activeEdge = currentEdges?.find(e => e.to === next);
+                if (activeEdge) {
+                    polygonPositions.push(...activeEdge.positions.slice(0, -1));
+                }
+
+                if (next === fromNode) {
+                    isClosed = true;
+                    break;
+                }
+
+                const nextNodeEdges = sortedGraph[next];
+                if (!nextNodeEdges || nextNodeEdges.length === 0) break;
+
+                const incomingIndex = nextNodeEdges.findIndex(e => e.to === curr);
+                if (incomingIndex === -1) break;
+
+                // 時計回りに一番近い「次のエッジ」を選択
+                const nextEdgeIndex = (incomingIndex - 1 + nextNodeEdges.length) % nextNodeEdges.length;
+                const nextEdge = nextNodeEdges[nextEdgeIndex];
+
+                curr = next;
+                next = nextEdge.to;
+
+                if (currentPath.length > 500) break;
+            }
+
+            if (isClosed && polygonPositions.length >= 3) {
+                polygonPositions.push(polygonPositions[0]);
+                regions.push(polygonPositions);
+            }
+        }
+    }
+
+    console.log(`🗺️ 抽出された閉領域の数: ${regions.length} 区画`);
+    return regions;
 };
