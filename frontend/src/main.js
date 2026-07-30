@@ -40,7 +40,7 @@ const viewer = (async function bootstrap() {
   );
 
   await addPopulationMesh(viewer, region);
-  const models = await addGltfModels(viewer, region);
+  let models = await addGltfModels(viewer, region);
   viewer.scene.globe.depthTestAgainstTerrain = true;
 
   const road = await addRoad(viewer);
