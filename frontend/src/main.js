@@ -6,8 +6,9 @@ import { initUI, outputContainer } from './app/controls/index.js';
 import { setupIon } from './app/services/ion.js';
 import { addGltfModels } from './app/tiles/addGltfModels.js';
 import { addPopulationMesh } from './app/tiles/addPopulationMesh.js';
+import { addRoad } from './app/tiles/addRoad.js';
 import { result } from './app/controls/actions/index.js';
-import { appState, setRegion, setResult } from './app/state/appState.js';
+import { appState, setRegion, setResult, setRoad } from './app/state/appState.js';
 import { toPayload } from './app/tiles/toPayload.js';
 import { promptRegionSelection } from './app/region/regionSelector.js';
 import { getActiveRegion } from './app/region/regionState.js';
@@ -41,6 +42,9 @@ const viewer = (async function bootstrap() {
   await addPopulationMesh(viewer, region);
   const models = await addGltfModels(viewer, region);
   viewer.scene.globe.depthTestAgainstTerrain = true;
+
+  const road = await addRoad(viewer);
+  setRoad(road)
 
   setResult(models.map(toPayload));
   await renewBuildingPopulation(viewer);

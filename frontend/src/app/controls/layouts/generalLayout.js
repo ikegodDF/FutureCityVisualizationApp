@@ -69,8 +69,9 @@ export function initGeneralLayout(viewer, models) {
     };
 
     const currentAllModels = addNewBuildings(viewer, models, {
-      count: 1000,
+      count: 100,
       zones: [customZone],
+      roadSpatial: appState.road.spatial,
       targetYear: appState.year, // 現在選択中の年度
     });
 

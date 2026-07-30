@@ -7,6 +7,7 @@ export const appState = {
   disasterState:"被災前",
   region: null,
   result: {},
+  road: {},
   totalVictims: {},
   selectedRanges: {},
   distribution: null,
@@ -143,5 +144,9 @@ export const getCommittedRangeSelection = (year = appState.year) => {
   });
   return Array.from(selectionSet);
 };
+
+export const setRoad = (road) => {
+  appState.road = road
+}
 
 
