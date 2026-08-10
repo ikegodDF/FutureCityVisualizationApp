@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.models.schemas import ComputeRequest, ComputeResponse, BuildingPopulationRequest
+from app.models.schemas import ComputeRequest, ComputeResponse, BuildingPopulationRequest, NewPredictionRequest
 from app.services.compute_service import ComputeService
 from fastapi import HTTPException
 
@@ -18,3 +18,7 @@ def renew_building_population(request: BuildingPopulationRequest):
     return compute_service.building_population(request)
 
 
+
+@router.post("/new_prediction", response_model = ComputeResponse)
+def new_prediction(request: NewPredictionRequest):
+    return compute_service.new_prediction(request)

@@ -91,14 +91,8 @@ export function initGeneralLayout(viewer, models) {
       polygon: createTurfPolygonFromPoints(rawCoordinates) // ★ここで変換して渡す
     };
 
-    models = await addNewBuildings(viewer, models, {
-      count: 100,
-      zones: [customZone],
-      roadSpatial: appState.road.spatial,
-      targetYear: appState.year, // 現在選択中の年度
-      minArea: 40,
-      maxArea: 2000
-    });
+    models = await addNewBuildings(viewer, models, 100, [customZone]
+    );
     setResult(models.map(toPayload));
 
     // 建物データ取得

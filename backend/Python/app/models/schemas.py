@@ -86,3 +86,10 @@ class RegionListResponse(BaseModel):
     regions: List[dict]
     duration_ms: float
     timestamp: datetime
+
+class NewPredictionRequest(BaseModel):
+    deletes:List[int]
+    models:List[Model3D]
+    add_num:int
+    duration_ms:float
+    timestamp: datetime

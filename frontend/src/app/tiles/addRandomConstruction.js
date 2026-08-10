@@ -1,6 +1,7 @@
 import * as turf from "@turf/turf";
 import { Cartesian3, Color } from "cesium";
 import { getModelColor } from "./getModelColor.js";
+import { appState } from "../state/appState.js";
 
 function calculateRectDimensions(area, aspect) {
     const width = Math.sqrt(area * aspect);
@@ -90,20 +91,20 @@ function isPolygonIntersectingRoadFast(poly, roadBufferPolygon) {
     return false;
 }
 
-export async function addNewBuildings(viewer, currentModels = [], config = {}) {
-    const {
-        count = 50,
-        zones = [],
-        roadSpatial = null,
-        targetYear = new Date().getFullYear(),
-        minArea = 40,
-        maxArea = 2000,
-        minAspect = 1.0,
-        maxAspect = 2.2,
-    } = config;
+export async function addNewBuildings(viewer, currentModels = [], count, zones) {
+    const config = {
+        count: count,
+        zones: zones,
+        roadSpatial: appState.road.spatial,
+        targetYear: appState.year,
+        minArea: 50,
+        maxArea: 500,
+        minAspect: 1.0,
+        maxAspect: 2.2,
+    }
 
-    const roadSegments = roadSpatial?.roadSegments || null;
-    const roadBufferPolygon = roadSpatial?.roadBuffer || null;
+    const roadSegments = config.roadSpatial?.roadSegments || null;
+    const roadBufferPolygon = config.roadSpatial?.roadBuffer || null;
 
     const existingBuildings = currentModels
         .map((ent) => {
@@ -136,10 +137,10 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
 
         if (!currentBuildingShape || buildingAttempts % 100 === 1) {
             const shrinkFactor = Math.pow(0.5, Math.floor((buildingAttempts - 1) / 100));
-            const effectiveMaxArea = Math.max(minArea, maxArea * shrinkFactor);
+            const effectiveMaxArea = Math.max(config.minArea, config.maxArea * shrinkFactor);
 
-            const area = minArea + Math.random() * (effectiveMaxArea - minArea);
-            const aspect = minAspect + Math.random() * (maxAspect - minAspect);
+            const area = config.minArea + Math.random() * (effectiveMaxArea - config.minArea);
+            const aspect = config.minAspect + Math.random() * (config.maxAspect - config.minAspect);
             const { width, depth } = calculateRectDimensions(area, aspect);
 
             currentBuildingShape = { area, aspect, width, depth };
@@ -196,7 +197,7 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
         const topHeight = baseHeight + buildingHeight;
 
         const flatCoordinates = newPoly.geometry.coordinates[0].flatMap((c) => [c[0], c[1]]);
-        const modelColor = getModelColor(targetYear);
+        const modelColor = getModelColor(config.targetYear);
 
         const entityId = `new_building_${Date.now()}_${newEntities.length}`;
         const entity = viewer.entities.add({
@@ -210,7 +211,7 @@ export async function addNewBuildings(viewer, currentModels = [], config = {}) {
                 outline: false,
             },
             isNewBuilding: true,
-            year: targetYear,
+            year: config.targetYear,
             latlon: [lat, lon],
             latitude: lat,
             longitude: lon,
