@@ -6,7 +6,9 @@ import { appState } from "../state/appState.js";
 import { pickWeightedZone } from "../construction/constructionZoneUtils.js";
 import {
   createBuildingIdAllocator,
+  createBuildingSizeSampler,
   createNewBuildingRecord,
+  extractBuildingSizeSamples,
   resolveConstructionYear,
 } from "../domain/buildings/index.js";
 
@@ -122,6 +124,21 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
             ...(buildingOptions.idSources ?? []),
         ]);
 
+    const sizeSampleSources = [
+        ...currentModels,
+        ...(buildingOptions.idSources ?? []),
+    ];
+    const buildingSizeSamples = extractBuildingSizeSamples(sizeSampleSources);
+    const sampleBuildingSize = createBuildingSizeSampler(buildingSizeSamples, {
+        compactAreaThreshold: buildingOptions.compactAreaThresholdSqM ?? 50,
+        compactMaxStoreys: buildingOptions.compactMaxStoreys ?? 1,
+        fallback: {
+            area: Math.round((config.minArea + config.maxArea) / 2),
+            height: 9,
+            storeys: 2,
+        },
+    });
+
     const existingBuildings = currentModels
         .map((ent) => {
             const lat = ent.latitude || ent.latlon?.[0];
@@ -155,11 +172,18 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
             const shrinkFactor = Math.pow(0.5, Math.floor((buildingAttempts - 1) / 100));
             const effectiveMaxArea = Math.max(config.minArea, config.maxArea * shrinkFactor);
 
-            const area = config.minArea + Math.random() * (effectiveMaxArea - config.minArea);
+            const { area, height: sampledHeight, storeys: sampledStoreys } = sampleBuildingSize(effectiveMaxArea);
             const aspect = config.minAspect + Math.random() * (config.maxAspect - config.minAspect);
             const { width, depth } = calculateRectDimensions(area, aspect);
 
-            currentBuildingShape = { area, aspect, width, depth };
+            currentBuildingShape = {
+                area,
+                aspect,
+                width,
+                depth,
+                buildingHeight: sampledHeight,
+                storeys: sampledStoreys,
+            };
         }
 
         const selectedZone = pickWeightedZone(zones);
@@ -171,7 +195,7 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
 
         const [lon, lat] = pt.geometry.coordinates;
 
-        const { area, width, depth } = currentBuildingShape;
+        const { area, width, depth, buildingHeight, storeys } = currentBuildingShape;
 
         let rotation = 0;
         if (roadSegments) {
@@ -207,8 +231,6 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
         }
 
         // Cesium Entity 生成
-        const storeys = Math.random() < 0.7 ? 2 : (Math.random() < 0.5 ? 1 : 3);
-        const buildingHeight = storeys * 3.2;
         const baseHeight = 33.7;
         const topHeight = baseHeight + buildingHeight;
 

@@ -28,3 +28,13 @@ export {
   yearFromCategoryIndex,
   yearFromCategoryIndexAtTarget,
 } from './buildingAge.js';
+
+export {
+  createBuildingSizeSampler,
+  extractBuildingSizeSamples,
+  summarizeAreaDistribution,
+  fitLogNormalDistribution,
+  fitBuildingSizeDistributions,
+  sampleLogNormalDistribution,
+  STOREY_HEIGHT_M,
+} from './buildingSizeDistribution.js';

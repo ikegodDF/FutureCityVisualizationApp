@@ -4,6 +4,9 @@
     "maxArea": 500,
     "minAspect": 1.0,
     "maxAspect": 2.2,
+    "compactAreaThresholdSqM": 50,
+    "compactMaxStoreys": 1,
+    "storeyHeightM": 4.5,
     "defaultCount": 100,
     "roadBlockMinAreaSqM": 200
   },
