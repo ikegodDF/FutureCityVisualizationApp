@@ -1,17 +1,30 @@
-import { appState } from '../../state/appState.js';
+import { appState, setDisasterState, setYear, setResult } from '../../state/appState.js';
+import { renew3DModels } from '../../tiles/renew3DModels.js';
+import { refreshRangeVisibility } from './rangeSelectActions.js';
 import { buildComputePayload } from '../../region/regionState.js';
+import { generateBuildingsByCategory } from '../../construction/generateBuildings.js';
+import { toPayload } from '../../tiles/toPayload.js';
+import { resolveBuildingId } from '../../tiles/buildingId.js';
+
+const removeBuildingEntity = (viewer, models, deleteId) => {
+  const entity = viewer.entities.getById(deleteId)
+    ?? models.find((model) => resolveBuildingId(model) === deleteId);
+  if (entity) {
+    viewer.entities.remove(entity);
+  }
+};
 
 export const newPrediction = async (viewer, models = [], addYear = 5) => {
-  // if (appState.disasterState !== '被災前') {
-  //   setDisasterState('被災前');
-  // }
+  if (appState.disasterState !== '被災前') {
+    setDisasterState('被災前');
+  }
 
-  // if (appState.result[appState.appliedPolicy][appState.year + addYear]) {
-  //   setYear(appState.year + addYear);
-  //   renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year + addYear][appState.disasterState]);
-  //   refreshRangeVisibility(viewer);
-  //   return true;
-  // }
+  if (appState.result[appState.appliedPolicy][appState.year + addYear]) {
+    setYear(appState.year + addYear);
+    renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year][appState.disasterState]);
+    refreshRangeVisibility(viewer);
+    return true;
+  }
 
   const payload = buildComputePayload({
     method: 'building_retention_rate',
@@ -41,24 +54,46 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
 
     const data = await res.json();
     console.log('new_prediction response:', data);
+
+    const previousYear = appState.year;
+    const policy = appState.appliedPolicy;
+    const disaster = appState.disasterState;
+    const currentParams = appState.result[policy][previousYear][disaster];
+    const deleteSet = new Set(data.deletes ?? []);
+
+    for (const deleteId of deleteSet) {
+      removeBuildingEntity(viewer, models, deleteId);
+    }
+
+    let nextResult = currentParams.filter((model) => !deleteSet.has(model.id));
+    if (Array.isArray(data.models) && data.models.length > 0) {
+      nextResult = [...nextResult, ...data.models];
+    }
+
+    const addCount = (data.add_num ?? []).reduce((sum, count) => sum + (Number(count) || 0), 0);
+    if (addCount > 0) {
+      const remainingModels = models.filter((model) => !deleteSet.has(resolveBuildingId(model) ?? -1));
+      const updatedModels = await generateBuildingsByCategory(
+        viewer,
+        remainingModels,
+        data.add_num ?? [],
+        { idSources: currentParams },
+      );
+      const existingIds = new Set(nextResult.map((model) => model.id));
+      updatedModels
+        .filter((entity) => {
+          const entityId = resolveBuildingId(entity);
+          return entityId != null && !existingIds.has(entityId);
+        })
+        .forEach((entity) => nextResult.push(toPayload(entity)));
+    }
+
+    setYear(previousYear + addYear);
+    setResult(nextResult, 0);
+    await renew3DModels(viewer, nextResult);
+    refreshRangeVisibility(viewer);
+    console.log(appState);
     return true;
-
-    // setYear(appState.year + addYear);
-    // setResult(data.result, data.total_victims ?? 0);
-
-    // for (let i = 0; i < data.deletes.length; i++) {
-    //   const deleteModel = models.find((model) => model.id === data.deletes[i]);
-    //   viewer.entities.remove(deleteModel);
-    // }
-
-    // addNewBuildings(viewer, models, data.add_num);
-
-    // const nextModels = Array.isArray(data.models)
-    //   ? data.models
-    //   : appState.result?.[appState.appliedPolicy]?.[appState.year]?.[appState.disasterState];
-    // await renew3DModels(viewer, nextModels);
-    // refreshRangeVisibility(viewer);
-    // console.log(appState);
   } catch (error) {
     console.error('new_prediction error:', error);
     return false;

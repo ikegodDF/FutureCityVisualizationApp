@@ -2,6 +2,8 @@ import * as turf from "@turf/turf";
 import { Cartesian3, Color } from "cesium";
 import { getModelColor } from "./getModelColor.js";
 import { appState } from "../state/appState.js";
+import { pickWeightedZone } from "../construction/constructionZoneUtils.js";
+import { createBuildingIdAllocator, toModelName } from "./buildingId.js";
 
 function calculateRectDimensions(area, aspect) {
     const width = Math.sqrt(area * aspect);
@@ -91,20 +93,25 @@ function isPolygonIntersectingRoadFast(poly, roadBufferPolygon) {
     return false;
 }
 
-export async function addNewBuildings(viewer, currentModels = [], count, zones) {
+export async function addNewBuildings(viewer, currentModels = [], count, zones, buildingOptions = {}) {
     const config = {
         count: count,
         zones: zones,
         roadSpatial: appState.road.spatial,
         targetYear: appState.year,
-        minArea: 50,
-        maxArea: 500,
-        minAspect: 1.0,
-        maxAspect: 2.2,
+        minArea: buildingOptions.minArea ?? 50,
+        maxArea: buildingOptions.maxArea ?? 500,
+        minAspect: buildingOptions.minAspect ?? 1.0,
+        maxAspect: buildingOptions.maxAspect ?? 2.2,
     }
 
     const roadSegments = config.roadSpatial?.roadSegments || null;
     const roadBufferPolygon = config.roadSpatial?.roadBuffer || null;
+    const idAllocator = buildingOptions.idAllocator
+        ?? createBuildingIdAllocator([
+            ...currentModels,
+            ...(buildingOptions.idSources ?? []),
+        ]);
 
     const existingBuildings = currentModels
         .map((ent) => {
@@ -146,7 +153,7 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones) 
             currentBuildingShape = { area, aspect, width, depth };
         }
 
-        const selectedZone = zones.length > 0 ? zones[0] : null;
+        const selectedZone = pickWeightedZone(zones);
         if (!selectedZone?.polygon) continue;
 
         const bbox = turf.bbox(selectedZone.polygon);
@@ -199,10 +206,10 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones) 
         const flatCoordinates = newPoly.geometry.coordinates[0].flatMap((c) => [c[0], c[1]]);
         const modelColor = getModelColor(config.targetYear);
 
-        const entityId = `new_building_${Date.now()}_${newEntities.length}`;
+        const buildingId = idAllocator.next();
         const entity = viewer.entities.add({
-            id: entityId,
-            name: entityId,
+            id: buildingId,
+            name: toModelName(buildingId),
             polygon: {
                 hierarchy: Cartesian3.fromDegreesArray(flatCoordinates),
                 height: baseHeight,

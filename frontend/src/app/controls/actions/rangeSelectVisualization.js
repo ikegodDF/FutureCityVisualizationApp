@@ -1,4 +1,5 @@
 import { Cartesian3, Color, PolygonHierarchy } from 'cesium';
+import { resolveBuildingId } from '../../tiles/buildingId.js';
 
 const RANGE_POLYGON_BASE_HEIGHT = 0;
 const RANGE_POLYGON_EXTRUDED_HEIGHT = 30;
@@ -19,12 +20,7 @@ export const getModelName = (entity, index) => (
 );
 
 /** Cesium エンティティから建物 ID を取得 */
-export const getModelId = (entity) => {
-  const rawId = entity?.id;
-  const fromId = typeof rawId === 'number' ? rawId : Number(rawId);
-  if (Number.isFinite(fromId) && fromId > 0) return fromId;
-  return null;
-};
+export const getModelId = (entity) => resolveBuildingId(entity);
 
 export const isPointInPolygon = (point, polygon) => {
   let inside = false;
