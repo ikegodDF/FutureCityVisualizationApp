@@ -7,6 +7,7 @@ import { pickWeightedZone } from "../construction/constructionZoneUtils.js";
 import {
   createBuildingIdAllocator,
   createNewBuildingRecord,
+  resolveConstructionYear,
 } from "../domain/buildings/index.js";
 
 function calculateRectDimensions(area, aspect) {
@@ -98,11 +99,15 @@ function isPolygonIntersectingRoadFast(poly, roadBufferPolygon) {
 }
 
 export async function addNewBuildings(viewer, currentModels = [], count, zones, buildingOptions = {}) {
+    const targetAppStateYear = buildingOptions.targetAppStateYear ?? appState.year;
+    const constructionYear = resolveConstructionYear(buildingOptions, appState.year);
+
     const config = {
         count: count,
         zones: zones,
         roadSpatial: appState.road.spatial,
-        targetYear: appState.year,
+        targetAppStateYear,
+        constructionYear,
         minArea: buildingOptions.minArea ?? 50,
         maxArea: buildingOptions.maxArea ?? 500,
         minAspect: buildingOptions.minAspect ?? 1.0,
@@ -208,7 +213,7 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
         const topHeight = baseHeight + buildingHeight;
 
         const flatCoordinates = newPoly.geometry.coordinates[0].flatMap((c) => [c[0], c[1]]);
-        const modelColor = getModelColor(config.targetYear);
+        const modelColor = getModelColor(config.constructionYear);
 
         const buildingId = idAllocator.next();
         const buildingPopulation = Math.floor(area / 30) * storeys;
@@ -216,7 +221,7 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
             id: buildingId,
             lat,
             lon,
-            year: config.targetYear,
+            year: config.constructionYear,
             buildingArea: Math.round(area),
             buildingHeight,
             storeysAboveGround: storeys,

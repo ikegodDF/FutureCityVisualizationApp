@@ -26,6 +26,8 @@ export async function generateBuildings(viewer, currentModels = [], options = {}
   const buildingOptions = {
     ...getConstructionDefaults(),
     ...options.buildingOptions,
+    categoryIndex: options.categoryIndex ?? 0,
+    targetAppStateYear: options.targetAppStateYear ?? appState.year,
     idSources: [
       ...currentModels,
       ...(options.idSources ?? []),
@@ -53,6 +55,7 @@ export async function generateBuildingsByCategory(viewer, currentModels = [], ad
   const buildingOptions = {
     ...getConstructionDefaults(),
     ...options.buildingOptions,
+    targetAppStateYear: options.targetAppStateYear ?? appState.year,
     idSources: [
       ...currentModels,
       ...(options.idSources ?? []),
@@ -74,7 +77,10 @@ export async function generateBuildingsByCategory(viewer, currentModels = [], ad
       updatedModels,
       categoryCount,
       zones,
-      buildingOptions,
+      {
+        ...buildingOptions,
+        categoryIndex,
+      },
     );
   }
 

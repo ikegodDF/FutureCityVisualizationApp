@@ -14,3 +14,17 @@ export {
 
 export { createNewBuildingRecord } from './createNewBuildingRecord.js';
 export { buildBuildingDetail, toPayload } from './toPayload.js';
+export {
+  CATEGORY_COUNT,
+  CATEGORY_LABELS,
+  OVER46_CATEGORY_INDEX,
+  buildingAgeFromYear,
+  calendarAgeFromYear,
+  categoryAgeRange,
+  resolveCategoryIndex,
+  resolveConstructionYear,
+  yearFromBuildingAge,
+  yearFromCalendarAge,
+  yearFromCategoryIndex,
+  yearFromCategoryIndexAtTarget,
+} from './buildingAge.js';

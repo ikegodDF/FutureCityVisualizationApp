@@ -70,13 +70,17 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
     }
 
     const addCount = (data.add_num ?? []).reduce((sum, count) => sum + (Number(count) || 0), 0);
+    const targetAppStateYear = previousYear + addYear;
     if (addCount > 0) {
       const remainingModels = models.filter((model) => !deleteSet.has(resolveBuildingId(model) ?? -1));
       const updatedModels = await generateBuildingsByCategory(
         viewer,
         remainingModels,
         data.add_num ?? [],
-        { idSources: currentParams },
+        {
+          idSources: currentParams,
+          targetAppStateYear,
+        },
       );
       const existingIds = new Set(nextResult.map((model) => model.id));
       updatedModels
