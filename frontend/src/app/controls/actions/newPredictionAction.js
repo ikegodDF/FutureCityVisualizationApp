@@ -145,7 +145,7 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
     method: 'building_retention_rate',
     appStateYear: previousYear,
     addYear,
-    percentage: 50,
+    percentage: 90,
     disasterState: disaster,
     params: appState.result[policy][previousYear][disaster],
     selectedRanges: appState.selectedRanges[previousYear],
