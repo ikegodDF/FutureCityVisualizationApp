@@ -1,5 +1,5 @@
 import { renew3DModels } from '../tiles/renew3DModels.js';
-import { toPayload } from '../tiles/toPayload.js';
+import { toPayload } from '../domain/buildings/toPayload.js';
 
 export const appState = {
   year: new Date().getFullYear(),

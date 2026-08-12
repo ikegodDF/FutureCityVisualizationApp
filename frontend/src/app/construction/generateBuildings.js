@@ -1,6 +1,6 @@
 import { appState } from '../state/appState.js';
 import { addNewBuildings } from '../tiles/addRandomConstruction.js';
-import { createBuildingIdAllocator } from '../tiles/buildingId.js';
+import { createBuildingIdAllocator } from '../domain/buildings/buildingId.js';
 import {
   getDefaultBuildingCount,
   resolveConstructionZones,

@@ -3,8 +3,7 @@ import { renew3DModels } from '../../tiles/renew3DModels.js';
 import { refreshRangeVisibility } from './rangeSelectActions.js';
 import { buildComputePayload } from '../../region/regionState.js';
 import { generateBuildingsByCategory } from '../../construction/generateBuildings.js';
-import { toPayload } from '../../tiles/toPayload.js';
-import { resolveBuildingId } from '../../tiles/buildingId.js';
+import { toPayload, resolveBuildingId } from '../../domain/buildings/index.js';
 
 const removeBuildingEntity = (viewer, models, deleteId) => {
   const entity = viewer.entities.getById(deleteId)

@@ -2,6 +2,7 @@ import {
   buildingUsageLabels,
   buildingStructureTypeLabels,
 } from "./buildingDatas.js";
+import { buildBuildingDetail } from "../domain/buildings/toPayload.js";
 
 const displayValue = (value) => (value == null || value === "" ? "-" : value);
 
@@ -69,6 +70,10 @@ export const applyModelPayloadToEntity = (entity, renewModel) => {
   entity.year = renewModel.year ?? entity.year;
   entity.show = renewModel.show;
 
+  if (typeof renewModel.isDamage === 'boolean') {
+    entity.isDamage = renewModel.isDamage;
+  }
+
   if (renewModel.latitude != null) entity.latitude = renewModel.latitude;
   if (renewModel.longitude != null) entity.longitude = renewModel.longitude;
   if (renewModel.latitude != null && renewModel.longitude != null) {
@@ -90,6 +95,10 @@ export const applyModelPayloadToEntity = (entity, renewModel) => {
   if (detail.buildingPopulation != null) {
     entity.buildingPopulation = detail.buildingPopulation;
   }
+  entity.buildingDetail = {
+    ...(entity.buildingDetail ?? {}),
+    ...buildBuildingDetail(entity, detail),
+  };
 
   const lat = entity.latitude ?? entity.latlon?.[0];
   const lon = entity.longitude ?? entity.latlon?.[1];

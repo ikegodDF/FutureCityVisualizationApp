@@ -5,7 +5,7 @@ import {
   setConstructionZoneSource,
 } from '../../construction/constructionState.js';
 import { appState, setResult } from '../../state/appState.js';
-import { toPayload } from '../../tiles/toPayload.js';
+import { toPayload } from '../../domain/buildings/toPayload.js';
 
 /**
  * 設定済みゾーン内に新築建物を生成し appState を更新する。

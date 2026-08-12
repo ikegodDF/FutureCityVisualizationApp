@@ -9,7 +9,7 @@ import { addPopulationMesh } from './app/tiles/addPopulationMesh.js';
 import { addRoad } from './app/tiles/addRoad.js';
 import { result } from './app/controls/actions/index.js';
 import { appState, setRegion, setResult, setRoad } from './app/state/appState.js';
-import { toPayload } from './app/tiles/toPayload.js';
+import { toPayload } from './app/domain/buildings/toPayload.js';
 import { promptRegionSelection } from './app/region/regionSelector.js';
 import { getActiveRegion } from './app/region/regionState.js';
 import { setInitialCamera } from './app/utils/camera.js';

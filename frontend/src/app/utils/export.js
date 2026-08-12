@@ -1,4 +1,4 @@
-import { toPayload } from '../tiles/toPayload.js';
+import { toPayload } from '../domain/buildings/toPayload.js';
 export function exportResult(filename, dataObject) {
   try {
     const json = JSON.stringify(dataObject, null, 2);

@@ -1,5 +1,5 @@
 import { Cartesian3, Color, PolygonHierarchy } from 'cesium';
-import { resolveBuildingId } from '../../tiles/buildingId.js';
+import { resolveBuildingId } from '../../domain/buildings/buildingId.js';
 
 const RANGE_POLYGON_BASE_HEIGHT = 0;
 const RANGE_POLYGON_EXTRUDED_HEIGHT = 30;

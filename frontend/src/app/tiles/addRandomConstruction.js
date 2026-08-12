@@ -1,9 +1,13 @@
 import * as turf from "@turf/turf";
-import { Cartesian3, Color } from "cesium";
+import { Cartesian3 } from "cesium";
 import { getModelColor } from "./getModelColor.js";
+import { createModelDescription } from "./modelDescription.js";
 import { appState } from "../state/appState.js";
 import { pickWeightedZone } from "../construction/constructionZoneUtils.js";
-import { createBuildingIdAllocator, toModelName } from "./buildingId.js";
+import {
+  createBuildingIdAllocator,
+  createNewBuildingRecord,
+} from "../domain/buildings/index.js";
 
 function calculateRectDimensions(area, aspect) {
     const width = Math.sqrt(area * aspect);
@@ -207,9 +211,22 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
         const modelColor = getModelColor(config.targetYear);
 
         const buildingId = idAllocator.next();
-        const entity = viewer.entities.add({
+        const buildingPopulation = Math.floor(area / 30) * storeys;
+        const record = createNewBuildingRecord({
             id: buildingId,
-            name: toModelName(buildingId),
+            lat,
+            lon,
+            year: config.targetYear,
+            buildingArea: Math.round(area),
+            buildingHeight,
+            storeysAboveGround: storeys,
+            buildingPopulation,
+        });
+
+        const entity = viewer.entities.add({
+            id: record.id,
+            name: record.name,
+            show: record.show,
             polygon: {
                 hierarchy: Cartesian3.fromDegreesArray(flatCoordinates),
                 height: baseHeight,
@@ -217,15 +234,34 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
                 material: modelColor,
                 outline: false,
             },
-            isNewBuilding: true,
-            year: config.targetYear,
-            latlon: [lat, lon],
-            latitude: lat,
-            longitude: lon,
-            buildingArea: Math.round(area),
-            buildingHeight: buildingHeight,
-            storeysAboveGround: storeys,
-            buildingPopulation: Math.floor(area / 30) * storeys,
+            isNewBuilding: record.isNewBuilding,
+            isEstimatedYear: record.isEstimatedYear,
+            isDamage: record.isDamage,
+            year: record.year,
+            latlon: record.latlon,
+            latitude: record.latitude,
+            longitude: record.longitude,
+            buildingUsage: record.buildingUsage,
+            buildingStructureType: record.buildingStructureType,
+            architecturalPeriod: record.architecturalPeriod,
+            buildingArea: record.buildingArea,
+            buildingHeight: record.buildingHeight,
+            storeysAboveGround: record.storeysAboveGround,
+            buildingPopulation: record.buildingPopulation,
+            buildingDetail: record.buildingDetail,
+            description: createModelDescription({
+                lat: record.latitude,
+                lon: record.longitude,
+                year: record.year,
+                isEstimatedYear: record.isEstimatedYear,
+                buildingUsage: record.buildingUsage,
+                buildingStructureType: record.buildingStructureType,
+                buildingArea: record.buildingArea,
+                buildingHeight: record.buildingHeight,
+                storeysAboveGround: record.storeysAboveGround,
+                architecturalPeriod: record.architecturalPeriod,
+                buildingPopulation: record.buildingPopulation,
+            }),
         });
 
         existingBuildings.push({
