@@ -4,13 +4,13 @@ from typing import Optional, List, Literal
 from datetime import datetime
 
 class BuildingDetail(BaseModel):
-    buildingStructureType: int = None
-    storeysAboveGround: int = None
-    buildingArea: float = None
-    buildingHeight: float = None
-    buildingUsage: int = None
-    architecturalPeriod: int = None
-    buildingPopulation: int = None
+    buildingStructureType: Optional[int] = None
+    storeysAboveGround: Optional[int] = None
+    buildingArea: Optional[float] = None
+    buildingHeight: Optional[float] = None
+    buildingUsage: Optional[int] = None
+    architecturalPeriod: Optional[int] = None
+    buildingPopulation: Optional[int] = None
 
 
 class Model3D(BaseModel):
@@ -88,8 +88,22 @@ class RegionListResponse(BaseModel):
     timestamp: datetime
 
 class NewPredictionRequest(BaseModel):
+    method: str
+    appStateYear: int
+    addYear: int
+    disasterState: str
+    percentage: float
+    region: str = "mukawa"
+    # 欠損データの扱い方針（UIから選択）
+    # - strict: 欠損がある建物は計算しない（フロントで黒表示などに使える）
+    # - fallback_fixed: 欠損があっても固定値で補完して計算する（現状互換のデフォルト）
+    missing_data_policy: Literal["strict", "fallback_fixed"] = "strict"
+    params: List[Model3D]
+    selectedRanges: Optional[List[selectedRange]] = []
+
+class NewPredictionResponse(BaseModel):
     deletes:List[int]
     models:List[Model3D]
-    add_num:int
+    add_num:List[int]
     duration_ms:float
     timestamp: datetime

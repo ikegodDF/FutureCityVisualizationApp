@@ -5,7 +5,16 @@ import math
 import random
 import numpy as np
 from scipy.stats import norm, truncnorm
-from ..models.schemas import ComputeRequest, ComputeResponse, Model3D, selectedRange, BuildingPopulationRequest
+from ..models.schemas import (
+    ComputeRequest,
+    ComputeResponse,
+    Model3D,
+    selectedRange,
+    BuildingPopulationRequest,
+    NewPredictionRequest,
+    NewPredictionResponse,
+)
+from .new_prediction_service import NewPredictionService
 from .seismic_data_service import SeismicDataService
 
 
@@ -15,6 +24,7 @@ class ComputeService:
         self.enable_cache = False  # 開発中はキャッシュ無効
         self.seismic_data_service = SeismicDataService()
         self.seismic_data_service.ensure_loaded_from_directory()
+        self.new_prediction_service = NewPredictionService()
     
     def compute(self, request: ComputeRequest) -> ComputeResponse:
         """計算リクエストを処理"""
@@ -184,7 +194,10 @@ class ComputeService:
                 param.year = appStateYear
         return param
 
-    
+    def new_prediction(self, request: NewPredictionRequest) -> NewPredictionResponse:
+        """新将来予測: 削除・新築建物数の算出と削除対象IDの抽出"""
+        return self.new_prediction_service.run(request)
+
     @staticmethod
     def _resolve_earthquake_damage_structure_kind(structure_type: Any) -> Literal["wood", "non_wood"]:
         """建物構造から地震被害計算に用いる区分を返す（木造／非木造）。"""

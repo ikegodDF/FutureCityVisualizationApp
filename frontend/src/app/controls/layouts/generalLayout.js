@@ -12,6 +12,7 @@ import { createDistributionLegend, updateLegendContent } from '../components/sha
 import { exportResultSerializable } from '../../utils/export.js';
 import { analysis } from '../actions/analysisActions.js';
 import { addNewBuildings } from '../../tiles/addRandomConstruction.js'
+import { newPrediction } from '../actions/newPredictionAction.js';
 import * as turf from "@turf/turf";
 let outputContainer;
 
@@ -116,7 +117,8 @@ export function initGeneralLayout(viewer, models) {
   const btnAnalyze = document.createElement('button');
   btnAnalyze.textContent = '分析';
   btnAnalyze.addEventListener('click', () => {
-    analysis(viewer, models);
+    // analysis(viewer, models);
+    newPrediction(viewer, models, 5);
   });
 
   const timelineController = createTimelineController({
