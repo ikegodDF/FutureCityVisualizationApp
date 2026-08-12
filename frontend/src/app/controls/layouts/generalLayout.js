@@ -49,10 +49,6 @@ export function initGeneralLayout(viewer, models) {
 
   const btnAnalyze = document.createElement('button');
   btnAnalyze.textContent = '分析';
-  btnAnalyze.addEventListener('click', () => {
-    // analysis(viewer, models);
-    newPrediction(viewer, models, 5);
-  });
 
   const timelineController = createTimelineController({
     viewer,
@@ -87,6 +83,14 @@ export function initGeneralLayout(viewer, models) {
       await timelineController.trimFutureFromYear(selectedYear);
       timeline.setYear(appState.year);
     },
+  });
+
+  btnAnalyze.addEventListener('click', async () => {
+    const ok = await newPrediction(viewer, models, 25);
+    if (!ok) return;
+    timeline.setYear(appState.year);
+    timeline.setDisasterState(appState.disasterState);
+    timelineController.syncResult();
   });
 
   const row = document.createElement('div');

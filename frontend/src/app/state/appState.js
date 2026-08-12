@@ -136,13 +136,44 @@ export const getCommittedRangeSelection = (year = appState.year) => {
   const selectionSet = new Set();
   getSelectedRangesForYear(year).forEach((range) => {
     (range.models ?? []).forEach((modelId) => {
-      const id = typeof modelId === 'number'
-        ? modelId
-        : Number(String(modelId ?? '').replace(/^model_/, ''));
-      if (Number.isFinite(id)) selectionSet.add(id);
+      const id = normalizeSelectedModelId(modelId);
+      if (id != null) selectionSet.add(id);
     });
   });
   return Array.from(selectionSet);
+};
+
+const normalizeSelectedModelId = (modelId) => {
+  if (typeof modelId === 'number' && Number.isFinite(modelId)) {
+    return modelId;
+  }
+  const parsed = Number(String(modelId ?? '').replace(/^model_/, ''));
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+/** 範囲選択から削除された建物 ID を除去する（全年の selectedRanges を走査） */
+export const removeModelsFromSelectedRanges = (deleteIds = []) => {
+  const deleteSet = new Set(
+    deleteIds
+      .map((id) => normalizeSelectedModelId(id))
+      .filter((id) => id != null),
+  );
+  if (deleteSet.size === 0) return;
+
+  Object.keys(appState.selectedRanges).forEach((yearKey) => {
+    const ranges = appState.selectedRanges[yearKey];
+    if (!Array.isArray(ranges)) return;
+
+    appState.selectedRanges[yearKey] = ranges
+      .map((range) => ({
+        ...range,
+        models: (range.models ?? []).filter((modelId) => {
+          const id = normalizeSelectedModelId(modelId);
+          return id != null && !deleteSet.has(id);
+        }),
+      }))
+      .filter((range) => Array.isArray(range.models) && range.models.length > 0);
+  });
 };
 
 export const setRoad = (road) => {
