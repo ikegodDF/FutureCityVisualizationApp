@@ -575,27 +575,122 @@ class ComputeService:
             timestamp=datetime.now()
         )
 
-    from typing import List
+    @staticmethod
+    def _haversine_km(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
+        radius_km = 6371.0
+        phi1 = math.radians(lat1)
+        phi2 = math.radians(lat2)
+        dphi = math.radians(lat2 - lat1)
+        dlambda = math.radians(lon2 - lon1)
+        a = (
+            math.sin(dphi / 2) ** 2
+            + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda / 2) ** 2
+        )
+        return 2 * radius_km * math.asin(math.sqrt(a))
+
+    def _build_building_to_mesh(self, population: dict) -> Dict[int, str]:
+        building_to_mesh: Dict[int, str] = {}
+        for mesh_id, mesh in population.items():
+            for raw_id in mesh.get("buildings") or []:
+                try:
+                    building_id = int(raw_id)
+                except (TypeError, ValueError):
+                    continue
+                building_to_mesh[building_id] = mesh_id
+        return building_to_mesh
+
+    def _build_mesh_centroids(
+        self,
+        population: dict,
+        params_by_id: Dict[int, Model3D],
+    ) -> Dict[str, tuple[float, float]]:
+        mesh_centroids: Dict[str, tuple[float, float]] = {}
+        for mesh_id, mesh in population.items():
+            sum_lon = 0.0
+            sum_lat = 0.0
+            count = 0
+            for raw_id in mesh.get("buildings") or []:
+                try:
+                    building_id = int(raw_id)
+                except (TypeError, ValueError):
+                    continue
+                building = params_by_id.get(building_id)
+                if building is None or building.latitude is None or building.longitude is None:
+                    continue
+                sum_lon += float(building.longitude)
+                sum_lat += float(building.latitude)
+                count += 1
+            if count > 0:
+                mesh_centroids[mesh_id] = (sum_lon / count, sum_lat / count)
+        return mesh_centroids
+
+    def _find_nearest_mesh_id(
+        self,
+        lat: float,
+        lon: float,
+        mesh_centroids: Dict[str, tuple[float, float]],
+    ) -> Optional[str]:
+        nearest_mesh_id = None
+        nearest_distance = float("inf")
+        for mesh_id, (centroid_lon, centroid_lat) in mesh_centroids.items():
+            distance = self._haversine_km(lon, lat, centroid_lon, centroid_lat)
+            if distance < nearest_distance:
+                nearest_distance = distance
+                nearest_mesh_id = mesh_id
+        return nearest_mesh_id
+
+    def _assign_unassigned_buildings_to_meshes(
+        self,
+        params: List[Model3D],
+        building_to_mesh: Dict[int, str],
+        mesh_centroids: Dict[str, tuple[float, float]],
+    ) -> Dict[str, List[int]]:
+        dynamic_by_mesh: Dict[str, List[int]] = {mesh_id: [] for mesh_id in mesh_centroids}
+        for param in params:
+            if param.id in building_to_mesh:
+                continue
+            if param.latitude is None or param.longitude is None:
+                continue
+            mesh_id = self._find_nearest_mesh_id(
+                float(param.latitude),
+                float(param.longitude),
+                mesh_centroids,
+            )
+            if mesh_id is None:
+                continue
+            dynamic_by_mesh.setdefault(mesh_id, []).append(param.id)
+        return dynamic_by_mesh
 
     def _calculate_building_population(self, params: List[Model3D], appStateYear: int, selectedRanges: List[selectedRange], population: dict) -> List[Model3D]:
-    
-        for target_mesh in population.values():
-            target_population = target_mesh[str(appStateYear)]
+        params_by_id = {param.id: param for param in params}
+        building_to_mesh = self._build_building_to_mesh(population)
+        mesh_centroids = self._build_mesh_centroids(population, params_by_id)
+        dynamic_by_mesh = self._assign_unassigned_buildings_to_meshes(
+            params,
+            building_to_mesh,
+            mesh_centroids,
+        )
+
+        year_key = str(appStateYear)
+        for mesh_id, target_mesh in population.items():
+            if year_key not in target_mesh:
+                continue
+            target_population = target_mesh[year_key]
 
             active_buildings = []
             total_area = 0
 
-            for building_id in target_mesh["buildings"]:
-                idx = int(building_id) - 1
-            
-                if idx < 0 or idx >= len(params):
-                    print(f"建物ID {building_id} に対応する要素が params にありません")
-                    continue
-                
-                building = params[idx]
+            static_building_ids = target_mesh.get("buildings") or []
+            dynamic_building_ids = dynamic_by_mesh.get(mesh_id, [])
+            candidate_building_ids = list(static_building_ids) + [
+                str(building_id) for building_id in dynamic_building_ids
+            ]
+
+            for building_id in candidate_building_ids:
+                building = params_by_id.get(int(building_id))
 
                 if building is None:
-                    print("建物ない")
+                    print(f"建物ID {building_id} に対応する要素が params にありません")
                     continue
 
                 if building.show:

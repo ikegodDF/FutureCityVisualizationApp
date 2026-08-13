@@ -4,6 +4,7 @@ import { refreshRangeVisibility } from './rangeSelectActions.js';
 import { buildComputePayload } from '../../region/regionState.js';
 import { generateBuildingsByCategory } from '../../construction/generateBuildings.js';
 import { toPayload, resolveBuildingId } from '../../domain/buildings/index.js';
+import { renewBuildingPopulation } from './renewBuildingPopulationAction.js';
 
 /** 共有 models 配列の中身を差し替える（参照は維持） */
 export const replaceSceneModels = (models, nextModels) => {
@@ -125,8 +126,12 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
   const disaster = appState.disasterState;
   const previousYear = appState.year;
 
-  const finish = (sceneModels) => {
+  const finish = async (sceneModels) => {
     replaceSceneModels(models, sceneModels);
+    const populationOk = await renewBuildingPopulation(viewer);
+    if (!populationOk) {
+      console.warn('new_prediction: 人口按分に失敗しました');
+    }
     console.log(appState);
     return true;
   };
@@ -138,7 +143,7 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
       collectDeletedIdsFromResults(previousResult, cachedResult),
     );
     const sceneModels = await applyCachedYear(viewer, models, addYear);
-    return finish(sceneModels);
+    return await finish(sceneModels);
   }
 
   const payload = buildComputePayload({
@@ -169,7 +174,7 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
     });
 
     await commitTimelineAdvance(viewer, sceneModels, previousYear + addYear);
-    return finish(sceneModels);
+    return await finish(sceneModels);
   } catch (error) {
     console.error('new_prediction error:', error);
     return false;

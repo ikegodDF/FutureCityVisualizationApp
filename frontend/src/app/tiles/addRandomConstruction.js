@@ -238,7 +238,7 @@ export async function addNewBuildings(viewer, currentModels = [], count, zones, 
         const modelColor = getModelColor(config.constructionYear);
 
         const buildingId = idAllocator.next();
-        const buildingPopulation = Math.floor(area / 30) * storeys;
+        const buildingPopulation = 0;
         const record = createNewBuildingRecord({
             id: buildingId,
             lat,
