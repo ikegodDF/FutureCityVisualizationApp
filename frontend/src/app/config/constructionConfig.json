@@ -12,7 +12,7 @@
   },
   "regions": {
     "mukawa": {
-      "zoneSource": "config",
+      "zoneSource": "roadBlocks",
       "zones": [
         {
           "id": "mukawa-default",

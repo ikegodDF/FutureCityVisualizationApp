@@ -8,7 +8,10 @@ import { addGltfModels } from './app/tiles/addGltfModels.js';
 import { addPopulationMesh } from './app/tiles/addPopulationMesh.js';
 import { addRoad } from './app/tiles/addRoad.js';
 import { result } from './app/controls/actions/index.js';
-import { appState, setRegion, setResult, setRoad } from './app/state/appState.js';
+import { appState, setRegion, setResult, setRoad, setBlockRegions } from './app/state/appState.js';
+import { blockRegionsFromConstructionZones } from './app/state/blockRegions.js';
+import { buildZonesFromConfig, buildZonesFromRoadBlocks } from './app/construction/constructionZoneUtils.js';
+import { getActiveRegionId } from './app/region/regionState.js';
 import { toPayload } from './app/domain/buildings/toPayload.js';
 import { promptRegionSelection } from './app/region/regionSelector.js';
 import { getActiveRegion } from './app/region/regionState.js';
@@ -44,7 +47,13 @@ const viewer = (async function bootstrap() {
   viewer.scene.globe.depthTestAgainstTerrain = true;
 
   const road = await addRoad(viewer);
-  setRoad(road)
+  setRoad(road);
+
+  const configZones = buildZonesFromConfig(getActiveRegionId());
+  setBlockRegions(blockRegionsFromConstructionZones(
+    buildZonesFromRoadBlocks(road, configZones),
+  ));
+  console.log(`街区領域: ${appState.blockRegions.length} 区画（地図非表示・appState のみ保持）`);
 
   setResult(models.map(toPayload));
   await renewBuildingPopulation(viewer);

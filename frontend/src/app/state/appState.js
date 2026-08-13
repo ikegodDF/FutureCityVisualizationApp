@@ -8,6 +8,8 @@ export const appState = {
   region: null,
   result: {},
   road: {},
+  /** @type {import('./blockRegions.js').BlockRegion[]} */
+  blockRegions: [],
   totalVictims: {},
   selectedRanges: {},
   distribution: null,
@@ -180,4 +182,32 @@ export const setRoad = (road) => {
   appState.road = road
 }
 
+/** @param {import('./blockRegions.js').BlockRegion[]} regions */
+export const setBlockRegions = (regions) => {
+  appState.blockRegions = Array.isArray(regions) ? regions.map((region) => ({ ...region })) : [];
+}
+
+export const getBlockRegions = () => appState.blockRegions;
+
+export const getBlockRegionById = (id) => (
+  appState.blockRegions.find((region) => region.id === id) ?? null
+);
+
+/** @param {string} id @param {Partial<import('./blockRegions.js').BlockRegion>} patch */
+export const updateBlockRegion = (id, patch = {}) => {
+  const index = appState.blockRegions.findIndex((region) => region.id === id);
+  if (index === -1) {
+    return null;
+  }
+
+  appState.blockRegions[index] = {
+    ...appState.blockRegions[index],
+    ...patch,
+  };
+  return appState.blockRegions[index];
+}
+
+export const clearBlockRegions = () => {
+  appState.blockRegions = [];
+}
 

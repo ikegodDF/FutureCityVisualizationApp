@@ -1,6 +1,6 @@
 import * as turf from '@turf/turf';
 import constructionConfig from '../config/constructionConfig.json';
-import { deriveRoadBlockZones } from './roadBlockZones.js';
+import { deriveRoadBlockZones, deriveRoadGraphBlockZones } from './roadBlockZones.js';
 
 /**
  * @typedef {Object} ConstructionZone
@@ -99,16 +99,27 @@ export function buildZonesFromSelectedRanges(selectedRanges = [], year = null) {
     .filter(Boolean);
 }
 
-export function buildZonesFromRoadBlocks(roadSpatial, boundaryZones = [], options = {}) {
+export function buildZonesFromRoadBlocks(roadData, boundaryZones = [], options = {}) {
   const boundaryPolygon = boundaryZones[0]?.polygon;
-  if (!boundaryPolygon) {
+  const defaults = {
+    ...getConstructionDefaults(),
+    ...options,
+  };
+
+  const adjacencyList = roadData?.graph?.adjacencyList;
+  if (adjacencyList) {
+    const graphZones = deriveRoadGraphBlockZones(adjacencyList, boundaryPolygon, defaults);
+    if (graphZones.length > 0) {
+      return graphZones;
+    }
+  }
+
+  const roadSpatial = roadData?.spatial ?? roadData;
+  if (!boundaryPolygon || !roadSpatial?.rawGeoJson) {
     return [];
   }
 
-  return deriveRoadBlockZones(boundaryPolygon, roadSpatial, {
-    ...getConstructionDefaults(),
-    ...options,
-  });
+  return deriveRoadBlockZones(boundaryPolygon, roadSpatial, defaults);
 }
 
 export function pickWeightedZone(zones = []) {

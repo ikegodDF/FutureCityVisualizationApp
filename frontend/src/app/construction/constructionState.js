@@ -66,8 +66,7 @@ export function resolveConstructionZones(appState, regionId = getActiveRegionId(
       return selectedZones.length > 0 ? selectedZones : configZones;
     }
     case 'roadBlocks': {
-      const roadSpatial = appState.road?.spatial;
-      const roadBlockZones = buildZonesFromRoadBlocks(roadSpatial, configZones);
+      const roadBlockZones = buildZonesFromRoadBlocks(appState.road, configZones);
       return roadBlockZones.length > 0 ? roadBlockZones : configZones;
     }
     case 'custom':

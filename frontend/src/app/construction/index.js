@@ -20,7 +20,8 @@ export {
   setCustomConstructionZones,
 } from './constructionState.js';
 
-export { deriveRoadBlockZones } from './roadBlockZones.js';
+export { deriveRoadBlockZones, deriveRoadGraphBlockZones } from './roadBlockZones.js';
+export { extractEnclosedRegions } from './roadEnclosedRegions.js';
 
 export {
   generateBuildings,

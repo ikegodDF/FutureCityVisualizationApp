@@ -1,5 +1,5 @@
 import { GeoJsonDataSource, Color } from 'cesium';
-import * as turf from '@turf/turf'; // ★ Turf.js をインポート
+import * as turf from '@turf/turf';
 
 GeoJsonDataSource.crsNames['urn:ogc:def:crs:EPSG::6668'] = GeoJsonDataSource.crsNames['urn:ogc:def:crs:OGC:1.3:CRS84'];
 GeoJsonDataSource.crsNames['urn:ogc:def:crs:EPSG::6680'] = GeoJsonDataSource.crsNames['urn:ogc:def:crs:OGC:1.3:CRS84'];
@@ -75,7 +75,6 @@ export const addRoad = async (viewer) => {
 
         console.log(`✅ 道路データ描画完了（${entities.length}本）`);
 
-        // ★ 5. ダイクストラ用と新築用の両方のデータを返却する
         return {
             graph: {
                 adjacencyList,
@@ -85,7 +84,7 @@ export const addRoad = async (viewer) => {
                 rawGeoJson,
                 roadSegments,
                 roadBuffer
-            }
+            },
         };
 
     } catch (error) {
