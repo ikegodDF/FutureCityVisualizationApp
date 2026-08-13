@@ -15,7 +15,8 @@
   "description": "",
   "dependencies": {
     "@turf/turf": "^7.3.5",
-    "cesium": "^1.133.1"
+    "cesium": "^1.133.1",
+    "html2canvas": "^1.4.1"
   },
   "devDependencies": {
     "cross-env": "^10.1.0",

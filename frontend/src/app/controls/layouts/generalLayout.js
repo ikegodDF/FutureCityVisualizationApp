@@ -9,6 +9,7 @@ import { createBuildingAgeLegend } from '../components/shared/scales/buildingAge
 import { createDistributionLegend, updateLegendContent } from '../components/shared/scales/distributionLegend.js';
 import { runConstructionPreview } from '../actions/constructionActions.js';
 import { newPrediction } from '../actions/newPredictionAction.js';
+import { takeHighResScreenshot } from '../../utils/screenshot.js';
 let outputContainer;
 
 export function initGeneralLayout(viewer, models) {
@@ -49,6 +50,19 @@ export function initGeneralLayout(viewer, models) {
 
   const btnAnalyze = document.createElement('button');
   btnAnalyze.textContent = '分析';
+
+  const btnScreenshot = document.createElement('button');
+  btnScreenshot.textContent = 'スクリーンショット';
+  btnScreenshot.addEventListener('click', async () => {
+    btnScreenshot.disabled = true;
+    try {
+      await takeHighResScreenshot(viewer);
+    } catch (error) {
+      console.error('スクリーンショット取得に失敗しました:', error);
+    } finally {
+      btnScreenshot.disabled = false;
+    }
+  });
 
   const timelineController = createTimelineController({
     viewer,
@@ -99,7 +113,13 @@ export function initGeneralLayout(viewer, models) {
   row.appendChild(btnRangeSelect);
   row.appendChild(btnAddDistribution);
   row.appendChild(btnAnalyze);
+
+  const rowSecondary = document.createElement('div');
+  rowSecondary.className = 'control-row';
+  rowSecondary.appendChild(btnScreenshot);
+
   container.appendChild(row);
+  container.appendChild(rowSecondary);
   container.appendChild(createBuildingAgeLegend());
   container.appendChild(legendElement);
   
