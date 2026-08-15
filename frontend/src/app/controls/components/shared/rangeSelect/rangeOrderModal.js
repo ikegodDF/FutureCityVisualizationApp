@@ -1,4 +1,4 @@
-import { closeModal, openModal, setModalCloseHandler } from '../../editor/modal/modalRoot.js';
+import { closeModal, openModal, setModalCloseHandler } from '../modal/modalRoot.js';
 
 const RANGE_PERIOD_MAX_YEARS = 25;
 const RANGE_PERIOD_STEP_YEARS = 5;

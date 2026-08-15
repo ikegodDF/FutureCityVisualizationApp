@@ -1,3 +1,5 @@
+import { syncGeneralLeftStackLayout } from '../../../layouts/generalLayoutSync.js';
+
 const RANGE_PANEL_ID = 'rangeSelectPanel';
 const RANGE_CLEAR_BUTTON_ID = 'rangeSelectionClearButton';
 const RANGE_CLEAR_ROW_ID = 'rangeSelectionClearRow';
@@ -87,13 +89,14 @@ export const updateRangeClearButtonVisibility = ({ visible, onClear }) => {
   if (!visible) {
     getRangeClearButton()?.remove();
     getRangeClearRow()?.remove();
+    syncGeneralLeftStackLayout();
     return;
   }
 
   const existing = getRangeClearButton();
   if (existing) return;
 
-  const controls = document.getElementById('uiControls');
+  const controls = document.getElementById('operator-ui') ?? document.getElementById('uiControls');
   const row = document.createElement('div');
   row.id = RANGE_CLEAR_ROW_ID;
   row.className = 'control-row range-clear-row';
@@ -111,4 +114,6 @@ export const updateRangeClearButtonVisibility = ({ visible, onClear }) => {
   } else {
     document.body.appendChild(row);
   }
+
+  syncGeneralLeftStackLayout();
 };

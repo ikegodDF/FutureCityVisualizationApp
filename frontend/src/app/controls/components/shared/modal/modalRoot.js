@@ -21,10 +21,10 @@ export function initModal() {
   header.className = 'modal-header';
   const title = document.createElement('div');
   title.className = 'modal-title';
-  title.textContent = '特定状況の呼び出し';
   const closeBtn = document.createElement('button');
   closeBtn.className = 'modal-close';
   closeBtn.textContent = '×';
+  closeBtn.setAttribute('aria-label', '閉じる');
   closeBtn.addEventListener('click', closeModal);
   header.appendChild(title);
   header.appendChild(closeBtn);

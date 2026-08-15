@@ -36,6 +36,7 @@ export const createEditMenuBar = ({ title = '編集メニュー' } = {}) => {
   root.appendChild(tooltip);
 
   let isOpen = false;
+
   const updateOffset = () => {
     const panelHeight = Math.ceil(panel.getBoundingClientRect().height);
     document.body.style.setProperty('--general-edit-menu-offset', `${panelHeight}px`);

@@ -125,8 +125,3 @@ body.ui-mode-general .edit-menu-tooltip {
 body.ui-mode-general .edit-menu-tooltip.is-visible {
     opacity: 1;
 }
-
-
-body.ui-mode-general #cesiumContainer {
-    transition: none;
-}

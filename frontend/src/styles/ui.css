@@ -1,5 +1,6 @@
 @import './tokens.css';
 @import './components/shared/controls.css';
+@import './components/shared/info-ui.css';
 @import './components/shared/legend.css';
 @import './components/shared/output.css';
 @import './components/shared/screenshot.css';
@@ -7,4 +8,4 @@
 @import './components/shared/rangeSelect/order-modal.css';
 @import './components/general/timeline.css';
 @import './components/general/edit-menu.css';
-@import './components/editor/modal.css';
+@import './components/shared/modal.css';

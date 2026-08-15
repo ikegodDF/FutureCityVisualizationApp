@@ -71,10 +71,22 @@ body.ui-mode-general .timeline-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+    margin-top: 8px;
 }
 
 body.ui-mode-general .timeline-actions button {
+    padding: 6px 10px;
+    border: 1px solid var(--ui-border-soft);
+    border-radius: 6px;
+    background: var(--ui-bg-soft);
+    color: var(--ui-text-main);
+    cursor: pointer;
     font-size: 12px;
+    font-family: var(--ui-font-family);
+}
+
+body.ui-mode-general .timeline-actions button:hover {
+    background: rgba(255, 255, 255, 0.14);
 }
 
 body.ui-mode-general .timeline-policy-group {

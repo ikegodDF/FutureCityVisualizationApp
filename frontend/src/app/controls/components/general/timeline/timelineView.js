@@ -54,9 +54,11 @@ export const createTimelineView = ({
   actions.className = 'timeline-actions';
 
   const applyBtn = document.createElement('button');
+  applyBtn.type = 'button';
   applyBtn.textContent = 'この年を表示';
 
   const trimBtn = document.createElement('button');
+  trimBtn.type = 'button';
   trimBtn.textContent = 'この年より先を削除';
 
   actions.appendChild(applyBtn);
@@ -156,7 +158,7 @@ export const createTimelineView = ({
   };
 
   const updateCurrentLabel = () => {
-    currentLabel.textContent = `現在: ${getSelectedYear()}年`;
+    currentLabel.textContent = `現在: ${snapYear(getSelectedYear())}年`;
   };
 
   slider.addEventListener('input', updateCurrentLabel);

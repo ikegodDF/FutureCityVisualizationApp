@@ -49,10 +49,10 @@ const collectPendingSelectionIds = (pendingRanges = []) => {
 };
 
 const setControlsVisibilityForRangeMode = (hidden, previousStates = []) => {
-  const controls = document.getElementById('uiControls');
+  const controls = document.getElementById('operator-ui') ?? document.getElementById('uiControls');
   if (!controls) return [];
 
-  const targets = Array.from(controls.querySelectorAll('button, .edit-menu-bar'));
+  const targets = Array.from(controls.querySelectorAll('button'));
   if (!hidden) {
     previousStates.forEach(({ element, display }) => {
       if (element) element.style.display = display;

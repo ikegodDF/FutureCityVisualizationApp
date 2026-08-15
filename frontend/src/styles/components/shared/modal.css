@@ -31,13 +31,18 @@
 
 .modal-header {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     padding: 10px 12px;
     border-bottom: 1px solid var(--ui-border-soft);
 }
 
+.modal-title:empty {
+    display: none;
+}
+
 .modal-title {
+    flex: 1;
     font-weight: bold;
 }
 
@@ -52,27 +57,6 @@
 .modal-content {
     padding: 12px;
     line-height: 1.6;
-}
-
-.modal-content .form-row {
-    margin-bottom: 10px;
-}
-
-.modal-content label {
-    display: block;
-    margin-bottom: 6px;
-    line-height: 1.6;
-}
-
-.modal-content input[type="file"] {
-    display: block;
-}
-
-.modal-content .selects,
-.modal-content .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--ui-gap-sm);
 }
 
 .modal-content select {

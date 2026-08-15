@@ -20,7 +20,7 @@ export function updateLegendContent(container) {
     return;
   }
 
-  container.style.display = 'block';
+  container.style.display = 'flex';
   container.innerHTML = '';
 
   const title = document.createElement('div');

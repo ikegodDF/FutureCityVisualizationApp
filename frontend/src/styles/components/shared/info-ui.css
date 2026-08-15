@@ -1,0 +1,16 @@
+/* 情報 UI: DOM グループのみ（子要素が個別にレイアウト） */
+#info-ui {
+    display: contents;
+}
+
+.info-ui-legends {
+    position: fixed;
+    top: var(--general-left-stack-offset, 100px);
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--ui-gap-sm);
+    z-index: 1000;
+    font-family: var(--ui-font-family);
+    color: var(--ui-text-main);
+}

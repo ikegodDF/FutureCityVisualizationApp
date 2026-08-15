@@ -1,6 +1,7 @@
 import html2canvas from 'html2canvas';
 import { appState } from '../state/appState.js';
 import { getActiveRegion } from '../region/regionState.js';
+import { syncGeneralLeftStackLayout } from '../controls/layouts/generalLayoutSync.js';
 import { waitForDomPaint, waitForViewerRender } from './waitForViewerRender.js';
 
 export const SCREENSHOT_SCALE = 4;
@@ -10,6 +11,11 @@ const DISASTER_LABELS = {
   地震発生後: '地震被害',
   津波発生後: '津波被害',
 };
+
+const SCREENSHOT_OVERLAYS = [
+  { selector: '#buildingAgeLegend', anchor: 'top-left' },
+  { selector: '#outputContainer', anchor: 'center' },
+];
 
 function resolveRegionLabel() {
   return getActiveRegion()?.label
@@ -23,6 +29,15 @@ function buildScreenshotFilename() {
   return `政策:${appState.appliedPolicy},${appState.year},${disasterLabel},${regionLabel}.png`;
 }
 
+function resolveScreenshotFilename(filename) {
+  if (filename == null || String(filename).trim() === '') {
+    return buildScreenshotFilename();
+  }
+
+  const trimmed = String(filename).trim();
+  return trimmed.toLowerCase().endsWith('.png') ? trimmed : `${trimmed}.png`;
+}
+
 function downloadDataUrl(dataUrl, filename) {
   const link = document.createElement('a');
   link.href = dataUrl;
@@ -30,66 +45,129 @@ function downloadDataUrl(dataUrl, filename) {
   link.click();
 }
 
-function buildScreenshotUiOverlay() {
-  const overlay = document.createElement('div');
-  overlay.id = 'screenshot-ui-overlay';
+function resolveOverlaySnapshots(canvasRect) {
+  return SCREENSHOT_OVERLAYS
+    .map(({ selector, anchor }) => {
+      const element = document.querySelector(selector);
+      if (!element) {
+        return null;
+      }
 
-  const legend = document.querySelector('.building-age-legend');
-  if (legend) {
-    overlay.appendChild(legend.cloneNode(true));
-  }
-
-  const timeline = document.querySelector('.timeline-controls');
-  if (timeline) {
-    overlay.appendChild(timeline.cloneNode(true));
-  }
-
-  document.body.appendChild(overlay);
-  return overlay;
+      const rect = element.getBoundingClientRect();
+      return {
+        element,
+        anchor,
+        rect: {
+          width: rect.width,
+          height: rect.height,
+          relLeft: rect.left - canvasRect.left,
+          relTop: rect.top - canvasRect.top,
+        },
+      };
+    })
+    .filter(Boolean);
 }
 
-async function withScreenshotUi(runCapture) {
-  document.body.classList.add('screenshot-capture');
-  const overlay = buildScreenshotUiOverlay();
+function resolveScreenshotLayout(cesiumCanvas, outputScale) {
+  const canvasRect = cesiumCanvas.getBoundingClientRect();
+  const displayWidth = canvasRect.width || cesiumCanvas.clientWidth || window.innerWidth;
+  const mapScale = (cesiumCanvas.width * outputScale) / displayWidth;
+
+  return {
+    canvasRect,
+    width: cesiumCanvas.width * outputScale,
+    height: cesiumCanvas.height * outputScale,
+    mapScale,
+  };
+}
+
+function resolveOverlayDestination(rect, mapScale, anchor) {
+  const baseX = rect.relLeft * mapScale;
+  const baseY = rect.relTop * mapScale;
+  const destW = rect.width * mapScale;
+  const destH = rect.height * mapScale;
+
+  if (anchor === 'top-left') {
+    return { destX: baseX, destY: baseY, destW, destH };
+  }
+
+  return {
+    destX: baseX,
+    destY: baseY,
+    destW,
+    destH,
+  };
+}
+
+async function drawDomOverlay(ctx, snapshot, mapScale) {
+  const { element, rect, anchor } = snapshot;
+  if (rect.width <= 0 || rect.height <= 0) {
+    return;
+  }
+
+  const { destX, destY, destW, destH } = resolveOverlayDestination(rect, mapScale, anchor);
+
   try {
-    await waitForDomPaint();
-    return await runCapture();
-  } finally {
-    overlay.remove();
-    document.body.classList.remove('screenshot-capture');
+    const captureScale = Math.max(window.devicePixelRatio || 1, mapScale);
+    const overlayCanvas = await html2canvas(element, {
+      scale: captureScale,
+      backgroundColor: null,
+      logging: false,
+      useCORS: true,
+    });
+    ctx.drawImage(overlayCanvas, destX, destY, destW, destH);
+  } catch (error) {
+    console.warn('UI オーバーレイの描画に失敗しました:', element, error);
   }
 }
 
 /**
- * 現在の画面（Cesium シーン + UI）の高解像度 PNG を 1 枚保存する。
- * 撮影中は築年数スケールとタイムラインのみ UI に残す。
+ * Cesium + 築年数スケール + 上部の施策・年度表示 の PNG を保存する。
+ * UI は DOM から取得。モデル編集パネルは screenshot.css で非表示。
+ *
  * @param {import('cesium').Viewer} viewer
- * @param {number} [scale=4]
- * @returns {Promise<{ filename: string, dataUrl: string }>}
+ * @param {string} [filename] 保存ファイル名。省略時は施策・年度などから自動生成
+ * @param {number} [scale=SCREENSHOT_SCALE]
  */
-export async function takeHighResScreenshot(viewer, scale = SCREENSHOT_SCALE) {
-  return withScreenshotUi(async () => {
-    await waitForViewerRender(viewer);
+export async function takeHighResScreenshot(
+  viewer,
+  filename,
+  scale = SCREENSHOT_SCALE,
+) {
+  await waitForViewerRender(viewer);
+
+  syncGeneralLeftStackLayout();
+  await waitForDomPaint();
+
+  const cesiumCanvas = viewer.scene.canvas;
+  const canvasRect = cesiumCanvas.getBoundingClientRect();
+  const overlaySnapshots = resolveOverlaySnapshots(canvasRect);
+  const layout = resolveScreenshotLayout(cesiumCanvas, scale);
+
+  document.body.classList.add('screenshot-capture');
+  try {
     await waitForDomPaint();
+    document.body.offsetHeight;
+
     viewer.scene.render();
 
-    const { width: originalWidth, height: originalHeight } = viewer.scene.canvas;
+    const compositeCanvas = document.createElement('canvas');
+    compositeCanvas.width = layout.width;
+    compositeCanvas.height = layout.height;
 
-    const canvas = document.createElement('canvas');
-    canvas.width = originalWidth * scale;
-    canvas.height = originalHeight * scale;
+    const context = compositeCanvas.getContext('2d');
+    context.drawImage(cesiumCanvas, 0, 0, layout.width, layout.height);
 
-    const context = canvas.getContext('2d');
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    context.drawImage(viewer.scene.canvas, 0, 0, canvas.width, canvas.height);
+    for (const snapshot of overlaySnapshots) {
+      await drawDomOverlay(context, snapshot, layout.mapScale);
+    }
 
-    const uiCanvas = await html2canvas(document.body, { scale });
-    context.drawImage(uiCanvas, 0, 0, canvas.width, canvas.height);
+    const resolvedFilename = resolveScreenshotFilename(filename);
+    const dataUrl = compositeCanvas.toDataURL('image/png', 1.0);
+    downloadDataUrl(dataUrl, resolvedFilename);
 
-    const filename = buildScreenshotFilename();
-    const dataUrl = canvas.toDataURL('image/png', 1.0);
-    downloadDataUrl(dataUrl, filename);
-
-    return { filename, dataUrl };
-  });
+    return { filename: resolvedFilename, dataUrl, width: layout.width, height: layout.height };
+  } finally {
+    document.body.classList.remove('screenshot-capture');
+  }
 }

@@ -12,37 +12,44 @@ import { newPrediction } from '../actions/newPredictionAction.js';
 import { restoreInitialScene } from '../actions/restoreInitialSceneAction.js';
 import { takeHighResScreenshot } from '../../utils/screenshot.js';
 import { waitForDomPaint, waitForViewerRender } from '../../utils/waitForViewerRender.js';
+import { bindGeneralLeftStackLayoutSync } from './generalLayoutSync.js';
 let outputContainer;
 
 export function initGeneralLayout(viewer, models) {
-  if (document.getElementById('uiControls')) return;
+  if (document.getElementById('operator-ui')) return;
   document.body.classList.add('ui-mode-general');
-  document.body.classList.remove('ui-mode-editor');
+  document.body.classList.remove('general-edit-menu-open');
+  document.body.style.setProperty('--general-edit-menu-offset', '0px');
   const baseYear = appState.year;
+
+  const operatorUi = document.createElement('div');
+  operatorUi.id = 'operator-ui';
+
+  const infoUi = document.createElement('div');
+  infoUi.id = 'info-ui';
 
   outputContainer = document.createElement('div');
   outputContainer.id = 'outputContainer';
-  document.body.appendChild(outputContainer);
 
-  const container = document.createElement('div');
-  container.id = 'uiControls';
+  const legendsWrap = document.createElement('div');
+  legendsWrap.className = 'info-ui-legends';
+  legendsWrap.appendChild(createBuildingAgeLegend());
+
+  const legendElement = createDistributionLegend();
+  legendsWrap.appendChild(legendElement);
+  infoUi.appendChild(legendsWrap);
 
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
   btnFlyJapan.addEventListener('click', async () => {
     models = await runConstructionPreview(viewer, models);
-
-    // 建物データ取得
-    // const filename = `result_${Date.now()}.json`;
-    // exportResultSerializable(filename, appState.result);
   });
-
 
   const btnRangeSelect = document.createElement('button');
   btnRangeSelect.textContent = '範囲選択して編集';
   btnRangeSelect.addEventListener('click', () => {
     startRangeSelection(viewer);
-  })
+  });
 
   const btnAddDistribution = document.createElement('button');
   btnAddDistribution.textContent = '分布取得';
@@ -73,8 +80,6 @@ export function initGeneralLayout(viewer, models) {
     baseYear,
   });
 
-  const legendElement = createDistributionLegend();
-
   const timeline = createTimelineView({
     baseYear,
     currentYear: appState.year,
@@ -90,7 +95,7 @@ export function initGeneralLayout(viewer, models) {
     onDisasterChange: async (disasterState) => {
       await timelineController.applyDisasterState(disasterState);
       timeline.setDisasterState(appState.disasterState);
-      updateLegendContent(legendElement)
+      updateLegendContent(legendElement);
     },
     onPolicyChange: async (policyName) => {
       await timelineController.applyPolicy(policyName);
@@ -100,6 +105,10 @@ export function initGeneralLayout(viewer, models) {
       timeline.setYear(appState.year);
     },
   });
+
+  const editMenuBar = createEditMenuBar({ title: 'モデル編集' });
+  editMenuBar.content.appendChild(timeline.element);
+  infoUi.appendChild(editMenuBar.element);
 
   const syncTimelineFromAppState = () => {
     timeline.setYear(appState.year);
@@ -138,18 +147,17 @@ export function initGeneralLayout(viewer, models) {
   rowSecondary.className = 'control-row';
   rowSecondary.appendChild(btnScreenshot);
 
-  container.appendChild(row);
-  container.appendChild(rowSecondary);
-  container.appendChild(createBuildingAgeLegend());
-  container.appendChild(legendElement);
-  
-  const editMenuBar = createEditMenuBar({ title: 'モデル編集' });
-  editMenuBar.content.appendChild(timeline.element);
-  container.appendChild(editMenuBar.element);
+  operatorUi.appendChild(row);
+  operatorUi.appendChild(rowSecondary);
 
-  document.body.appendChild(container);
+  document.body.appendChild(operatorUi);
+  document.body.appendChild(outputContainer);
+  document.body.appendChild(infoUi);
+
+  bindGeneralLeftStackLayoutSync();
 
   timelineController.syncResult();
 }
 
 export { outputContainer };
+
