@@ -1,6 +1,7 @@
 import html2canvas from 'html2canvas';
 import { appState } from '../state/appState.js';
 import { getActiveRegion } from '../region/regionState.js';
+import { waitForDomPaint, waitForViewerRender } from './waitForViewerRender.js';
 
 export const SCREENSHOT_SCALE = 4;
 
@@ -29,32 +30,66 @@ function downloadDataUrl(dataUrl, filename) {
   link.click();
 }
 
+function buildScreenshotUiOverlay() {
+  const overlay = document.createElement('div');
+  overlay.id = 'screenshot-ui-overlay';
+
+  const legend = document.querySelector('.building-age-legend');
+  if (legend) {
+    overlay.appendChild(legend.cloneNode(true));
+  }
+
+  const timeline = document.querySelector('.timeline-controls');
+  if (timeline) {
+    overlay.appendChild(timeline.cloneNode(true));
+  }
+
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+async function withScreenshotUi(runCapture) {
+  document.body.classList.add('screenshot-capture');
+  const overlay = buildScreenshotUiOverlay();
+  try {
+    await waitForDomPaint();
+    return await runCapture();
+  } finally {
+    overlay.remove();
+    document.body.classList.remove('screenshot-capture');
+  }
+}
+
 /**
  * 現在の画面（Cesium シーン + UI）の高解像度 PNG を 1 枚保存する。
+ * 撮影中は築年数スケールとタイムラインのみ UI に残す。
  * @param {import('cesium').Viewer} viewer
  * @param {number} [scale=4]
  * @returns {Promise<{ filename: string, dataUrl: string }>}
  */
 export async function takeHighResScreenshot(viewer, scale = SCREENSHOT_SCALE) {
-  viewer.scene.requestRender();
-  viewer.scene.render();
+  return withScreenshotUi(async () => {
+    await waitForViewerRender(viewer);
+    await waitForDomPaint();
+    viewer.scene.render();
 
-  const { width: originalWidth, height: originalHeight } = viewer.scene.canvas;
+    const { width: originalWidth, height: originalHeight } = viewer.scene.canvas;
 
-  const canvas = document.createElement('canvas');
-  canvas.width = originalWidth * scale;
-  canvas.height = originalHeight * scale;
+    const canvas = document.createElement('canvas');
+    canvas.width = originalWidth * scale;
+    canvas.height = originalHeight * scale;
 
-  const context = canvas.getContext('2d');
-  context.clearRect(0, 0, canvas.width, canvas.height);
-  context.drawImage(viewer.scene.canvas, 0, 0, canvas.width, canvas.height);
+    const context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(viewer.scene.canvas, 0, 0, canvas.width, canvas.height);
 
-  const uiCanvas = await html2canvas(document.body, { scale });
-  context.drawImage(uiCanvas, 0, 0, canvas.width, canvas.height);
+    const uiCanvas = await html2canvas(document.body, { scale });
+    context.drawImage(uiCanvas, 0, 0, canvas.width, canvas.height);
 
-  const filename = buildScreenshotFilename();
-  const dataUrl = canvas.toDataURL('image/png', 1.0);
-  downloadDataUrl(dataUrl, filename);
+    const filename = buildScreenshotFilename();
+    const dataUrl = canvas.toDataURL('image/png', 1.0);
+    downloadDataUrl(dataUrl, filename);
 
-  return { filename, dataUrl };
+    return { filename, dataUrl };
+  });
 }

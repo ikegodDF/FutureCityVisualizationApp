@@ -14,6 +14,8 @@ export const appState = {
   selectedRanges: {},
   distribution: null,
   population: null,
+  /** @type {import('./baselineScene.js').BaselineSceneRef|null} */
+  baselineScene: null,
 };
 
 export const setYear = (year) => {
@@ -64,7 +66,13 @@ export const resetResult = (viewer) => {
   console.log(appState);
 }
 
-export const allResetResult = (viewer) => {
+export const allResetResult = async (viewer, models = []) => {
+  const { getBaselineSceneRef } = await import('./baselineScene.js');
+  if (getBaselineSceneRef()) {
+    const { restoreInitialScene } = await import('../controls/actions/restoreInitialSceneAction.js');
+    return restoreInitialScene(viewer, models);
+  }
+
   const initialYear = new Date().getFullYear();
   const initialPolicy = '施策なし';
   const initialDisasterState = '被災前';

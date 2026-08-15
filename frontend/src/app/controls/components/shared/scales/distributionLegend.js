@@ -2,7 +2,8 @@ import { appState } from '../../../../state/appState.js';
 
 export function createDistributionLegend() {
   const legendContainer = document.createElement('div');
-  legendContainer.id = 'buildingAgeLegend';
+  legendContainer.id = 'distributionLegend';
+  legendContainer.className = 'distribution-legend';
 
   updateLegendContent(legendContainer);
 

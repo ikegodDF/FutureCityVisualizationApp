@@ -9,6 +9,7 @@ import { addPopulationMesh } from './app/tiles/addPopulationMesh.js';
 import { addRoad } from './app/tiles/addRoad.js';
 import { result } from './app/controls/actions/index.js';
 import { appState, setRegion, setResult, setRoad, setBlockRegions } from './app/state/appState.js';
+import { setBaselineSceneRef } from './app/state/baselineScene.js';
 import { blockRegionsFromConstructionZones } from './app/state/blockRegions.js';
 import { buildZonesFromConfig, buildZonesFromRoadBlocks } from './app/construction/constructionZoneUtils.js';
 import { getActiveRegionId } from './app/region/regionState.js';
@@ -57,6 +58,7 @@ const viewer = (async function bootstrap() {
 
   setResult(models.map(toPayload));
   await renewBuildingPopulation(viewer);
+  setBaselineSceneRef();
   initUI(viewer, models);
   console.log('Region', getActiveRegion());
   console.log('Models', models);

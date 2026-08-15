@@ -9,7 +9,9 @@ import { createBuildingAgeLegend } from '../components/shared/scales/buildingAge
 import { createDistributionLegend, updateLegendContent } from '../components/shared/scales/distributionLegend.js';
 import { runConstructionPreview } from '../actions/constructionActions.js';
 import { newPrediction } from '../actions/newPredictionAction.js';
+import { restoreInitialScene } from '../actions/restoreInitialSceneAction.js';
 import { takeHighResScreenshot } from '../../utils/screenshot.js';
+import { waitForDomPaint, waitForViewerRender } from '../../utils/waitForViewerRender.js';
 let outputContainer;
 
 export function initGeneralLayout(viewer, models) {
@@ -99,12 +101,30 @@ export function initGeneralLayout(viewer, models) {
     },
   });
 
-  btnAnalyze.addEventListener('click', async () => {
-    const ok = await newPrediction(viewer, models, 25);
-    if (!ok) return;
+  const syncTimelineFromAppState = () => {
     timeline.setYear(appState.year);
     timeline.setDisasterState(appState.disasterState);
     timelineController.syncResult();
+  };
+
+  btnAnalyze.addEventListener('click', async () => {
+    btnAnalyze.disabled = true;
+    try {
+      for (let i = 0; i < 10; i++) {
+        const ok = await newPrediction(viewer, models, 25);
+        if (!ok) return;
+
+        syncTimelineFromAppState();
+        await waitForViewerRender(viewer);
+        await waitForDomPaint();
+        await takeHighResScreenshot(viewer);
+        await restoreInitialScene(viewer, models);
+
+        syncTimelineFromAppState();
+      }
+    } finally {
+      btnAnalyze.disabled = false;
+    }
   });
 
   const row = document.createElement('div');

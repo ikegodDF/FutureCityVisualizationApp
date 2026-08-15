@@ -5,6 +5,7 @@ import { buildComputePayload } from '../../region/regionState.js';
 import { generateBuildingsByCategory } from '../../construction/generateBuildings.js';
 import { toPayload, resolveBuildingId } from '../../domain/buildings/index.js';
 import { renewBuildingPopulation } from './renewBuildingPopulationAction.js';
+import { waitForViewerRender } from '../../utils/waitForViewerRender.js';
 
 /** 共有 models 配列の中身を差し替える（参照は維持） */
 export const replaceSceneModels = (models, nextModels) => {
@@ -132,6 +133,7 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
     if (!populationOk) {
       console.warn('new_prediction: 人口按分に失敗しました');
     }
+    await waitForViewerRender(viewer);
     console.log(appState);
     return true;
   };

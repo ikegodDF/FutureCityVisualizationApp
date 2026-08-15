@@ -1,0 +1,35 @@
+/* スクリーンショット撮影中: オーバーレイの築年数スケール + タイムラインのみ表示 */
+
+body.screenshot-capture #uiControls,
+body.screenshot-capture #outputContainer,
+body.screenshot-capture #regionCurrentLabel,
+body.screenshot-capture .edit-menu-bar {
+    display: none !important;
+}
+
+body.screenshot-capture .cesium-viewer-toolbar,
+body.screenshot-capture .cesium-viewer-bottom,
+body.screenshot-capture .cesium-viewer-fullscreenContainer,
+body.screenshot-capture .cesium-widget-credits {
+    display: none !important;
+}
+
+#screenshot-ui-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    pointer-events: none;
+}
+
+#screenshot-ui-overlay .building-age-legend {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    display: flex !important;
+}
+
+#screenshot-ui-overlay .timeline-controls {
+    position: fixed;
+    left: 0;
+    bottom: 64px;
+}

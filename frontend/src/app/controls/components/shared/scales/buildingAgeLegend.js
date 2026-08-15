@@ -1,6 +1,7 @@
 export function createBuildingAgeLegend() {
   const legendContainer = document.createElement('div');
   legendContainer.id = 'buildingAgeLegend';
+  legendContainer.className = 'building-age-legend';
 
   const title = document.createElement('div');
   title.className = 'legend-title';

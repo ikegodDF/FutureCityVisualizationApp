@@ -1,3 +1,4 @@
+export { restoreInitialScene } from './restoreInitialSceneAction.js';
 export { prediction, restore } from './predictionActions.js';
 export { renewBuildingPopulation } from './renewBuildingPopulationAction.js';
 export { result } from './resultActions.js';

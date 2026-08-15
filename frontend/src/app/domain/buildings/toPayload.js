@@ -34,6 +34,19 @@ export const toPayload = (source) => {
     buildingDetail: buildBuildingDetail(source, detail),
   };
 
+  if (source?.latitude != null && source?.longitude != null) {
+    payload.latitude = source.latitude;
+    payload.longitude = source.longitude;
+  }
+
+  if (source?.altitude != null) {
+    payload.altitude = source.altitude;
+  }
+
+  if (typeof source?.isEstimatedYear === 'boolean') {
+    payload.isEstimatedYear = source.isEstimatedYear;
+  }
+
   if (typeof source?.isDamage === 'boolean') {
     payload.isDamage = source.isDamage;
   }
