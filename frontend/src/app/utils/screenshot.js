@@ -2,6 +2,7 @@ import html2canvas from 'html2canvas';
 import { appState } from '../state/appState.js';
 import { getActiveRegion } from '../region/regionState.js';
 import { syncGeneralLeftStackLayout } from '../controls/layouts/generalLayoutSync.js';
+import { getOutputDisplayContent, renderOutputContainerHtml } from './outputDisplay.js';
 import { waitForDomPaint, waitForViewerRender } from './waitForViewerRender.js';
 
 export const SCREENSHOT_SCALE = 4;
@@ -121,6 +122,16 @@ async function drawDomOverlay(ctx, snapshot, mapScale) {
   }
 }
 
+function syncOutputContainerDom() {
+  const outputContainer = document.getElementById('outputContainer');
+  if (!outputContainer) {
+    return;
+  }
+
+  const { lines } = getOutputDisplayContent(appState);
+  outputContainer.innerHTML = renderOutputContainerHtml(lines);
+}
+
 /**
  * Cesium + 築年数スケール + 上部の施策・年度表示 の PNG を保存する。
  * UI は DOM から取得。モデル編集パネルは screenshot.css で非表示。
@@ -128,28 +139,36 @@ async function drawDomOverlay(ctx, snapshot, mapScale) {
  * @param {import('cesium').Viewer} viewer
  * @param {string} [filename] 保存ファイル名。省略時は施策・年度などから自動生成
  * @param {number} [scale=SCREENSHOT_SCALE]
+ * @param {{ onBeforeCapture?: () => void | Promise<void> }} [options]
  */
 export async function takeHighResScreenshot(
   viewer,
   filename,
   scale = SCREENSHOT_SCALE,
+  options = {},
 ) {
+  const { onBeforeCapture } = options;
+
   await waitForViewerRender(viewer);
 
   syncGeneralLeftStackLayout();
   await waitForDomPaint();
 
   const cesiumCanvas = viewer.scene.canvas;
-  const canvasRect = cesiumCanvas.getBoundingClientRect();
-  const overlaySnapshots = resolveOverlaySnapshots(canvasRect);
   const layout = resolveScreenshotLayout(cesiumCanvas, scale);
 
   document.body.classList.add('screenshot-capture');
   try {
+    await onBeforeCapture?.();
+    syncOutputContainerDom();
+    syncGeneralLeftStackLayout();
     await waitForDomPaint();
     document.body.offsetHeight;
 
     viewer.scene.render();
+
+    const canvasRect = cesiumCanvas.getBoundingClientRect();
+    const overlaySnapshots = resolveOverlaySnapshots(canvasRect);
 
     const compositeCanvas = document.createElement('canvas');
     compositeCanvas.width = layout.width;

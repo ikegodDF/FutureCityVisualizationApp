@@ -11,19 +11,26 @@ export function clonePayloads(payloads = []) {
   return structuredClone(payloads);
 }
 
+/** @type {import('../domain/buildings/toPayload.js').ModelPayload[]|null} */
+let baselinePayloadsSnapshot = null;
+
 /**
- * ロード完了時の appState.result 位置を記録する（ペイロード本体は result に保持）。
+ * ロード完了時の appState.result 位置を記録する（ペイロードはスナップショットとして固定）。
  */
 export function setBaselineSceneRef() {
+  const { year, appliedPolicy, disasterState } = appState;
+  const payloads = appState.result?.[appliedPolicy]?.[year]?.[disasterState];
+  baselinePayloadsSnapshot = Array.isArray(payloads) ? clonePayloads(payloads) : null;
+
   appState.baselineScene = {
-    year: appState.year,
-    appliedPolicy: appState.appliedPolicy,
-    disasterState: appState.disasterState,
+    year,
+    appliedPolicy,
+    disasterState,
   };
 
-  const count = getBaselinePayloads()?.length ?? 0;
+  const count = baselinePayloadsSnapshot?.length ?? 0;
   console.log(
-    `基準シーンを記録: result[${appState.appliedPolicy}][${appState.year}][${appState.disasterState}]（${count} 棟）`,
+    `基準シーンを記録: result[${appliedPolicy}][${year}][${disasterState}]（${count} 棟）`,
   );
 
   return appState.baselineScene;
@@ -36,13 +43,10 @@ export function getBaselineSceneRef() {
 
 /** @returns {import('../domain/buildings/toPayload.js').ModelPayload[]|null} */
 export function getBaselinePayloads() {
-  const ref = getBaselineSceneRef();
-  if (!ref) {
+  if (!baselinePayloadsSnapshot?.length) {
     return null;
   }
-
-  const payloads = appState.result?.[ref.appliedPolicy]?.[ref.year]?.[ref.disasterState];
-  return Array.isArray(payloads) ? payloads : null;
+  return clonePayloads(baselinePayloadsSnapshot);
 }
 
 /**

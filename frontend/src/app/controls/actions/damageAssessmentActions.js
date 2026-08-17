@@ -2,7 +2,12 @@ import { appState, setDisasterState, setResult } from '../../state/appState.js';
 import { renew3DModels } from '../../tiles/renew3DModels.js';
 import { buildComputePayload } from '../../region/regionState.js';
 
-const runDamageAssessment = async (viewer, disasterState, { expectedAfterState, method, apiPath }) => {
+const runDamageAssessment = async (
+  viewer,
+  disasterState,
+  { expectedAfterState, method, apiPath },
+  { forceRefresh = false } = {},
+) => {
   if (appState.disasterState !== '被災前') {
     renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year]['被災前']);
 
@@ -22,10 +27,19 @@ const runDamageAssessment = async (viewer, disasterState, { expectedAfterState, 
   });
 
   setDisasterState(disasterState);
-  if (appState.result[appState.appliedPolicy][appState.year][appState.disasterState]) {
+
+  const cachedResult = appState.result[appState.appliedPolicy]?.[appState.year]?.[disasterState];
+  if (!forceRefresh && cachedResult) {
     console.log(appState);
-    renew3DModels(viewer, appState.result[appState.appliedPolicy][appState.year][appState.disasterState]);
+    renew3DModels(viewer, cachedResult);
     return;
+  }
+
+  if (forceRefresh && cachedResult) {
+    delete appState.result[appState.appliedPolicy][appState.year][disasterState];
+    if (appState.totalVictims?.[appState.appliedPolicy]?.[appState.year]) {
+      delete appState.totalVictims[appState.appliedPolicy][appState.year][disasterState];
+    }
   }
 
   try {
@@ -46,14 +60,24 @@ const runDamageAssessment = async (viewer, disasterState, { expectedAfterState, 
   }
 };
 
-export const earthquakeDamageAssessment = async (viewer, models = [], disasterState) => runDamageAssessment(viewer, disasterState, {
+export const earthquakeDamageAssessment = async (
+  viewer,
+  models = [],
+  disasterState,
+  options = {},
+) => runDamageAssessment(viewer, disasterState, {
   expectedAfterState: '地震発生後',
   method: 'earthquake_damage_assessment',
   apiPath: '/api/v1/damage_prediction/earthquake',
-});
+}, options);
 
-export const tsunamiDamageAssessment = async (viewer, models = [], disasterState) => runDamageAssessment(viewer, disasterState, {
+export const tsunamiDamageAssessment = async (
+  viewer,
+  models = [],
+  disasterState,
+  options = {},
+) => runDamageAssessment(viewer, disasterState, {
   expectedAfterState: '津波発生後',
   method: 'tsunami_damage_assessment',
   apiPath: '/api/v1/damage_prediction/tsunami',
-});
+}, options);

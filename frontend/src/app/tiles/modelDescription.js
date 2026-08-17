@@ -68,11 +68,8 @@ export const applyModelPayloadToEntity = (entity, renewModel) => {
   const detail = renewModel?.buildingDetail ?? renewModel?.BuildingDetail ?? {};
 
   entity.year = renewModel.year ?? entity.year;
-  entity.show = renewModel.show;
-
-  if (typeof renewModel.isDamage === 'boolean') {
-    entity.isDamage = renewModel.isDamage;
-  }
+  entity.show = renewModel.show !== false;
+  entity.isDamage = renewModel.isDamage === true;
 
   if (renewModel.latitude != null) entity.latitude = renewModel.latitude;
   if (renewModel.longitude != null) entity.longitude = renewModel.longitude;

@@ -690,7 +690,7 @@ class ComputeService:
                 building = params_by_id.get(int(building_id))
 
                 if building is None:
-                    print(f"建物ID {building_id} に対応する要素が params にありません")
+                    # print(f"建物ID {building_id} に対応する要素が params にありません")
                     continue
 
                 if building.show:

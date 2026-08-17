@@ -8,11 +8,10 @@ import { createEditMenuBar } from '../components/general/editMenu/editMenuBar.js
 import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
 import { createDistributionLegend, updateLegendContent } from '../components/shared/scales/distributionLegend.js';
 import { runConstructionPreview } from '../actions/constructionActions.js';
-import { newPrediction } from '../actions/newPredictionAction.js';
-import { restoreInitialScene } from '../actions/restoreInitialSceneAction.js';
+import { runAnalysisBatch } from '../actions/analysisActions.js';
 import { takeHighResScreenshot } from '../../utils/screenshot.js';
-import { waitForDomPaint, waitForViewerRender } from '../../utils/waitForViewerRender.js';
 import { bindGeneralLeftStackLayoutSync } from './generalLayoutSync.js';
+import { setInitialCamera } from '../../utils/camera.js';
 let outputContainer;
 
 export function initGeneralLayout(viewer, models) {
@@ -42,7 +41,7 @@ export function initGeneralLayout(viewer, models) {
   const btnFlyJapan = document.createElement('button');
   btnFlyJapan.textContent = '初期位置へ';
   btnFlyJapan.addEventListener('click', async () => {
-    models = await runConstructionPreview(viewer, models);
+    setInitialCamera(viewer);
   });
 
   const btnRangeSelect = document.createElement('button');
@@ -65,7 +64,9 @@ export function initGeneralLayout(viewer, models) {
   btnScreenshot.addEventListener('click', async () => {
     btnScreenshot.disabled = true;
     try {
-      await takeHighResScreenshot(viewer);
+      await takeHighResScreenshot(viewer, undefined, undefined, {
+        onBeforeCapture: () => timelineController.syncResult(),
+      });
     } catch (error) {
       console.error('スクリーンショット取得に失敗しました:', error);
     } finally {
@@ -119,18 +120,14 @@ export function initGeneralLayout(viewer, models) {
   btnAnalyze.addEventListener('click', async () => {
     btnAnalyze.disabled = true;
     try {
-      for (let i = 0; i < 10; i++) {
-        const ok = await newPrediction(viewer, models, 25);
-        if (!ok) return;
-
-        syncTimelineFromAppState();
-        await waitForViewerRender(viewer);
-        await waitForDomPaint();
-        await takeHighResScreenshot(viewer);
-        await restoreInitialScene(viewer, models);
-
-        syncTimelineFromAppState();
-      }
+      await runAnalysisBatch({
+        viewer,
+        models,
+        baseYear,
+        maxYears: TIMELINE_MAX_YEARS,
+        stepYears: TIMELINE_STEP_YEARS,
+        onSyncUi: syncTimelineFromAppState,
+      });
     } finally {
       btnAnalyze.disabled = false;
     }

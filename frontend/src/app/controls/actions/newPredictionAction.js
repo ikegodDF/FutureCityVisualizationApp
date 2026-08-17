@@ -105,7 +105,11 @@ const applyPredictionToScene = async (
 };
 
 const commitTimelineAdvance = async (viewer, sceneModels, targetYear) => {
-  const nextResult = sceneModels.map(toPayload);
+  const nextResult = sceneModels.map((model) => {
+    const payload = toPayload(model);
+    delete payload.isDamage;
+    return payload;
+  });
   setYear(targetYear);
   setResult(nextResult, 0);
   await renew3DModels(viewer, nextResult);
@@ -118,7 +122,13 @@ const commitTimelineAdvance = async (viewer, sceneModels, targetYear) => {
  * UI 同期は generalLayout（タイムラインスライダー）側で行う。
  * @returns {Promise<boolean>}
  */
-export const newPrediction = async (viewer, models = [], addYear = 5) => {
+export const newPrediction = async (
+  viewer,
+  models = [],
+  addYear = 5,
+  percentage = 50,
+  { forceRefresh = false } = {},
+) => {
   if (appState.disasterState !== '被災前') {
     setDisasterState('被災前');
   }
@@ -126,6 +136,7 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
   const policy = appState.appliedPolicy;
   const disaster = appState.disasterState;
   const previousYear = appState.year;
+  const targetYear = previousYear + addYear;
 
   const finish = async (sceneModels) => {
     replaceSceneModels(models, sceneModels);
@@ -138,7 +149,11 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
     return true;
   };
 
-  if (appState.result[policy]?.[previousYear + addYear]) {
+  if (forceRefresh && appState.result[policy]?.[targetYear]) {
+    delete appState.result[policy][targetYear];
+  }
+
+  if (!forceRefresh && appState.result[policy]?.[targetYear]) {
     const previousResult = appState.result[policy][previousYear][disaster];
     const cachedResult = appState.result[policy][previousYear + addYear][disaster];
     removeModelsFromSelectedRanges(
@@ -152,7 +167,7 @@ export const newPrediction = async (viewer, models = [], addYear = 5) => {
     method: 'building_retention_rate',
     appStateYear: previousYear,
     addYear,
-    percentage: 90,
+    percentage: percentage,
     disasterState: disaster,
     params: appState.result[policy][previousYear][disaster],
     selectedRanges: appState.selectedRanges[previousYear],
