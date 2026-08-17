@@ -1,9 +1,12 @@
 import * as Cesium from 'cesium'; // 💡 環境に合わせて const Cesium = window.Cesium; に変えてください
 import { appState } from '../state/appState.js';
+import { sampleTerrainHeights } from '../terrain/sampleTerrainHeights.js';
 
-// 描画したエンティティを、地震と津波で別々に管理する（クリア用）
+// 描画したオブジェクトを、地震と津波で別々に管理する（クリア用）
 let seismicEntities = [];
-let tsunamiEntities = [];
+let tsunamiPrimitives = [];
+
+const TSUNAMI_PRIMITIVE_BATCH = 4000;
 
 /**
  * ==================================================
@@ -95,6 +98,93 @@ function decodeJapanMeshFromPython(meshcode) {
     return { lat, lon, deltaLat, deltaLon };
 }
 
+function getTsunamiCellDeltas(lat) {
+    const meterPerLat = 111111;
+    const meterPerLon = 111111 * Math.cos(lat * Math.PI / 180);
+    const sizeInMeter = 10.0;
+    return {
+        deltaLatDeg: sizeInMeter / meterPerLat,
+        deltaLonDeg: sizeInMeter / meterPerLon,
+    };
+}
+
+function buildTsunamiInstances(items, terrainHeights) {
+    const instances = [];
+
+    items.forEach((item, index) => {
+        const lat = item.latitude;
+        const lon = item.longitude;
+        const depth = item.depth;
+        const { deltaLatDeg, deltaLonDeg } = getTsunamiCellDeltas(lat);
+        const waterDepth = depth > 0 ? depth : 0.1;
+        const groundHeight = terrainHeights[index] ?? 0;
+        const color = getTsunamiColor(depth);
+
+        instances.push(new Cesium.GeometryInstance({
+            id: `tsunami_${lat}_${lon}_${index}`,
+            geometry: new Cesium.RectangleGeometry({
+                rectangle: Cesium.Rectangle.fromDegrees(
+                    lon - deltaLonDeg / 2,
+                    lat - deltaLatDeg / 2,
+                    lon + deltaLonDeg / 2,
+                    lat + deltaLatDeg / 2,
+                ),
+                height: groundHeight,
+                extrudedHeight: groundHeight + waterDepth,
+                vertexFormat: Cesium.PerInstanceColorAppearance.VERTEX_FORMAT,
+            }),
+            attributes: {
+                color: Cesium.ColorGeometryInstanceAttribute.fromColor(color),
+            },
+        }));
+    });
+
+    return instances;
+}
+
+function addTsunamiPrimitiveBatches(viewer, instances) {
+    for (let i = 0; i < instances.length; i += TSUNAMI_PRIMITIVE_BATCH) {
+        const batch = instances.slice(i, i + TSUNAMI_PRIMITIVE_BATCH);
+        const primitive = viewer.scene.primitives.add(new Cesium.Primitive({
+            geometryInstances: batch,
+            appearance: new Cesium.PerInstanceColorAppearance({
+                closed: true,
+                translucent: true,
+            }),
+            asynchronous: true,
+            releaseGeometryInstances: true,
+        }));
+        tsunamiPrimitives.push(primitive);
+    }
+}
+
+async function renderTsunamiDistribution(viewer, tsunami) {
+    const validItems = tsunami.filter((item) =>
+        !Number.isNaN(item.latitude)
+        && !Number.isNaN(item.longitude)
+        && item.depth !== undefined,
+    );
+
+    if (validItems.length === 0) {
+        return;
+    }
+
+    console.log(`⏳ 津波浸水域 (${validItems.length}件) の地形サンプリング開始...`);
+    const terrainHeights = await sampleTerrainHeights(viewer, validItems, {
+        onProgress: (done, total) => {
+            if (done > 0 && done % 10000 === 0) {
+                console.log(` 👀 地形サンプリング... ${done}/${total} 件`);
+            }
+        },
+    });
+
+    console.log(`⏳ 津波ポリゴン生成中...`);
+    const instances = buildTsunamiInstances(validItems, terrainHeights);
+    addTsunamiPrimitiveBatches(viewer, instances);
+
+    console.log(`✅ 津波マッピング完了: ${instances.length} 件 (${tsunamiPrimitives.length} プリミティブ)`);
+}
+
 
 /**
  * ==================================================
@@ -117,10 +207,10 @@ export const clearDistributionModels = (viewer, mode) => {
     }
     
     if (mode === 'tsunami' || !mode) {
-        if (tsunamiEntities.length > 0) {
-            console.log(`🧹 古い津波モデルを削除中... (${tsunamiEntities.length}件)`);
-            tsunamiEntities.forEach(entity => viewer.entities.remove(entity));
-            tsunamiEntities.length = 0;
+        if (tsunamiPrimitives.length > 0) {
+            console.log(`🧹 古い津波モデルを削除中... (${tsunamiPrimitives.length}件)`);
+            tsunamiPrimitives.forEach((primitive) => viewer.scene.primitives.remove(primitive));
+            tsunamiPrimitives.length = 0;
         }
     }
 };
@@ -130,7 +220,7 @@ export const clearDistributionModels = (viewer, mode) => {
  * @param {Object} viewer - Cesium Viewer インスタンス
  * @param {string} mode - 'seismic' または 'tsunami'
  */
-export const addDistributionModel = (viewer, mode) => {
+export const addDistributionModel = async (viewer, mode) => {
     if (!viewer) {
         console.error('❌ 描画エラー: Cesiumの viewer オブジェクトが関数に渡されていません。');
         return false;
@@ -143,9 +233,6 @@ export const addDistributionModel = (viewer, mode) => {
 
     const { seismic, tsunami } = appState.distribution;
     
-    // パフォーマンス向上のため、描画イベントを一時停止
-    viewer.entities.suspendEvents();
-
     // 描画する前に、指定されたモードの古いポリゴンを自動クリア
     clearDistributionModels(viewer, mode);
 
@@ -153,6 +240,8 @@ export const addDistributionModel = (viewer, mode) => {
     // 🔥 【地震（震度メッシュ）の平面描画】
     // --------------------------------------------------
     if (mode === 'earthquake' && seismic && seismic.length > 0) {
+        viewer.entities.suspendEvents();
+
         console.log(`⏳ 震度メッシュ (${seismic.length}件) のマッピングを開始...`);
         
         seismic.forEach((item, index) => {
@@ -180,64 +269,18 @@ export const addDistributionModel = (viewer, mode) => {
             });
             seismicEntities.push(entity);
         });
+
+        viewer.entities.resumeEvents();
         console.log(`✅ 震度マッピング完了: ${seismicEntities.length} 件`);
     }
 
     // --------------------------------------------------
     // 🔥 【津波浸水域の3D高さ有描画】
+    // 地形追従の見た目を保ちつつ、描画時サンプリング + Primitive バッチで軽量化
     // --------------------------------------------------
-    if ((mode === 'tsunami' || mode === 'tsunami') && tsunami && tsunami.length > 0) {
-        console.log(`⏳ 津波浸水域 (${tsunami.length}件) のマッピングを開始...`);
-        
-        tsunami.forEach((item, index) => {
-            if (index > 0 && index % 1000 === 0) {
-                console.log(` 👀 津波処理中... ${index}/${tsunami.length} 件完了`);
-            }
-            
-            const lat = item.latitude;
-            const lon = item.longitude;
-            const depth = item.depth;
-
-            if (isNaN(lat) || isNaN(lon) || depth === undefined) return;
-
-            const color = getTsunamiColor(depth);
-            
-            // 💡 1度あたりの正確なメートル数（地球の形に基づく計算）
-            const meterPerLat = 111111; // 緯度1度 ≒ 約111.1km
-            // 経度は赤道から離れる（緯度が上がる）ほど1度あたりのメートルが狭くなるため、cos(lat) をかける
-            const meterPerLon = 111111 * Math.cos(lat * Math.PI / 180); 
-
-            // 💡 「10メートル」を「度（Degrees）」の単位に変換する
-            const sizeInMeter = 10.0; 
-            const deltaLatDeg = sizeInMeter / meterPerLat; // 10mの縦幅（度）
-            const deltaLonDeg = sizeInMeter / meterPerLon; // 10mの横幅（度）
-
-            // 浸水深（m）をそのまま高さとして適用
-            const extrudedHeightValue = depth > 0 ? depth : 0.1;
-
-            const entity = viewer.entities.add({
-                id: `tsunami_${lat}_${lon}_${index}`,
-                description: `<h3>津波浸水情報</h3><p>緯度: ${lat}</p><p>経度: ${lon}</p><p>浸水深: ${depth.toFixed(2)}m</p>`,
-                rectangle: {
-                    // 💡 中心座標（lat, lon）から、上下左右に「10mの半分（5m分）」ずつ広げる
-                    coordinates: Cesium.Rectangle.fromDegrees(
-                        lon - deltaLonDeg / 2, // 西端
-                        lat - deltaLatDeg / 2, // 南端
-                        lon + deltaLonDeg / 2, // 東端
-                        lat + deltaLatDeg / 2  // 北端
-                    ),
-                    material: color,
-                    extrudedHeight: extrudedHeightValue, // 高さは「m」
-                    outline: false
-                }
-            });
-            tsunamiEntities.push(entity);
-        });
-        
-        console.log(`✅ 津波マッピング完了: ${tsunamiEntities.length} 件`);
+    if (mode === 'tsunami' && tsunami && tsunami.length > 0) {
+        await renderTsunamiDistribution(viewer, tsunami);
     }
 
-    // まとめて画面を更新
-    viewer.entities.resumeEvents();
     return true;
 };

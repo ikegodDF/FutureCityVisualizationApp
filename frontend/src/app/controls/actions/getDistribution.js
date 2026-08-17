@@ -22,7 +22,7 @@ export const getDistribution = async (viewer) => {
 
         setDistribution(data.distribution)
         console.log(appState);
-        addDistributionModel(viewer, 'tsunami')
+        await addDistributionModel(viewer, 'tsunami')
         return true;
     } catch (error) {
         console.error('calculate error:', error);

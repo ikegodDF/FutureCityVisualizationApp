@@ -1,4 +1,4 @@
-import * as turf from "@turf/turf";
+﻿import * as turf from "@turf/turf";
 import { Cartesian3 } from "cesium";
 import { getModelColor } from "./getModelColor.js";
 import { createModelDescription } from "./modelDescription.js";
