@@ -166,12 +166,15 @@ export async function takeHighResScreenshot(
   document.body.classList.add('screenshot-capture');
   try {
     await onBeforeCapture?.();
+    // 範囲ポリゴン等の Entity 追加後、キャプチャ前に描画完了を待つ
+    await waitForViewerRender(viewer, 4);
     syncOutputContainerDom();
     syncGeneralLeftStackLayout();
     await waitForDomPaint();
     document.body.offsetHeight;
 
     viewer.scene.render();
+    await waitForViewerRender(viewer, 2);
 
     const canvasRect = cesiumCanvas.getBoundingClientRect();
     const overlaySnapshots = resolveOverlaySnapshots(canvasRect);

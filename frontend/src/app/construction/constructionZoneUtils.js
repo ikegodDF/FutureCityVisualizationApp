@@ -99,6 +99,26 @@ export function buildZonesFromSelectedRanges(selectedRanges = [], year = null) {
     .filter(Boolean);
 }
 
+/** 適用期間内の範囲設定のみ残す（new_prediction API と同じ判定） */
+export function filterActiveSelectedRanges(selectedRanges = [], appStateYear) {
+  return selectedRanges.filter(
+    (range) => !range.period?.end || range.period.end > appStateYear - 5,
+  );
+}
+
+/** 指定 order の範囲選択から建物生成ゾーンを作る */
+export function buildZonesFromSelectedRangesByOrder(
+  selectedRanges = [],
+  order,
+  appStateYear,
+  year = null,
+) {
+  const activeRanges = filterActiveSelectedRanges(selectedRanges, appStateYear)
+    .filter((range) => range.order === order);
+
+  return buildZonesFromSelectedRanges(activeRanges, year);
+}
+
 export function buildZonesFromRoadBlocks(roadData, boundaryZones = [], options = {}) {
   const boundaryPolygon = boundaryZones[0]?.polygon;
   const defaults = {

@@ -6,6 +6,7 @@ export { analysis, runAnalysisBatch, recordEarthquakeAndTsunamiDamageMetrics, ex
 export { earthquakeDamageAssessment, tsunamiDamageAssessment } from './damageAssessmentActions.js';
 export {
   startRangeSelection,
+  refreshRangeVisibility,
   getCommittedRangeSelection,
   getCommittedRangePolygon,
 } from './rangeSelectActions.js';

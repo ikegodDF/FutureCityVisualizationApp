@@ -4,6 +4,8 @@ export {
   buildZonesFromConfig,
   buildZonesFromRoadBlocks,
   buildZonesFromSelectedRanges,
+  buildZonesFromSelectedRangesByOrder,
+  filterActiveSelectedRanges,
   createConstructionZone,
   createTurfPolygonFromPoints,
   getConstructionDefaults,

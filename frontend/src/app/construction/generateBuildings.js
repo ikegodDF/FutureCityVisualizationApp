@@ -5,8 +5,41 @@ import {
   getDefaultBuildingCount,
   resolveConstructionZones,
 } from './constructionState.js';
-import { getConstructionDefaults } from './constructionZoneUtils.js';
+import {
+  buildZonesFromSelectedRangesByOrder,
+  getConstructionDefaults,
+} from './constructionZoneUtils.js';
 import { getActiveRegionId } from '../region/regionState.js';
+
+/** order=2（範囲内新築化）の範囲に集中させる新築比率 */
+export const ORDER_2_NEW_BUILDING_RATIO = 0.8;
+
+function splitBuildingCount(total, ratio) {
+  if (total <= 0) {
+    return { focused: 0, rest: 0 };
+  }
+
+  const focused = Math.min(total, Math.max(0, Math.round(total * ratio)));
+  return { focused, rest: total - focused };
+}
+
+async function addNewBuildingsForCategory(
+  viewer,
+  currentModels,
+  count,
+  zones,
+  buildingOptions,
+  categoryIndex,
+) {
+  if (count <= 0 || !zones.length) {
+    return currentModels;
+  }
+
+  return addNewBuildings(viewer, currentModels, count, zones, {
+    ...buildingOptions,
+    categoryIndex,
+  });
+}
 
 /**
  * 建物生成ゾーンを解決し、新築建物を配置する統合エントリ。
@@ -46,11 +79,19 @@ export async function generateBuildings(viewer, currentModels = [], options = {}
  */
 export async function generateBuildingsByCategory(viewer, currentModels = [], addNum = [], options = {}) {
   const regionId = getActiveRegionId();
-  const zones = options.zones ?? resolveConstructionZones(appState, regionId);
-  if (!zones.length) {
+  const defaultZones = options.zones ?? resolveConstructionZones(appState, regionId);
+  if (!defaultZones.length) {
     console.warn('建物生成ゾーンが未設定のため新築をスキップしました');
     return currentModels;
   }
+
+  const sourceYear = options.sourceYear ?? appState.year;
+  const order2Zones = buildZonesFromSelectedRangesByOrder(
+    appState.selectedRanges?.[sourceYear] ?? [],
+    2,
+    sourceYear,
+    sourceYear,
+  );
 
   const buildingOptions = {
     ...getConstructionDefaults(),
@@ -72,15 +113,26 @@ export async function generateBuildingsByCategory(viewer, currentModels = [], ad
     if (categoryCount <= 0) {
       continue;
     }
-    updatedModels = await addNewBuildings(
+
+    const { focused, rest } = order2Zones.length > 0
+      ? splitBuildingCount(categoryCount, ORDER_2_NEW_BUILDING_RATIO)
+      : { focused: 0, rest: categoryCount };
+
+    updatedModels = await addNewBuildingsForCategory(
       viewer,
       updatedModels,
-      categoryCount,
-      zones,
-      {
-        ...buildingOptions,
-        categoryIndex,
-      },
+      focused,
+      order2Zones,
+      buildingOptions,
+      categoryIndex,
+    );
+    updatedModels = await addNewBuildingsForCategory(
+      viewer,
+      updatedModels,
+      rest,
+      defaultZones,
+      buildingOptions,
+      categoryIndex,
     );
   }
 
