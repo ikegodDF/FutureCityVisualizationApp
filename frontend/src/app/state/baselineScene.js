@@ -1,4 +1,5 @@
 import { appState } from './appState.js';
+import { clearDistributionLegend } from '../controls/components/shared/scales/distributionLegend.js';
 
 /**
  * @typedef {Object} BaselineSceneRef
@@ -82,5 +83,6 @@ export function resetAppStateToBaseline() {
   };
   appState.selectedRanges = {};
   appState.distribution = null;
+  clearDistributionLegend();
   return true;
 }

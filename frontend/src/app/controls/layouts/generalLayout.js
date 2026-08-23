@@ -6,7 +6,7 @@ import { createTimelineView } from '../components/general/timeline/timelineView.
 import { createTimelineController, TIMELINE_MAX_YEARS, TIMELINE_STEP_YEARS } from '../components/general/timeline/timelineController.js';
 import { createEditMenuBar } from '../components/general/editMenu/editMenuBar.js';
 import { createBuildingAgeLegend } from '../components/shared/scales/buildingAgeLegend.js';
-import { createDistributionLegend, updateLegendContent } from '../components/shared/scales/distributionLegend.js';
+import { createDistributionLegend } from '../components/shared/scales/distributionLegend.js';
 import { runConstructionPreview } from '../actions/constructionActions.js';
 import { runAnalysisBatch } from '../actions/analysisActions.js';
 import { takeHighResScreenshot } from '../../utils/screenshot.js';
@@ -96,7 +96,6 @@ export function initGeneralLayout(viewer, models) {
     onDisasterChange: async (disasterState) => {
       await timelineController.applyDisasterState(disasterState);
       timeline.setDisasterState(appState.disasterState);
-      updateLegendContent(legendElement);
     },
     onPolicyChange: async (policyName) => {
       await timelineController.applyPolicy(policyName);

@@ -3,6 +3,7 @@ import { appState } from '../state/appState.js';
 import { getActiveRegion } from '../region/regionState.js';
 import { syncGeneralLeftStackLayout } from '../controls/layouts/generalLayoutSync.js';
 import { getOutputDisplayContent, renderOutputContainerHtml } from './outputDisplay.js';
+import { isDistributionLegendVisible } from '../controls/components/shared/scales/distributionLegend.js';
 import { waitForDomPaint, waitForViewerRender } from './waitForViewerRender.js';
 
 export const SCREENSHOT_SCALE = 4;
@@ -13,7 +14,7 @@ const DISASTER_LABELS = {
   津波発生後: '津波被害',
 };
 
-const SCREENSHOT_OVERLAYS = [
+const BASE_SCREENSHOT_OVERLAYS = [
   { selector: '#buildingAgeLegend', anchor: 'top-left' },
   { selector: '#outputContainer', anchor: 'center' },
 ];
@@ -47,7 +48,12 @@ function downloadDataUrl(dataUrl, filename) {
 }
 
 function resolveOverlaySnapshots(canvasRect) {
-  return SCREENSHOT_OVERLAYS
+  const overlays = [
+    ...BASE_SCREENSHOT_OVERLAYS,
+    ...(isDistributionLegendVisible() ? [{ selector: '#distributionLegend', anchor: 'top-left' }] : []),
+  ];
+
+  return overlays
     .map(({ selector, anchor }) => {
       const element = document.querySelector(selector);
       if (!element) {

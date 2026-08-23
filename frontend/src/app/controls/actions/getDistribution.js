@@ -1,32 +1,29 @@
+import { appState, setDistribution } from '../../state/appState.js';
+import { addDistributionModel } from '../../tiles/addDistribution.js';
+import { buildComputePayload } from '../../region/regionState.js';
+import { setDistributionLegendMode } from '../components/shared/scales/distributionLegend.js';
 import {
-    appState,
-    setDistribution,
-} from "../../state/appState.js";
-import { addDistributionModel } from "../../tiles/addDistribution.js";
-import { buildComputePayload } from "../../region/regionState.js";
+  ACTIVE_DISTRIBUTION_MODE,
+  getDistributionRenderMode,
+} from '../components/shared/scales/distributionConfig.js';
 
 export const getDistribution = async (viewer) => {
-    if (appState.distribution !== null) {
-    }
-
-    try {
-    const apiBaseUrl =
-        import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
-    const res = await fetch(`${apiBaseUrl}/api/v1/get_distribution/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+  try {
+    if (!appState.distribution) {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiBaseUrl}/api/v1/get_distribution/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(buildComputePayload({})),
-    });
-    const data = await res.json();
-    console.log("distribution response:", data);
-
-        setDistribution(data.distribution)
-        console.log(appState);
-        await addDistributionModel(viewer, 'tsunami')
-        return true;
-    } catch (error) {
-        console.error('calculate error:', error);
-        return false;
+      });
+      setDistribution((await res.json()).distribution);
     }
-}
 
+    await addDistributionModel(viewer, getDistributionRenderMode());
+    setDistributionLegendMode(ACTIVE_DISTRIBUTION_MODE);
+    return true;
+  } catch (error) {
+    console.error('calculate error:', error);
+    return false;
+  }
+};

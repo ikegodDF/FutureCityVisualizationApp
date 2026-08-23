@@ -2,7 +2,6 @@
 
 body.screenshot-capture #operator-ui,
 body.screenshot-capture #regionCurrentLabel,
-body.screenshot-capture .distribution-legend,
 body.screenshot-capture .edit-menu-bar {
     display: none !important;
 }

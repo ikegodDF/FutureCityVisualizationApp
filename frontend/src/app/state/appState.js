@@ -13,6 +13,8 @@ export const appState = {
   totalVictims: {},
   selectedRanges: {},
   distribution: null,
+  /** @type {import('../controls/components/shared/scales/distributionConfig.js').DistributionMode|null} */
+  distributionLegendMode: null,
   population: null,
   /** @type {import('./baselineScene.js').BaselineSceneRef|null} */
   baselineScene: null,
