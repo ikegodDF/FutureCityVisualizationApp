@@ -92,7 +92,6 @@ const applyPredictionToScene = async (
       {
         idSources: currentParams,
         targetAppStateYear,
-        sourceYear: previousYear,
       },
     );
   }

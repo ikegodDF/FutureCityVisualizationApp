@@ -1,6 +1,6 @@
 import '../../../styles/ui.css';
 import { appState } from '../../state/appState.js';
-import { startRangeSelection, refreshRangeVisibility } from '../actions/index.js';
+import { startRangeSelection } from '../actions/index.js';
 import { getDistribution } from '../actions/getDistribution.js';
 import { createTimelineView } from '../components/general/timeline/timelineView.js';
 import { createTimelineController, TIMELINE_MAX_YEARS, TIMELINE_STEP_YEARS } from '../components/general/timeline/timelineController.js';
@@ -9,7 +9,7 @@ import { createBuildingAgeLegend } from '../components/shared/scales/buildingAge
 import { createDistributionLegend } from '../components/shared/scales/distributionLegend.js';
 import { runConstructionPreview } from '../actions/constructionActions.js';
 import { runAnalysisBatch } from '../actions/analysisActions.js';
-import { runScreenshotWithPrediction } from '../actions/screenshotPredictionAction.js';
+import { takeHighResScreenshot } from '../../utils/screenshot.js';
 import { bindGeneralLeftStackLayoutSync } from './generalLayoutSync.js';
 import { setInitialCamera } from '../../utils/camera.js';
 let outputContainer;
@@ -61,6 +61,18 @@ export function initGeneralLayout(viewer, models) {
 
   const btnScreenshot = document.createElement('button');
   btnScreenshot.textContent = 'スクリーンショット';
+  btnScreenshot.addEventListener('click', async () => {
+    btnScreenshot.disabled = true;
+    try {
+      await takeHighResScreenshot(viewer, undefined, undefined, {
+        onBeforeCapture: () => timelineController.syncResult(),
+      });
+    } catch (error) {
+      console.error('スクリーンショット取得に失敗しました:', error);
+    } finally {
+      btnScreenshot.disabled = false;
+    }
+  });
 
   const timelineController = createTimelineController({
     viewer,
@@ -98,15 +110,10 @@ export function initGeneralLayout(viewer, models) {
   editMenuBar.content.appendChild(timeline.element);
   infoUi.appendChild(editMenuBar.element);
 
-  const syncTimelineUi = () => {
+  const syncTimelineFromAppState = () => {
     timeline.setYear(appState.year);
     timeline.setDisasterState(appState.disasterState);
     timelineController.syncResult();
-  };
-
-  const syncTimelineFromAppState = () => {
-    syncTimelineUi();
-    refreshRangeVisibility(viewer);
   };
 
   btnAnalyze.addEventListener('click', async () => {
@@ -122,23 +129,6 @@ export function initGeneralLayout(viewer, models) {
       });
     } finally {
       btnAnalyze.disabled = false;
-    }
-  });
-
-  btnScreenshot.addEventListener('click', async () => {
-    btnScreenshot.disabled = true;
-    try {
-      await runScreenshotWithPrediction({
-        viewer,
-        models,
-        baseYear,
-        onSyncUi: syncTimelineFromAppState,
-        onBeforeScreenshotUi: syncTimelineUi,
-      });
-    } catch (error) {
-      console.error('スクリーンショット取得に失敗しました:', error);
-    } finally {
-      btnScreenshot.disabled = false;
     }
   });
 
