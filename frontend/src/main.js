@@ -18,7 +18,7 @@ import { promptRegionSelection } from './app/region/regionSelector.js';
 import { getActiveRegion } from './app/region/regionState.js';
 import { setInitialCamera } from './app/utils/camera.js';
 import { mountRegionBadge } from './app/region/regionBadge.js';
-import { Terrain, CesiumTerrainProvider } from 'cesium';
+import { Terrain, CesiumTerrainProvider, Cesium3DTileset } from 'cesium';
 import { renewBuildingPopulation } from './app/controls/actions/renewBuildingPopulationAction.js';
 
 window.CESIUM_BASE_URL = '/cesium';

@@ -73,6 +73,24 @@
           ]
         }
       ]
+    },
+    "tomakomai": {
+      "zoneSource": "config",
+      "zones": [
+        {
+          "id": "tomakomai-placeholder",
+          "name": "苫小牧市（仮エリア）",
+          "type": "residential",
+          "weight": 1.0,
+          "maxBuildingCoverageRatio": 0.6,
+          "coordinates": [
+            { "lon": 141.598, "lat": 42.638 },
+            { "lon": 141.612, "lat": 42.638 },
+            { "lon": 141.612, "lat": 42.630 },
+            { "lon": 141.598, "lat": 42.630 }
+          ]
+        }
+      ]
     }
   }
 }
