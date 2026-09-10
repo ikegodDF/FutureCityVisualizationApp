@@ -12,6 +12,7 @@ import { runAnalysisBatch } from '../actions/analysisActions.js';
 import { takeHighResScreenshot } from '../../utils/screenshot.js';
 import { bindGeneralLeftStackLayoutSync } from './generalLayoutSync.js';
 import { setInitialCamera } from '../../utils/camera.js';
+import { refreshShelterRegionVisualization } from '../actions/shelterRegionVisualization.js';
 let outputContainer;
 
 export function initGeneralLayout(viewer, models) {
@@ -42,6 +43,7 @@ export function initGeneralLayout(viewer, models) {
   btnFlyJapan.textContent = '初期位置へ';
   btnFlyJapan.addEventListener('click', async () => {
     setInitialCamera(viewer);
+    refreshShelterRegionVisualization(viewer);
   });
 
   const btnRangeSelect = document.createElement('button');

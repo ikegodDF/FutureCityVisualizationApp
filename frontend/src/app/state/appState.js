@@ -18,6 +18,14 @@ export const appState = {
   population: null,
   /** @type {import('./baselineScene.js').BaselineSceneRef|null} */
   baselineScene: null,
+  /** @type {import('./shelters.js').ShelterState} */
+  shelter: {
+    ids: [],
+    buildings: [],
+    regionMappings: [],
+    byRegion: {},
+    colorByShelterId: {},
+  },
 };
 
 export const setYear = (year) => {

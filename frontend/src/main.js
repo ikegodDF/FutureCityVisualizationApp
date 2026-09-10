@@ -20,6 +20,7 @@ import { setInitialCamera } from './app/utils/camera.js';
 import { mountRegionBadge } from './app/region/regionBadge.js';
 import { Terrain, CesiumTerrainProvider, Cesium3DTileset } from 'cesium';
 import { renewBuildingPopulation } from './app/controls/actions/renewBuildingPopulationAction.js';
+import { setShelters } from './app/state/shelters.js';
 
 window.CESIUM_BASE_URL = '/cesium';
 setupIon();
@@ -47,7 +48,7 @@ const viewer = (async function bootstrap() {
   let models = await addGltfModels(viewer, region);
   viewer.scene.globe.depthTestAgainstTerrain = true;
 
-  const road = await addRoad(viewer);
+  const road = await addRoad(viewer, region);
   setRoad(road);
 
   const configZones = buildZonesFromConfig(getActiveRegionId());
@@ -55,8 +56,15 @@ const viewer = (async function bootstrap() {
     buildZonesFromRoadBlocks(road, configZones),
   ));
   console.log(`街区領域: ${appState.blockRegions.length} 区画（地図非表示・appState のみ保持）`);
+  if (appState.blockRegions.length === 0) {
+    console.warn(
+      '街区領域が0件です。constructionConfig の境界ポリゴンと道路データの範囲を確認してください。',
+    );
+  }
 
-  setResult(models.map(toPayload));
+  const payloads = models.map(toPayload);
+  setResult(payloads);
+  setShelters(payloads);
   await renewBuildingPopulation(viewer);
   setBaselineSceneRef();
   initUI(viewer, models);

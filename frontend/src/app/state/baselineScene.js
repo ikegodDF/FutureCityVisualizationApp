@@ -1,5 +1,6 @@
 import { appState } from './appState.js';
 import { clearDistributionLegend } from '../controls/components/shared/scales/distributionLegend.js';
+import { setShelters } from './shelters.js';
 
 /**
  * @typedef {Object} BaselineSceneRef
@@ -83,6 +84,7 @@ export function resetAppStateToBaseline() {
   };
   appState.selectedRanges = {};
   appState.distribution = null;
+  setShelters(payloads);
   clearDistributionLegend();
   return true;
 }

@@ -23,6 +23,9 @@
       "data": {
         "seismicFile": "seismic/seismic_intensity.csv",
         "tsunamiFile": "tsunami/tsunami_inundation_depth_mukawa.csv"
+      },
+      "road": {
+        "geojsonPath": "/models/mukawaroad.geojson"
       }
     },
     {
@@ -48,6 +51,9 @@
       "data": {
         "seismicFile": "seismic/seismic_intensity_kuromatsunai.csv",
         "tsunamiFile": "tsunami/tsunami_inundation_depth_toyoura.csv"
+      },
+      "road": {
+        "geojsonPath": "/models/toyouraroad.geojson"
       }
     },
     {
@@ -73,6 +79,9 @@
       "data": {
         "seismicFile": "seismic/seismic_intensity_kuromatsunai.csv",
         "tsunamiFile": "tsunami/tsunami_inundation_depth_toyoura.csv"
+      },
+      "road": {
+        "geojsonPath": "/models/taikiroad.geojson"
       }
     },
     {
@@ -98,6 +107,9 @@
       "data": {
         "seismicFile": "seismic/seismic_intensity.csv",
         "tsunamiFile": "tsunami/tsunami_inundation_depth_mukawa.csv"
+      },
+      "road": {
+        "geojsonPath": "/models/tomakomairoad.geojson"
       }
     }
   ]

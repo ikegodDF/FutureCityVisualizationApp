@@ -1,12 +1,10 @@
 import json
 import os
-from functools import lru_cache
 from typing import Any, Dict, List
 
 from .config import settings
 
 
-@lru_cache(maxsize=1)
 def _load_regions_file() -> Dict[str, Any]:
     file_path = os.path.join(settings.data_dir, "regions.json")
     with open(file_path, "r", encoding="utf-8") as f:

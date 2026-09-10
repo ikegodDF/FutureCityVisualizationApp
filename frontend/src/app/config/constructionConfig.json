@@ -57,19 +57,19 @@
       ]
     },
     "toyoura": {
-      "zoneSource": "config",
+      "zoneSource": "roadBlocks",
       "zones": [
         {
-          "id": "toyoura-placeholder",
-          "name": "豊浦町（仮エリア）",
+          "id": "toyoura-default",
+          "name": "豊浦町指定エリア",
           "type": "residential",
           "weight": 1.0,
           "maxBuildingCoverageRatio": 0.6,
           "coordinates": [
-            { "lon": 140.597, "lat": 42.577 },
-            { "lon": 140.603, "lat": 42.577 },
-            { "lon": 140.603, "lat": 42.573 },
-            { "lon": 140.597, "lat": 42.573 }
+            { "lon": 140.535, "lat": 42.710 },
+            { "lon": 140.765, "lat": 42.710 },
+            { "lon": 140.765, "lat": 42.572 },
+            { "lon": 140.535, "lat": 42.572 }
           ]
         }
       ]

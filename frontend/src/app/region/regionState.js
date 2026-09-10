@@ -8,13 +8,35 @@ const getApiBaseUrl = () => import.meta.env.VITE_API_BASE_URL || 'http://localho
 
 export const getFallbackRegions = () => regionsData.regions;
 
+/** API 応答に無いフィールドを frontend の regions.json から補完する */
+export function mergeRegionWithLocalFallback(apiRegion, localRegions = getFallbackRegions()) {
+  if (!apiRegion?.id) {
+    return apiRegion ?? null;
+  }
+
+  const localRegion = findRegionById(apiRegion.id, localRegions);
+  if (!localRegion) {
+    return apiRegion;
+  }
+
+  return {
+    ...localRegion,
+    ...apiRegion,
+    model: { ...localRegion.model, ...apiRegion.model },
+    camera: { ...localRegion.camera, ...apiRegion.camera },
+    data: { ...localRegion.data, ...apiRegion.data },
+    populationMesh: apiRegion.populationMesh ?? localRegion.populationMesh,
+    road: apiRegion.road ?? localRegion.road,
+  };
+}
+
 export async function fetchRegions() {
   try {
     const res = await fetch(`${getApiBaseUrl()}/api/v1/regions/`);
     if (!res.ok) throw new Error(`regions API failed: ${res.status}`);
     const data = await res.json();
     if (Array.isArray(data.regions) && data.regions.length > 0) {
-      return data.regions;
+      return data.regions.map((region) => mergeRegionWithLocalFallback(region));
     }
   } catch (error) {
     console.warn('地域一覧の取得に失敗したため、ローカル設定を使用します:', error);
